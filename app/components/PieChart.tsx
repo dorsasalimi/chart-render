@@ -2,9 +2,23 @@
 "use client";
 
 import ReactECharts from "echarts-for-react";
-import type { PieChart as PieChartType } from "../types/charts";
 import { CHART_COLORS } from "../lib/chartTheme";
 import { getThemeColors, ThemeKey } from "../lib/colorThemes";
+
+// Define PieChart type locally
+interface PieChartDataItem {
+  name: string;
+  value: number;
+  itemStyle?: {
+    color?: string;
+  };
+}
+
+interface PieChartType {
+  title?: string;
+  unit?: string;
+  data: PieChartDataItem[];
+}
 
 interface Props {
   chart: PieChartType;
@@ -64,7 +78,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
         bottom: 0,
         itemWidth: 14,
         itemHeight: 14,
-        itemGap: 60, // Changed to 60
+        itemGap: 60,
         textStyle: {
           fontFamily: "inherit",
           fontSize: 12,
@@ -93,7 +107,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
           label: {
             show: true,
             formatter: (params: any) => {
-              return `${params.name}\n\n${toPersianDigits(params.percent)}٪`;
+              return `${params.name}\n\n٪${toPersianDigits(params.percent)}`;
             },
             fontSize: 12,
             fontWeight: 500,
@@ -117,7 +131,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
               fontFamily: "inherit",
               formatter: (params: any) => {
                 const value = toPersianDigits(params.value);
-                return `${params.name}\n\n${value} ${chart.unit ?? ""}\n\n${toPersianDigits(params.percent)}٪`;
+                return `${params.name}\n\n${value} ${chart.unit ?? ""}\n\n٪${toPersianDigits(params.percent)}`;
               },
             },
             itemStyle: {
@@ -191,7 +205,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
       bottom: 0,
       itemWidth: 14,
       itemHeight: 14,
-      itemGap: 60, // Keeping at 60
+      itemGap: 60,
       textStyle: {
         fontFamily: "inherit",
         fontSize: 12,
@@ -221,7 +235,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
         label: {
           show: true,
           formatter: (params: any) => {
-            return `${params.name}\n\n${toPersianDigits(params.percent)}٪`;
+            return `${params.name}\n\n٪${toPersianDigits(params.percent)}`;
           },
           fontSize: 12,
           fontWeight: 500,

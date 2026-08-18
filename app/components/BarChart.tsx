@@ -61,9 +61,12 @@ export default function BarChart({ chart, customColors, theme = "default" }: Pro
     },
 
     legend: {
-      top: 0,
+            bottom: 0,
+
       left: 'center',
       right: 'center',
+            itemGap: 60,
+
       textStyle: {
         fontFamily: "inherit",
       },

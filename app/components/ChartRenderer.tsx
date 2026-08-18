@@ -6,8 +6,12 @@ import { ThemeKey } from "../lib/colorThemes";
 
 import LineChart from "./LineChart";
 import BarChart from "./BarChart";
-import TreemapChart from "./AreaChart";
+import AreaChart from "./AreaChart";
 import PieChart from "./PieChart";
+// Import the new LineChart without curves
+import LineChartNoCurve from "./LineChartNoCurve";
+// Import a proper TreemapChart if you have one
+// import TreemapChart from "./TreemapChart";
 
 interface Props {
   chart: ChartDefinition;
@@ -16,6 +20,7 @@ interface Props {
   height?: number;
   showLegend?: boolean;
   showLabels?: boolean;
+  useCurvedLine?: boolean; // Prop to control line curve
 }
 
 export default function ChartRenderer({ 
@@ -24,13 +29,24 @@ export default function ChartRenderer({
   theme = "default",
   height = 420,
   showLegend = true,
-  showLabels = true
+  showLabels = true,
+  useCurvedLine = true // Default to curved for existing charts
 }: Props) {
   switch (chart.type) {
     case "line":
+      // Use the no-curve version if explicitly requested
+      if (!useCurvedLine) {
+        return (
+          <LineChartNoCurve 
+            chart={chart as any} 
+            customColors={customColors}
+            theme={theme}
+          />
+        );
+      }
       return (
         <LineChart 
-          chart={chart} 
+          chart={chart as any} 
           customColors={customColors}
           theme={theme}
           height={height}
@@ -42,16 +58,16 @@ export default function ChartRenderer({
     case "bar":
       return (
         <BarChart 
-          chart={chart} 
+          chart={chart as any} 
           customColors={customColors}
           theme={theme}
         />
       );
 
-    case "treemap":
+    case "area":
       return (
-        <TreemapChart 
-          chart={chart} 
+        <AreaChart 
+          chart={chart as any} 
           customColors={customColors}
           theme={theme}
         />
@@ -60,7 +76,7 @@ export default function ChartRenderer({
     case "pie":
       return (
         <PieChart 
-          chart={chart} 
+          chart={chart as any} 
           customColors={customColors}
           theme={theme}
         />
