@@ -31,8 +31,8 @@ export default function ChartRenderer({
   useCurvedLine = true,
   showConnectors = true
 }: Props) {
-  // Add type guard to prevent 'never' type errors
-  if (!chart || typeof chart !== 'object' || !('type' in chart)) {
+  // Validate chart exists
+  if (!chart || typeof chart !== 'object') {
     return (
       <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
         <p className="text-sm text-[#6B7A73]">Invalid chart configuration</p>
@@ -40,67 +40,75 @@ export default function ChartRenderer({
     );
   }
 
-  switch (chart.type) {
-    case "line":
-      if (!useCurvedLine) {
+  // Type-safe rendering using type property
+  const renderChart = () => {
+    // Using type assertion to avoid TypeScript narrowing issues
+    const type = (chart as any).type as string;
+    
+    switch (type) {
+      case "line":
+        if (!useCurvedLine) {
+          return (
+            <LineChartNoCurve 
+              chart={chart as any} 
+              customColors={customColors}
+              theme={theme}
+            />
+          );
+        }
         return (
-          <LineChartNoCurve 
+          <LineChart 
+            chart={chart as any} 
+            customColors={customColors}
+            theme={theme}
+            height={height}
+            showLegend={showLegend}
+            showLabels={showLabels}
+          />
+        );
+
+      case "bar":
+        return (
+          <BarChart 
             chart={chart as any} 
             customColors={customColors}
             theme={theme}
           />
         );
-      }
-      return (
-        <LineChart 
-          chart={chart as any} 
-          customColors={customColors}
-          theme={theme}
-          height={height}
-          showLegend={showLegend}
-          showLabels={showLabels}
-        />
-      );
 
-    case "bar":
-      return (
-        <BarChart 
-          chart={chart as any} 
-          customColors={customColors}
-          theme={theme}
-        />
-      );
+      case "treemap":
+        return (
+          <TreemapChart 
+            chart={chart as any} 
+            customColors={customColors}
+            theme={theme}
+          />
+        );
 
-    case "treemap":
-      return (
-        <TreemapChart 
-          chart={chart as any} 
-          customColors={customColors}
-          theme={theme}
-        />
-      );
+      case "area":
+        return (
+          <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
+            <p className="text-sm text-[#6B7A73]">Area chart component not implemented</p>
+          </div>
+        );
 
-    case "area":
-      return (
-        <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
-          <p className="text-sm text-[#6B7A73]">Area chart component not implemented</p>
-        </div>
-      );
+      case "pie":
+        return (
+          <PieChart 
+            chart={chart as any} 
+            customColors={customColors}
+            theme={theme}
+          />
+        );
 
-    case "pie":
-      return (
-        <PieChart 
-          chart={chart as any} 
-          customColors={customColors}
-          theme={theme}
-        />
-      );
+      default:
+        return (
+          <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
+            <p className="text-sm text-[#6B7A73]">Unsupported chart type: {type}</p>
+          </div>
+        );
+    }
+  };
 
-    default:
-      return (
-        <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
-          <p className="text-sm text-[#6B7A73]">Unsupported chart type: {chart.type}</p>
-        </div>
-      );
-  }
+  return renderChart();
 }
