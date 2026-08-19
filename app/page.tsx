@@ -343,12 +343,12 @@ export default function ChartsPage() {
     (charts: any[]) => {
       // Use grid layout for better organization
       return (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="">
           {charts.map((chart: any, index: number) => {
             if (chart.type === "line") {
               return (
                 <div key={`${chart.id}-group-${index}`} className="space-y-4 col-span-1 xl:col-span-2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="">
                     {renderChartCard(chart, true, "curved")}
                     {renderChartCard(chart, false, "straight")}
                   </div>
