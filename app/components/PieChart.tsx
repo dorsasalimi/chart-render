@@ -17,7 +17,9 @@ interface PieChartDataItem {
 interface PieChartType {
   title?: string;
   unit?: string;
-  data: PieChartDataItem[];
+  data?: PieChartDataItem[];
+  categories?: string[];
+  series?: Array<{ name?: string; data: number[] }>;
 }
 
 interface Props {
@@ -30,9 +32,31 @@ const toPersianDigits = (value: string | number) => {
   return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
 };
 
+// Helper function to normalize chart data
+const normalizeChartData = (chart: PieChartType): PieChartDataItem[] => {
+  // If data already exists in the expected format
+  if (chart.data && chart.data.length > 0) {
+    return chart.data;
+  }
+
+  // If using categories + series format
+  if (chart.categories && chart.series && chart.series.length > 0) {
+    const seriesData = chart.series[0].data;
+    return chart.categories.map((name, index) => ({
+      name,
+      value: seriesData[index] || 0,
+    }));
+  }
+
+  return [];
+};
+
 export default function PieChart({ chart, customColors, theme = "default" }: Props) {
+  // Normalize the data
+  const normalizedData = normalizeChartData(chart);
+
   // Guard against missing data
-  if (!chart.data || chart.data.length === 0) {
+  if (!normalizedData || normalizedData.length === 0) {
     return (
       <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
         <p className="text-sm text-[#6B7A73]">No data available</p>
@@ -42,17 +66,17 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
 
   // Determine colors
   let colors: string[];
-  
+
   // For pie charts with customColors as an object (per-item mapping)
   if (customColors && typeof customColors === 'object' && !Array.isArray(customColors)) {
     const colorMap = customColors;
-    const dataWithColors = chart.data.map((item) => ({
+    const dataWithColors = normalizedData.map((item) => ({
       ...item,
       itemStyle: {
         color: colorMap[item.name] || undefined
       }
     }));
-    
+
     const option = {
       color: getThemeColors(theme),
       tooltip: {
@@ -148,7 +172,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
     };
 
     return (
-      <div 
+      <div
         data-echarts-container
         style={{
           width: "100%",
@@ -170,7 +194,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
       </div>
     );
   }
-  
+
   // For pie charts with array colors or theme
   if (Array.isArray(customColors) && customColors.length > 0) {
     colors = customColors;
@@ -267,7 +291,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
             shadowColor: "rgba(0, 0, 0, 0.3)",
           },
         },
-        data: chart.data,
+        data: normalizedData,
       },
     ],
     grid: {
@@ -276,7 +300,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
   };
 
   return (
-    <div 
+    <div
       data-echarts-container
       style={{
         width: "100%",
@@ -288,7 +312,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
         option={option}
         style={{
           width: "100%",
-          height: "600px",
+          height: "820px",
           minHeight: "460px",
         }}
         opts={{

@@ -1,3 +1,5 @@
+// types/charts.ts
+
 export type ChartType =
   | "line"
   | "bar"
@@ -51,15 +53,9 @@ export type ChartDefinition =
   | TreemapChart
   | PieChartData;
 
-  export interface ChartSeries {
+export interface ChartSeries {
   name: string;
   data: number[];
-}
-
-export interface CategoryChart {
-  categories: string[];
-  series: ChartSeries[];
-  unit?: string;
 }
 
 export interface ColorTheme {

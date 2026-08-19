@@ -6,12 +6,9 @@ import { ThemeKey } from "../lib/colorThemes";
 
 import LineChart from "./LineChart";
 import BarChart from "./BarChart";
-import AreaChart from "./AreaChart";
+import TreemapChart from "./TreemapChart";
 import PieChart from "./PieChart";
-// Import the new LineChart without curves
 import LineChartNoCurve from "./LineChartNoCurve";
-// Import a proper TreemapChart if you have one
-// import TreemapChart from "./TreemapChart";
 
 interface Props {
   chart: ChartDefinition;
@@ -20,7 +17,8 @@ interface Props {
   height?: number;
   showLegend?: boolean;
   showLabels?: boolean;
-  useCurvedLine?: boolean; // Prop to control line curve
+  useCurvedLine?: boolean;
+  showConnectors?: boolean;
 }
 
 export default function ChartRenderer({ 
@@ -30,11 +28,20 @@ export default function ChartRenderer({
   height = 420,
   showLegend = true,
   showLabels = true,
-  useCurvedLine = true // Default to curved for existing charts
+  useCurvedLine = true,
+  showConnectors = true
 }: Props) {
+  // Add type guard to prevent 'never' type errors
+  if (!chart || typeof chart !== 'object' || !('type' in chart)) {
+    return (
+      <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
+        <p className="text-sm text-[#6B7A73]">Invalid chart configuration</p>
+      </div>
+    );
+  }
+
   switch (chart.type) {
     case "line":
-      // Use the no-curve version if explicitly requested
       if (!useCurvedLine) {
         return (
           <LineChartNoCurve 
@@ -64,13 +71,20 @@ export default function ChartRenderer({
         />
       );
 
-    case "area":
+    case "treemap":
       return (
-        <AreaChart 
+        <TreemapChart 
           chart={chart as any} 
           customColors={customColors}
           theme={theme}
         />
+      );
+
+    case "area":
+      return (
+        <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
+          <p className="text-sm text-[#6B7A73]">Area chart component not implemented</p>
+        </div>
       );
 
     case "pie":
@@ -83,6 +97,10 @@ export default function ChartRenderer({
       );
 
     default:
-      return null;
+      return (
+        <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
+          <p className="text-sm text-[#6B7A73]">Unsupported chart type: {chart.type}</p>
+        </div>
+      );
   }
 }
