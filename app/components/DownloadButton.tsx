@@ -34,7 +34,7 @@ export default function DownloadButton({ chartId, chartTitle }: DownloadButtonPr
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleDownload = async () => {
+  const performDownload = async (format: DownloadFormat) => {
     const chartElement = document.getElementById(chartId);
     if (!chartElement) {
       console.error("Chart element not found");
@@ -42,17 +42,32 @@ export default function DownloadButton({ chartId, chartTitle }: DownloadButtonPr
     }
 
     setIsDownloading(true);
-    await downloadChart(chartElement, selectedFormat, chartTitle);
-    setIsDownloading(false);
+    try {
+      await downloadChart(chartElement, format, chartTitle);
+    } catch (error) {
+      console.error("Download failed:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    await performDownload(selectedFormat);
     setIsOpen(false);
   };
 
-  const handleFormatSelect = (format: DownloadFormat) => {
+  const handleFormatSelect = async (format: DownloadFormat) => {
+    // Close dropdown immediately
+    setIsOpen(false);
+    
+    // Update the selected format and download in one go
     setSelectedFormat(format);
-    // Auto-download when format is selected
+    
+    // Wait for state to update, then download
+    // Using setTimeout with 0 ensures state update is processed
     setTimeout(() => {
-      handleDownload();
-    }, 100);
+      performDownload(format);
+    }, 0);
   };
 
   return (
@@ -67,7 +82,7 @@ export default function DownloadButton({ chartId, chartTitle }: DownloadButtonPr
           transition-all duration-200
           ${isDownloading 
             ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-            : "bg-[#F0F3F1] text-[#202522] hover:bg-[#E6EBE8] active:scale-95"
+            : "bg-white text-[#202522] border border-[#E6EBE8] hover:bg-[#F7F9F8] hover:border-[#2B9E65] hover:text-[#2B9E65] active:scale-95 shadow-sm"
           }
         `}
       >
@@ -101,24 +116,29 @@ export default function DownloadButton({ chartId, chartTitle }: DownloadButtonPr
       </button>
 
       {isOpen && !isDownloading && (
-        <div className="absolute right-0 mt-1 w-40 rounded-lg bg-gray-500 shadow-lg border border-[#E6EBE8] py-1 z-50">
-          {formats.map((format) => (
-            <button
-              key={format.value}
-              onClick={() => handleFormatSelect(format.value)}
-              className={`
-                w-full px-4 py-2 text-sm text-right
-                hover:bg-gray-300 transition-colors
-                flex items-center justify-between
-                ${selectedFormat === format.value ? "bg-gray-400" : ""}
-              `}
-            >
-              <span>{format.label}</span>
-              {selectedFormat === format.value && (
-                <Check className="h-4 w-4 text-[#2B9E65]" />
-              )}
-            </button>
-          ))}
+        <div className="absolute right-0 mt-1.5 w-44 rounded-lg bg-white shadow-lg border border-[#E6EBE8] py-1 z-50 overflow-hidden">
+          <div className="py-1">
+            {formats.map((format) => (
+              <button
+                key={format.value}
+                onClick={() => handleFormatSelect(format.value)}
+                className={`
+                  w-full px-4 py-2.5 text-sm text-left
+                  hover:bg-[#F0F4F2] transition-colors duration-150
+                  flex items-center justify-between
+                  ${selectedFormat === format.value 
+                    ? "bg-[#F0F7F3] text-[#2B9E65] font-medium" 
+                    : "text-[#202522]"
+                  }
+                `}
+              >
+                <span>{format.label}</span>
+                {selectedFormat === format.value && (
+                  <Check className="h-4 w-4 text-[#2B9E65] flex-shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

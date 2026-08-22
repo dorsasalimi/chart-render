@@ -193,6 +193,7 @@ export default function ChartsPage() {
         <section
           key={uniqueKey}
           className="
+          mb-6
             group
             overflow-hidden
             rounded-xl
@@ -374,11 +375,11 @@ export default function ChartsPage() {
               <h1 className="text-lg font-semibold text-[#202522]">📊 Charts Dashboard</h1>
               <div className="flex items-center gap-3 mt-0.5">
                 <span className="text-sm text-[#6B7A73]">
-                  Total: <span className="font-semibold text-[#202522]">{totalCharts}</span> charts
+                  تعداد کل: <span className="font-semibold text-[#202522]">{totalCharts}</span> چارت
                 </span>
                 {searchQuery || selectedChartType !== "all" ? (
                   <span className="text-sm text-[#6B7A73]">
-                    Filtered: <span className="font-semibold text-[#2B9E65]">{filteredCount}</span> charts
+                    فیلتر شده: <span className="font-semibold text-[#2B9E65]">{filteredCount}</span> چارت
                   </span>
                 ) : null}
               </div>
@@ -386,31 +387,7 @@ export default function ChartsPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            {/* Connector Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setShowConnectors(!showConnectors)}
-              className={`
-                inline-flex items-center gap-1.5
-                rounded-lg
-                border
-                px-3 py-1.5
-                text-xs font-medium
-                shadow-sm
-                transition-all duration-200
-                ${
-                  showConnectors
-                    ? "bg-[#2B9E65] text-white border-[#2B9E65] hover:bg-[#238D58]"
-                    : "bg-white text-[#202522] border-[#E6EBE8] hover:bg-[#F7F9F8] hover:border-[#C5D0CA]"
-                }
-              `}
-            >
-              <span className="text-base">{showConnectors ? "🔗" : "🚫"}</span>
-              <span className="hidden sm:inline">
-                {showConnectors ? "Hide Connectors" : "Show Connectors"}
-              </span>
-            </button>
-
+           
             <button
               type="button"
               onClick={() => setShowColorPicker(!showColorPicker)}
@@ -419,20 +396,54 @@ export default function ChartsPage() {
                 rounded-lg
                 border
                 px-3 py-1.5
-                text-xs font-medium
-                shadow-sm
+                text-sm font-medium
+                
                 transition-all duration-200
                 ${
                   showColorPicker
                     ? "bg-[#2B9E65] text-white border-[#2B9E65] hover:bg-[#238D58]"
-                    : "bg-white text-[#202522] border-[#E6EBE8] hover:bg-[#F7F9F8] hover:border-[#C5D0CA]"
+                    : "bg-white text-[#202522] border-gray-200 cursor-pointer hover:bg-[#F7F9F8] hover:border-[#C5D0CA]"
                 }
               `}
             >
-              <span className="text-base">🎨</span>
-              <span className="hidden sm:inline">
-                {showColorPicker ? "Hide Colors" : "Colors"}
+                  <span className="hidden sm:inline">
+                {showColorPicker ? "پنهان سازی رنگ" : "انتخاب رنگ"}
               </span>
+              <span className="text-base">
+<span className="text-base">
+  
+<span className="text-base">
+  <svg 
+    className="w-5 h-5" 
+    viewBox="0 0 73 73" 
+    fill="currentColor" 
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+    <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+    <g id="SVGRepo_iconCarrier">
+      <title>design-and-ux/color-theory</title>
+      <defs></defs>
+      <g id="design-and-ux/color-theory" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
+        <g id="container" transform="translate(2.000000, 2.000000)" fill="#FFFFFF" fillRule="nonzero">
+          <rect id="mask" x="-1" y="-1" width="71" height="71" rx="14"></rect>
+        </g>
+        <g id="rgb" transform="translate(11.000000, 11.000000)" fillRule="nonzero">
+          <path d="M41.1835937,15.234375 C41.1835937,23.6200256 34.3856506,30.4179687 26,30.4179687 C17.6143494,30.4179687 10.8164062,23.6200256 10.8164062,15.234375 C10.8164062,6.84872439 17.6143494,0.05078125 26,0.05078125 C34.3856506,0.05078125 41.1835937,6.84872439 41.1835937,15.234375 Z" fill="#42C0E2"></path>
+          <path d="M52,34.8280029 C52,43.2136535 45.2020569,50.0115967 36.8164062,50.0115967 C28.4307556,50.0115967 21.6328125,43.2136535 21.6328125,34.8280029 C21.6328125,26.4423523 28.4307556,19.6444092 36.8164062,19.6444092 C45.2020569,19.6444092 52,26.4423523 52,34.8280029 Z" fill="#FFD061"></path>
+          <path d="M22.4195252,29.9922791 C23.5676574,30.2695922 24.7665711,30.4179687 26,30.4179687 C32.6947937,30.4179687 38.377533,26.0849 40.3968811,20.0700989 C39.2487488,19.7923889 38.0498352,19.6444092 36.8164062,19.6444092 C30.1216125,19.6444092 24.4388733,23.9774781 22.4195252,29.9922791 Z" fill="#49BD90"></path>
+          <path d="M30.3671875,34.8280029 C30.3671875,43.2136535 23.5692444,50.0115967 15.1835937,50.0115967 C6.79794314,50.0115967 0,43.2136535 0,34.8280029 C0,26.4423523 6.79794314,19.6444092 15.1835937,19.6444092 C23.5692444,19.6444092 30.3671875,26.4423523 30.3671875,34.8280029 Z" fill="#FA70B2"></path>
+          <path d="M11.6031189,20.0700989 C13.622467,26.0849 19.3052063,30.4179687 26,30.4179687 C27.2334289,30.4179687 28.4323426,30.2695922 29.5804748,29.9922791 C27.5611267,23.9774781 21.8783875,19.6444092 15.1835937,19.6444092 C13.9501648,19.6444092 12.7512512,19.7923889 11.6031189,20.0700989 Z" fill="#AF7BC6"></path>
+          <path d="M21.6328125,34.8280029 C21.6328125,38.9797668 23.2998657,42.7415467 26,45.4825439 C28.7001343,42.7415467 30.3671875,38.9797668 30.3671875,34.8280029 C30.3671875,30.676239 28.7001343,26.9144592 26,24.1734619 C23.2998657,26.9144592 21.6328125,30.676239 21.6328125,34.8280029 Z" fill="#EF6122"></path>
+          <path d="M29.5804748,29.9934692 C28.4323426,30.2703857 27.2330322,30.4179687 26,30.4179687 C24.7669678,30.4179687 23.5676574,30.2703857 22.4195252,29.9934692 C23.162201,27.7817078 24.3995972,25.7984619 26,24.1734619 C27.6004028,25.7984619 28.837799,27.7817078 29.5804748,29.9934692 Z" fill="#FFFFFF"></path>
+        </g>
+      </g>
+    </g>
+  </svg>
+</span>
+</span>
+              </span>
+          
             </button>
           </div>
         </div>
@@ -586,11 +597,8 @@ export default function ChartsPage() {
           <div className="text-center py-16 bg-white/40 backdrop-blur-sm rounded-xl border border-white/60 shadow-sm">
             <div className="text-6xl mb-4 animate-bounce">🔍</div>
             <h3 className="text-lg font-semibold text-[#202522] mb-1">
-              No charts found
+              چارتی پیدا نشد
             </h3>
-            <p className="text-sm text-[#6B7A73] max-w-md mx-auto">
-              Try adjusting your search or filter criteria
-            </p>
             <button
               onClick={() => {
                 setSearchQuery("");
@@ -642,12 +650,7 @@ export default function ChartsPage() {
                         {charts.length}
                       </span>
                     </div>
-                    {type === "line" && (
-                      <div className="flex items-center gap-1.5 text-[10px] text-[#6B7A73] bg-white/60 px-2.5 py-1 rounded-full border border-[#E6EBE8]">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#2B9E65] animate-pulse" />
-                        Curved & Straight variants
-                      </div>
-                    )}
+                  
                     <div className="flex-1 h-px bg-gradient-to-r from-[#E6EBE8] to-transparent" />
                   </div>
 

@@ -433,7 +433,7 @@ export default function BarChart({
             },
             style: {
               fill: colors[seriesIndex % colors.length],
-              opacity: 0.42,
+              opacity: 0.35,
             },
           };
         },
@@ -451,8 +451,8 @@ export default function BarChart({
         barWidth: "55%",
         itemStyle: {
           color: colors[index % colors.length],
-          borderColor: "#ffffff",
-          borderWidth: 1,
+          borderRadius: [4, 4, 0, 0],
+          borderWidth: 0,
         },
         emphasis: {
           focus: "series",
@@ -478,7 +478,7 @@ export default function BarChart({
         option={option}
         style={{
           width: "100%",
-          height: "820px",
+          height: "850px",
           minHeight: "420px",
         }}
         opts={{

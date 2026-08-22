@@ -1,11 +1,9 @@
-// components/PieChart.tsx
 "use client";
 
 import ReactECharts from "echarts-for-react";
 import { CHART_COLORS } from "../lib/chartTheme";
 import { getThemeColors, ThemeKey } from "../lib/colorThemes";
 
-// Define PieChart type locally
 interface PieChartDataItem {
   name: string;
   value: number;
@@ -32,18 +30,19 @@ const toPersianDigits = (value: string | number) => {
   return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
 };
 
-// Helper function to normalize chart data
+const toPersianLabel = (text: string) => {
+  return text.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+};
+
 const normalizeChartData = (chart: PieChartType): PieChartDataItem[] => {
-  // If data already exists in the expected format
   if (chart.data && chart.data.length > 0) {
     return chart.data;
   }
 
-  // If using categories + series format
   if (chart.categories && chart.series && chart.series.length > 0) {
     const seriesData = chart.series[0].data;
     return chart.categories.map((name, index) => ({
-      name,
+      name: toPersianLabel(name),
       value: seriesData[index] || 0,
     }));
   }
@@ -52,10 +51,8 @@ const normalizeChartData = (chart: PieChartType): PieChartDataItem[] => {
 };
 
 export default function PieChart({ chart, customColors, theme = "default" }: Props) {
-  // Normalize the data
   const normalizedData = normalizeChartData(chart);
 
-  // Guard against missing data
   if (!normalizedData || normalizedData.length === 0) {
     return (
       <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
@@ -64,14 +61,22 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
     );
   }
 
+  // Calculate dynamic values based on data length
+  const dataLength = normalizedData.length;
+  const legendItemGap = dataLength <= 4 ? 60 : dataLength <= 6 ? 40 : 25;
+  const legendFontSize = dataLength <= 4 ? 15 : dataLength <= 6 ? 14 : 13;
+  const containerMinHeight = dataLength <= 4 ? 460 : 460 + Math.min((dataLength - 4) * 20, 80);
+  const pieRadius = dataLength <= 4 ? ["40%", "72%"] : dataLength <= 6 ? ["38%", "68%"] : ["35%", "62%"];
+  const pieCenter = dataLength <= 4 ? ["50%", "42%"] : ["50%", "40%"];
+
   // Determine colors
   let colors: string[];
-
-  // For pie charts with customColors as an object (per-item mapping)
+  
   if (customColors && typeof customColors === 'object' && !Array.isArray(customColors)) {
     const colorMap = customColors;
     const dataWithColors = normalizedData.map((item) => ({
       ...item,
+      name: toPersianLabel(item.name),
       itemStyle: {
         color: colorMap[item.name] || undefined
       }
@@ -84,9 +89,10 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
         formatter: (params: any) => {
           const value = toPersianDigits(params.value);
           const percent = toPersianDigits(params.percent);
+          const name = toPersianLabel(params.name);
           return `
             <div style="font-family: inherit; direction: rtl;">
-              <strong>${params.name}</strong>
+              <strong>${name}</strong>
               <br />
               ${value} ${chart.unit ?? ""}
               <br />
@@ -99,42 +105,45 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
         orient: "horizontal",
         left: "center",
         top: "bottom",
-        bottom: 0,
+        bottom: 20,
         itemWidth: 14,
         itemHeight: 14,
-        itemGap: 60,
+        itemGap: legendItemGap,
         textStyle: {
           fontFamily: "inherit",
-          fontSize: 12,
+          fontSize: 15,
           fontWeight: 400,
         },
-        padding: [8, 16, 16, 16],
+        padding: [8, 5, 5, 5],
         type: "scroll",
         icon: "circle",
         align: "left",
         itemStyle: {
           borderWidth: 0,
         },
+        formatter: (name: string) => {
+          return toPersianLabel(name);
+        },
       },
       series: [
         {
-          name: chart.title,
+          name: chart.title ? toPersianLabel(chart.title) : undefined,
           type: "pie",
-          radius: ["40%", "72%"],
-          center: ["50%", "42%"],
+          radius: pieRadius,
+          center: pieCenter,
           avoidLabelOverlap: true,
           itemStyle: {
             borderRadius: 8,
             borderColor: "#ffffff",
-            borderWidth: 3,
+            borderWidth: 1,
           },
           label: {
             show: true,
             formatter: (params: any) => {
-              return `${params.name}\n\n٪${toPersianDigits(params.percent)}`;
+              return `${toPersianLabel(params.name)}\n\n٪${toPersianDigits(params.percent)}`;
             },
-            fontSize: 12,
-            fontWeight: 500,
+            fontSize: 15,
+            fontWeight: 400,
             fontFamily: "inherit",
             color: "#333",
             position: "outside",
@@ -143,19 +152,19 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
           },
           labelLine: {
             show: true,
-            length: 12,
-            length2: 10,
+            length: dataLength <= 4 ? 20 : 15,
+            length2: dataLength <= 4 ? 18 : 12,
             smooth: false,
           },
           emphasis: {
             label: {
               show: true,
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: "bold",
               fontFamily: "inherit",
               formatter: (params: any) => {
                 const value = toPersianDigits(params.value);
-                return `${params.name}\n\n${value} ${chart.unit ?? ""}\n\n٪${toPersianDigits(params.percent)}`;
+                return `${toPersianLabel(params.name)}\n\n${value} ${chart.unit ?? ""}\n\n٪${toPersianDigits(params.percent)}`;
               },
             },
             itemStyle: {
@@ -168,6 +177,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
       ],
       grid: {
         containLabel: true,
+        bottom: dataLength > 5 ? 80 : 60,
       },
     };
 
@@ -177,15 +187,15 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
         style={{
           width: "100%",
           height: "100%",
-          minHeight: "460px",
+          minHeight: `${containerMinHeight}px`,
         }}
       >
         <ReactECharts
           option={option}
           style={{
             width: "100%",
-            height: "600px",
-            minHeight: "460px",
+          height: "850px",
+            minHeight: `${containerMinHeight}px`,
           }}
           opts={{
             renderer: "svg",
@@ -195,7 +205,7 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
     );
   }
 
-  // For pie charts with array colors or theme
+  // Handle array colors or theme
   if (Array.isArray(customColors) && customColors.length > 0) {
     colors = customColors;
   } else if (theme) {
@@ -204,6 +214,11 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
     colors = CHART_COLORS;
   }
 
+  const dataWithPersianLabels = normalizedData.map((item) => ({
+    ...item,
+    name: toPersianLabel(item.name),
+  }));
+
   const option = {
     color: colors,
     tooltip: {
@@ -211,9 +226,10 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
       formatter: (params: any) => {
         const value = toPersianDigits(params.value);
         const percent = toPersianDigits(params.percent);
+        const name = toPersianLabel(params.name);
         return `
           <div style="font-family: inherit; direction: rtl;">
-            <strong>${params.name}</strong>
+            <strong>${name}</strong>
             <br />
             ${value} ${chart.unit ?? ""}
             <br />
@@ -227,63 +243,64 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
       left: "center",
       top: "bottom",
       bottom: 0,
-      itemWidth: 14,
+      itemWidth: 20,
       itemHeight: 14,
-      itemGap: 60,
+      itemGap: legendItemGap,
       textStyle: {
         fontFamily: "inherit",
-        fontSize: 12,
+        fontSize: 15,
         fontWeight: 400,
-        width: "auto",
       },
-      padding: [8, 16, 16, 16],
       type: "scroll",
       icon: "circle",
       align: "left",
       itemStyle: {
         borderWidth: 0,
       },
+      formatter: (name: string) => {
+        return toPersianLabel(name);
+      },
     },
     series: [
       {
-        name: chart.title,
+        name: chart.title ? toPersianLabel(chart.title) : undefined,
         type: "pie",
-        radius: ["40%", "72%"],
-        center: ["50%", "42%"],
+        radius: pieRadius,
+        center: pieCenter,
         avoidLabelOverlap: true,
         itemStyle: {
           borderRadius: 8,
           borderColor: "#ffffff",
-          borderWidth: 3,
+          borderWidth: 1,
         },
         label: {
           show: true,
           formatter: (params: any) => {
-            return `${params.name}\n\n٪${toPersianDigits(params.percent)}`;
+            return `${toPersianLabel(params.name)}\n\n٪${toPersianDigits(params.percent)}`;
           },
-          fontSize: 12,
-          fontWeight: 500,
+          fontSize: 15,
+          fontWeight: 400,
           fontFamily: "inherit",
           color: "#333",
           position: "outside",
-          distanceToLabelLine: 2,
+          distanceToLabelLine: 5,
           lineHeight: 10,
         },
         labelLine: {
           show: true,
-          length: 12,
-          length2: 10,
+          length: dataLength <= 4 ? 50 : 35,
+          length2: dataLength <= 4 ? 40 : 25,
           smooth: false,
         },
         emphasis: {
           label: {
             show: true,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: "bold",
             fontFamily: "inherit",
             formatter: (params: any) => {
               const value = toPersianDigits(params.value);
-              return `${params.name}\n\n${value} ${chart.unit ?? ""}\n\n${toPersianDigits(params.percent)}٪`;
+              return `${toPersianLabel(params.name)}\n\n${value} ${chart.unit ?? ""}\n\n${toPersianDigits(params.percent)}٪`;
             },
           },
           itemStyle: {
@@ -291,11 +308,12 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
             shadowColor: "rgba(0, 0, 0, 0.3)",
           },
         },
-        data: normalizedData,
+        data: dataWithPersianLabels,
       },
     ],
     grid: {
       containLabel: true,
+      bottom: dataLength > 5 ? 80 : 60,
     },
   };
 
@@ -305,15 +323,15 @@ export default function PieChart({ chart, customColors, theme = "default" }: Pro
       style={{
         width: "100%",
         height: "100%",
-        minHeight: "460px",
+        minHeight: `${containerMinHeight}px`,
       }}
     >
       <ReactECharts
         option={option}
         style={{
           width: "100%",
-          height: "820px",
-          minHeight: "460px",
+          height: "850px",
+          minHeight: `${containerMinHeight}px`,
         }}
         opts={{
           renderer: "svg",
