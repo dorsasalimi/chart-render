@@ -2,13 +2,10 @@
 
 import ReactECharts from "echarts-for-react";
 import type { CategoryChart } from "../types/charts";
-import { CHART_COLORS } from "../lib/chartTheme";
-import { getThemeColors, ThemeKey } from "../lib/colorThemes";
+import { CHART_COLORS_RANKED, getRankedColorsForChart } from "../lib/colorThemes";
 
 interface Props {
   chart: CategoryChart;
-  customColors?: string[] | Record<string, string>;
-  theme?: ThemeKey;
 }
 
 const toPersianDigits = (value: string | number) => {
@@ -58,11 +55,7 @@ const needsPercentageConversion = (chart: CategoryChart): boolean => {
   return false;
 };
 
-export default function BarChart({
-  chart,
-  customColors,
-  theme = "default",
-}: Props) {
+export default function BarChart({ chart }: Props) {
   // ------------------------------------------------------------
   // Guard
   // ------------------------------------------------------------
@@ -76,32 +69,10 @@ export default function BarChart({
   }
 
   // ------------------------------------------------------------
-  // Colors
+  // Colors - Get ranked colors
   // ------------------------------------------------------------
 
-  let colors: string[];
-
-  if (
-    customColors &&
-    typeof customColors === "object" &&
-    !Array.isArray(customColors)
-  ) {
-    colors = chart.series.map(
-      (series, index) =>
-        customColors[series.name] ||
-        CHART_COLORS[index % CHART_COLORS.length]
-    );
-  } else if (Array.isArray(customColors) && customColors.length > 0) {
-    colors = customColors;
-  } else if (theme) {
-    colors = getThemeColors(theme);
-  } else {
-    colors = CHART_COLORS;
-  }
-
-  while (colors.length < chart.series.length) {
-    colors = [...colors, ...CHART_COLORS];
-  }
+  const colors = getRankedColorsForChart({ series: chart.series });
 
   // ------------------------------------------------------------
   // Data transformation

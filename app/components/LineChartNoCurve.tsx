@@ -1,41 +1,23 @@
-// components/linechartv2.tsx
 "use client";
 
 import ReactECharts from "echarts-for-react";
-import { CHART_COLORS } from "../lib/chartTheme";
-import { getThemeColors, ThemeKey } from "../lib/colorThemes";
-
-// Define the chart types locally to avoid import conflicts
-interface ChartDataItem {
-  name: string;
-  value: number;
-}
+import { getRankedColorsForChart } from "../lib/colorThemes";
 
 interface ChartSeries {
   name: string;
   data: number[];
 }
 
-interface BaseChart {
+interface CategoryChart {
   id: string;
   title: string;
   type: string;
   unit?: string;
   subtitle?: string;
-}
-
-interface CategoryChart extends BaseChart {
   categories: string[];
   series: ChartSeries[];
 }
 
-interface PieChartType extends BaseChart {
-  data: ChartDataItem[];
-}
-
-type ChartDefinition = CategoryChart | PieChartType;
-
-// Extend CategoryChart for line chart specific props
 interface LineChartType extends CategoryChart {
   xAxisLabel?: string;
   yAxisLabel?: string;
@@ -43,11 +25,9 @@ interface LineChartType extends CategoryChart {
 
 interface Props {
   chart: LineChartType;
-  customColors?: string[] | Record<string, string>;
-  theme?: ThemeKey;
-  height?: number;  // Added height prop
-  showLegend?: boolean;  // Added showLegend prop
-  showLabels?: boolean;  // Added showLabels prop
+  height?: number;
+  showLegend?: boolean;
+  showLabels?: boolean;
 }
 
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
@@ -56,26 +36,42 @@ const toPersianDigits = (value: string | number) => {
   return String(value).replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)]);
 };
 
-// Format numbers using Intl.NumberFormat like the second component
 const formatNumber = (value: number) => {
+  // If the absolute value is less than 1 and not zero, format without leading zero
+  if (Math.abs(value) < 1 && value !== 0) {
+    // Convert to Persian digits and remove the leading zero
+    const formatted = toPersianDigits(value.toString());
+    // Remove the leading zero and the decimal point, keep only the decimal part
+    return formatted.replace(/^۰\./, '۰٫');
+  }
+  
+  // For other values, use compact notation
   return new Intl.NumberFormat("fa-IR", {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
 };
 
-// Full number formatting without compact notation for tooltips
 const formatFullNumber = (value: number) => {
   return new Intl.NumberFormat("fa-IR").format(value);
 };
 
-export default function LineChartNoCurve({ 
-  chart, 
-  customColors, 
-  theme = "default",
-  height = 920,  // Default height matching second chart
-  showLegend = true,  // Default to true
-  showLabels = true   // Default to true
+// New function to format number without unit text (just the number part)
+const formatNumberWithoutUnit = (value: number) => {
+  const formatted = new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+  // Remove any non-digit, non-decimal, non-separator characters
+  // This removes suffixes like "B", "M", "K" etc.
+  return formatted.replace(/[^0-9.\u0660-\u0669]/g, '').trim();
+};
+
+export default function LineChartNoCurve({
+  chart,
+  height = 310,
+  showLegend = true,
+  showLabels = true
 }: Props) {
   // Guard against missing data
   if (!chart.series || chart.series.length === 0) {
@@ -89,24 +85,8 @@ export default function LineChartNoCurve({
   // Extract x-axis categories
   const categories = chart.categories;
 
-  // Determine colors
-  let colors: string[];
-  
-  if (customColors && typeof customColors === 'object' && !Array.isArray(customColors)) {
-    colors = chart.series.map((series, index) => 
-      customColors[series.name] || CHART_COLORS[index % CHART_COLORS.length]
-    );
-  } else if (Array.isArray(customColors) && customColors.length > 0) {
-    colors = customColors;
-  } else if (theme) {
-    colors = getThemeColors(theme);
-  } else {
-    colors = CHART_COLORS;
-  }
-
-  while (colors.length < chart.series.length) {
-    colors = [...colors, ...CHART_COLORS];
-  }
+  // Get ranked colors for line chart
+  const colors = getRankedColorsForChart({ series: chart.series });
 
   // Build series for ECharts
   const series = chart.series.map((s, index) => {
@@ -128,23 +108,23 @@ export default function LineChartNoCurve({
       name: s.name,
       type: "line",
       data: s.data,
-      smooth: false,  // Keeping the original smooth: false
+      smooth: false,
       symbol: "circle",
-      symbolSize: 7,  // Matching second chart
+      symbolSize: 7,
       lineStyle: {
-        width: 2.5,  // Matching second chart
+        width: 2.5,
       },
       itemStyle: {
         color: seriesColor,
         borderColor: "#FFFFFF",
-        borderWidth: 2,
+        borderWidth: 0,
         borderRadius: 8,
       },
       emphasis: {
         focus: "series",
         scale: true,
         itemStyle: {
-          borderWidth: 3,
+          borderWidth: 0,
         },
         lineStyle: {
           width: 3,
@@ -153,24 +133,22 @@ export default function LineChartNoCurve({
       label: showLabels ? {
         show: true,
         position: "top",
-        distance: 8,  // Matching second chart
+        distance: 8,
         formatter: (params: any) => {
           const index = params.dataIndex;
           if (!labelIndexes.has(index)) {
             return "";
           }
-          // Unit after the number
-          const formattedNumber = toPersianDigits(formatNumber(params.value));
-          return chart.unit ?  formattedNumber :`${formattedNumber} ${chart.unit}` ;
+          // Show just the number without any unit text
+          const formattedNumber = toPersianDigits(formatNumberWithoutUnit(params.value));
+          return formattedNumber;
         },
-        fontSize: 11,
-        fontFamily: "inherit",
-        fontWeight: 600,
+        fontSize: '16px',
+fontFamily: "Epsilon",        fontWeight: 600,
         color: seriesColor,
-        padding: [4, 7],
         borderRadius: 5,
         borderColor: `${seriesColor}22`,
-        borderWidth: 1,
+        borderWidth: 0,
       } : {
         show: false
       },
@@ -178,7 +156,7 @@ export default function LineChartNoCurve({
         hideOverlap: true,
       },
       areaStyle: {
-        opacity: 0.025,  // Matching second chart
+        opacity: 0.025,
       },
     };
   });
@@ -189,12 +167,12 @@ export default function LineChartNoCurve({
       trigger: "axis",
       backgroundColor: "rgba(255, 255, 255, 0.98)",
       borderColor: "#E5E7EB",
-      borderWidth: 1,
+      borderWidth: 0,
       padding: [12, 14],
       textStyle: {
-        fontFamily: "inherit",
+        fontFamily: "Epsilon",
         color: "#111827",
-        fontSize: 13,
+        fontSize: '16px',
       },
       extraCssText: `
         border-radius: 12px;
@@ -251,16 +229,15 @@ export default function LineChartNoCurve({
                   <span>${item.seriesName}</span>
                 </div>
 
-                <strong
-                  style="
-                    color:#111827;
-                    font-weight:600;
-                    direction:rtl;
-                  "
-                >
-                  ${toPersianDigits(value)}
-                  ${chart.unit ? ` ${chart.unit}` : ""}
-                </strong>
+              <strong
+  style="
+    color:#111827;
+    font-weight:600;
+    direction:rtl;
+  "
+>
+  ${toPersianDigits(value)}
+</strong>
               </div>
             `;
           })
@@ -284,84 +261,76 @@ export default function LineChartNoCurve({
         `;
       },
     },
-    legend: showLegend ? {
-      bottom: 0,
-      left: 'center',
-      right: 'center',
+ legend: showLegend
+  ? {
+      bottom: 8,
+      left: "center",
+      right: 12,
       orient: "horizontal",
-      itemWidth: 9,
-      itemHeight: 9,
-      itemGap: 18,
+      itemWidth: 8,
+      itemHeight: 8,
+      itemGap: 20,
       icon: "circle",
       selectedMode: true,
       textStyle: {
-        fontFamily: "inherit",
-        fontSize: 13,
+        fontFamily: "Epsilon",
+        fontSize: '16px',
         fontWeight: 500,
         color: "#4B5563",
       },
-      formatter: (name: string) => {
-        return name;
-      },
-      width: "92%",
-    } : { show: false },
-    grid: {
-      left: 80,  // Increased from 8% to match second chart
-      right: 40,  // Increased from 6% to match second chart
-      top: showLegend ? 72 : 40,  // Matching second chart
-      bottom: 60,  // Matching second chart
-      containLabel: true,
+      width: "94%",
+    }
+  : {
+      show: false,
     },
+grid: {
+  left: 56,
+  right: 24,
+  top: showLegend ? 48 : 24,
+  bottom: showLegend ? 90 : 34,  // Even more space
+  containLabel: true,
+},
     xAxis: {
       type: "category",
       data: categories.map(toPersianDigits),
-      boundaryGap: false,  // Added to match second chart
+      boundaryGap: false,
       axisLine: {
         lineStyle: {
           color: "#E5E7EB",
         },
       },
       axisTick: {
-        show: false,  // Added to match second chart
+        show: false,
       },
       axisLabel: {
-        fontSize: 12,
-        fontFamily: "inherit",
-        color: "#6B7280",  // Matching second chart
-        margin: 14,  // Added to match second chart
-        rotate: categories && categories.length > 8 ? 30 : 0,  // Added to match second chart
+        fontSize: '16px',
+        fontFamily: "Epsilon",
+        color: "#6B7280",
+        margin: 14,
+        rotate: categories && categories.length > 8 ? 30 : 0,
       },
       splitLine: {
-        show: false,  // Added to match second chart
+        show: false,
       },
     },
     yAxis: {
       type: "value",
-      name: chart.yAxisLabel || chart.unit || "",
-      nameLocation: "end",  // Added to match second chart
-      nameGap: 12,  // Added to match second chart
-      nameTextStyle: {
-        fontFamily: "inherit",
-        fontSize: 11,
-        fontWeight: 500,
-        color: "#9CA3AF",
-      },
       splitLine: {
         lineStyle: {
-          color: "#F0F1F3",  // Matching second chart
-          type: "solid",  // Changed from dashed to solid
+          color: "#F0F1F3",
+          type: "solid",
         },
       },
       axisLine: {
-        show: false,  // Added to match second chart
+        show: false,
       },
       axisTick: {
-        show: false,  // Added to match second chart
+        show: false,
       },
       axisLabel: {
-        fontSize: 11,
-        fontFamily: "inherit",
-        color: "#9CA3AF",  // Matching second chart
+        fontSize: '16px',
+        fontFamily: "Epsilon",
+        color: "#9CA3AF",
         formatter: (value: number) => {
           return toPersianDigits(formatNumber(value));
         },
@@ -369,29 +338,30 @@ export default function LineChartNoCurve({
     },
     series: series,
   };
-
-  return (
-    <div
-      data-echarts-container
+return (
+  <div
+    style={{
+      width: "100%",
+      aspectRatio: "510 / 310",
+      minHeight: `${height}px`,
+    }}
+  >
+    <ReactECharts
+      option={option}
+      notMerge
+      lazyUpdate
       style={{
         width: "100%",
         height: "100%",
-        minHeight: `${height}px`,
       }}
-    >
-      <ReactECharts
-        option={option}
-        notMerge  // Added to match second chart
-        lazyUpdate  // Added to match second chart
-        style={{
-          width: "100%",
-          height: "820px",
-          minHeight: `${height}px`,
-        }}
-        opts={{
-          renderer: "svg",
-        }}
-      />
-    </div>
-  );
+      opts={{
+        renderer: "svg",
+      }}
+      onChartReady={(instance) => {
+        const dom = instance.getDom();
+        dom.setAttribute("data-echarts-instance", "true");
+      }}
+    />
+  </div>
+);
 }

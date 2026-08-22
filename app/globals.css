@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: "IRANSansX";
+  font-family: "Epsilon";
   src: url("/fonts/w_Epsilon.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
@@ -16,8 +16,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "IRANSansX", sans-serif;
-  --font-mono: "IRANSansX", monospace;
+  --font-sans: "Epsilon", sans-serif;
+  --font-mono: "Epsilon", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,8 +27,12 @@
   }
 }
 
+html,
+body {
+  font-family: "Epsilon", sans-serif;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "IRANSansX", sans-serif;
 }
