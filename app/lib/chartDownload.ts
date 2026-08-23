@@ -10,7 +10,9 @@ const EXPORT_PIXEL_RATIO = 3;
 
 // IMPORTANT:
 // Must point to the actual font available from your Next.js public folder.
-const FONT_PATH = "/fonts/w_Epsilon.ttf";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+const FONT_PATH = `${BASE_PATH}/fonts/w_Epsilon.ttf`;
 
 const sanitizeFileName = (name: string) => {
   return name
