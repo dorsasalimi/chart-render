@@ -19,8 +19,6 @@ import tophsdollorimport from "./charts/pie/toptenproductsbydollarimport/top-hs-
 import topchaptersweightimport from "./charts/pie/toptenproductsbydollarimport/top-chapters-import.json";
 import topchaptersweight from "./charts/pie/toptenproductsbywieghtexport/top-chapters-weight.json";
 import tophsweightexport from "./charts/pie/toptenproductsbywieghtexport/top-hs-weight.json";
-import industrydollarsimpletreemapimport from "./charts/treemap/import-simple.json"
-import industrydollarsimpletreemapexport from "./charts/treemap/export-simple.json"
 import industrydollarimportdetailedtreemap from "./charts/treemap/import-detailed.json"
 import industrydollarexportdetailedtreemap from "./charts/treemap/export-detailed.json"
 
@@ -43,7 +41,6 @@ export const chartRegistry = [
   topchaptersweightimport,
   topchaptersweight,
   tophsweightexport,
-
   industrydollarimportdetailedtreemap,
   industrydollarexportdetailedtreemap,
   tophsimport,

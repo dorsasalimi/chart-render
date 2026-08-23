@@ -387,7 +387,7 @@ export const downloadChart = async (
         break;
 
       case "svg":
-        await downloadAsSVG(chartInstance, fileName, width, height);
+        await downloadAsSVG(chartElement, fileName, width, height);
         break;
 
       case "pdf":
@@ -469,19 +469,43 @@ const downloadAsJPG = async (
 };
 
 /* =========================================================
-   SVG
+   SVG with Custom Legend
 ========================================================= */
 
+interface LegendItemData {
+  name: string;
+  color: string;
+}
+
+const extractLegendData = (chartElement: HTMLElement): LegendItemData[] => {
+  const legendContainer = chartElement.querySelector(
+    '[data-chart-custom-legend="true"]'
+  );
+  if (!legendContainer) return [];
+
+  const buttons = Array.from(legendContainer.querySelectorAll("button"));
+  return buttons.map((button) => {
+    const colorEl = button.querySelector("span[style*='background-color']");
+    const labelEl = button.querySelector("span:not([style*='background-color'])");
+
+    const color =
+      (colorEl as HTMLElement)?.style?.backgroundColor || "#2B9E65";
+    const name = labelEl?.textContent?.trim() || "";
+
+    return { name, color };
+  });
+};
+
 const downloadAsSVG = async (
-  chartInstance: echarts.ECharts,
+  chartElement: HTMLElement,
   title: string,
   width: number,
   height: number
 ) => {
   try {
-    const dom = chartInstance.getDom();
-
-    const svgElement = dom.querySelector("svg") as SVGSVGElement | null;
+    const svgElement = chartElement.querySelector(
+      "[data-echarts-instance] svg"
+    ) as SVGSVGElement | null;
 
     if (!svgElement) {
       throw new Error(
@@ -505,15 +529,6 @@ const downloadAsSVG = async (
       svgElement.getAttribute("viewBox") ||
       `0 0 ${originalWidth} ${originalHeight}`;
 
-    svgClone.setAttribute("width", String(width));
-    svgClone.setAttribute("height", String(height));
-    svgClone.setAttribute("viewBox", viewBox);
-    svgClone.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    svgClone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-
-    await convertTextElementsToPaths(svgClone);
-
     const values = viewBox
       .trim()
       .split(/[\s,]+/)
@@ -524,18 +539,87 @@ const downloadAsSVG = async (
     const vbWidth = Number.isFinite(values[2]) ? values[2] : originalWidth;
     const vbHeight = Number.isFinite(values[3]) ? values[3] : originalHeight;
 
-    const background = document.createElementNS(SVG_NS, "rect");
+    // --- Add Custom Legend into SVG ---
+    const legendItems = extractLegendData(chartElement);
+    const legendHeight = legendItems.length > 0 ? 44 : 0;
+    const totalHeight = vbHeight + legendHeight;
 
+    if (legendItems.length > 0) {
+      const legendGroup = document.createElementNS(SVG_NS, "g");
+      legendGroup.setAttribute("id", "custom-legend");
+
+      const itemGap = 20;
+      const markerWidth = 16;
+      const markerHeight = 10;
+      const approxCharWidth = 8.5;
+
+      const itemsWithWidth = legendItems.map((item) => ({
+        ...item,
+        width: markerWidth + 8 + item.name.length * approxCharWidth,
+      }));
+
+      const totalLegendContentWidth =
+        itemsWithWidth.reduce((sum, item) => sum + item.width, 0) +
+        (itemsWithWidth.length - 1) * itemGap;
+
+      let currentX =
+        vbX + Math.max(10, (vbWidth - totalLegendContentWidth) / 2);
+      const legendY = vbY + vbHeight + 14;
+
+      for (const item of itemsWithWidth) {
+        // Legend Color Box
+        const rect = document.createElementNS(SVG_NS, "rect");
+        rect.setAttribute("x", String(currentX));
+        rect.setAttribute("y", String(legendY));
+        rect.setAttribute("width", String(markerWidth));
+        rect.setAttribute("height", String(markerHeight));
+        rect.setAttribute("rx", "3");
+        rect.setAttribute("ry", "3");
+        rect.setAttribute("fill", item.color);
+        legendGroup.appendChild(rect);
+
+        // Legend Text
+        const text = document.createElementNS(SVG_NS, "text");
+        text.setAttribute("x", String(currentX + markerWidth + 6));
+        text.setAttribute("y", String(legendY + markerHeight - 1));
+        text.setAttribute("font-size", "14");
+        text.setAttribute("fill", "#5F6368");
+        text.setAttribute("text-anchor", "start");
+        text.textContent = item.name;
+        legendGroup.appendChild(text);
+
+        currentX += item.width + itemGap;
+      }
+
+      svgClone.appendChild(legendGroup);
+    }
+
+    // Adjust ViewBox and dimensions for the combined SVG
+    const exportedHeight =
+      height + (legendHeight > 0 ? legendHeight * (height / vbHeight) : 0);
+
+    svgClone.setAttribute("width", String(width));
+    svgClone.setAttribute("height", String(exportedHeight));
+    svgClone.setAttribute("viewBox", `${vbX} ${vbY} ${vbWidth} ${totalHeight}`);
+    svgClone.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    svgClone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+
+    // Convert all text including legend labels into glyph paths
+    await convertTextElementsToPaths(svgClone);
+
+    // Background fill
+    const background = document.createElementNS(SVG_NS, "rect");
     background.setAttribute("x", String(vbX));
     background.setAttribute("y", String(vbY));
     background.setAttribute("width", String(vbWidth));
-    background.setAttribute("height", String(vbHeight));
+    background.setAttribute("height", String(totalHeight));
     background.setAttribute("fill", "#ffffff");
 
     svgClone.insertBefore(background, svgClone.firstChild);
 
+    // Output & Download
     const serializer = new XMLSerializer();
-
     let svgString = serializer.serializeToString(svgClone);
 
     if (!svgString.startsWith("<?xml")) {
@@ -547,9 +631,7 @@ const downloadAsSVG = async (
     });
 
     const url = URL.createObjectURL(blob);
-
     const link = document.createElement("a");
-
     link.download = `${title}.svg`;
     link.href = url;
 
