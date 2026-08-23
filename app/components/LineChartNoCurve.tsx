@@ -263,7 +263,7 @@ fontFamily: "Epsilon",        fontWeight: 600,
     },
  legend: showLegend
   ? {
-      bottom: 8,
+      bottom: 16,
       left: "center",
       right: 12,
       orient: "horizontal",
