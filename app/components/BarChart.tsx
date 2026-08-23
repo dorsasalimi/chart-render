@@ -30,29 +30,49 @@ const formatValue = (value: number, unit: string = "") => {
 // Check if data needs percentage conversion (values > 100 or not summing to 100)
 const needsPercentageConversion = (chart: CategoryChart): boolean => {
   if (!chart.series || chart.series.length === 0) return false;
-  
-  // Check if any value is > 100 (absolute values) or if all values are <= 100 but don't sum to 100
+
   for (let i = 0; i < chart.series.length; i++) {
     const data = chart.series[i].data || [];
     for (let j = 0; j < data.length; j++) {
       if (data[j] > 100) return true;
     }
   }
-  
-  // Check if data sums to ~100 for each category
+
   const categories = chart.categories || [];
   for (let catIndex = 0; catIndex < categories.length; catIndex++) {
     let sum = 0;
     for (let seriesIndex = 0; seriesIndex < chart.series.length; seriesIndex++) {
       sum += Number(chart.series[seriesIndex]?.data?.[catIndex] ?? 0);
     }
-    // If sum is not close to 100 (within 5% tolerance), convert to percentages
     if (Math.abs(sum - 100) > 5) {
       return true;
     }
   }
-  
+
   return false;
+};
+
+// ------------------------------------------------------------
+// Curved connector SVG path generator (Cubic Bézier Ribbon)
+// ------------------------------------------------------------
+const createCurvedRibbonPath = (
+  x1: number,
+  top1: number,
+  bottom1: number,
+  x2: number,
+  top2: number,
+  bottom2: number
+) => {
+  const dx = x2 - x1;
+  const cpOffset = dx * 0.5;
+
+  return [
+    `M ${x1} ${top1}`,
+    `C ${x1 + cpOffset} ${top1}, ${x2 - cpOffset} ${top2}, ${x2} ${top2}`,
+    `L ${x2} ${bottom2}`,
+    `C ${x2 - cpOffset} ${bottom2}, ${x1 + cpOffset} ${bottom1}, ${x1} ${bottom1}`,
+    `Z`,
+  ].join(" ");
 };
 
 export default function BarChart({ chart }: Props) {
@@ -62,14 +82,14 @@ export default function BarChart({ chart }: Props) {
 
   if (!chart.series || chart.series.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
+      <div className="flex items-center justify-center h-105 bg-[#F7F9F8] rounded-lg">
         <p className="text-sm text-[#6B7A73]">No data available</p>
       </div>
     );
   }
 
   // ------------------------------------------------------------
-  // Colors - Get ranked colors
+  // Colors
   // ------------------------------------------------------------
 
   const colors = getRankedColorsForChart({ series: chart.series });
@@ -78,18 +98,15 @@ export default function BarChart({ chart }: Props) {
   // Data transformation
   // ------------------------------------------------------------
 
-  // Clone the chart data to avoid mutating the original
-  let processedData = chart.series.map(series => ({
+  let processedData = chart.series.map((series) => ({
     ...series,
-    data: [...(series.data || [])]
+    data: [...(series.data || [])],
   }));
 
   const isPercentage = !needsPercentageConversion(chart);
   const categories = chart.categories || [];
-  
-  // If data is in absolute values, convert to percentages
+
   if (!isPercentage) {
-    // Calculate totals for each category
     const categoryTotals: number[] = [];
     for (let catIndex = 0; catIndex < categories.length; catIndex++) {
       let total = 0;
@@ -98,19 +115,17 @@ export default function BarChart({ chart }: Props) {
       }
       categoryTotals.push(total);
     }
-    
-    // Convert each value to percentage
-    processedData = processedData.map((series, seriesIndex) => ({
+
+    processedData = processedData.map((series) => ({
       ...series,
       data: series.data.map((value, catIndex) => {
         const total = categoryTotals[catIndex] || 1;
         return (Number(value) / total) * 100;
-      })
+      }),
     }));
   }
 
-  // Store original values for tooltip display
-  const originalData = chart.series.map(series => series.data || []);
+  const originalData = chart.series.map((series) => series.data || []);
 
   // ------------------------------------------------------------
   // Data helpers
@@ -124,10 +139,7 @@ export default function BarChart({ chart }: Props) {
     return Number(originalData[seriesIndex]?.[categoryIndex] ?? 0);
   };
 
-  const getSegmentBounds = (
-    seriesIndex: number,
-    categoryIndex: number
-  ) => {
+  const getSegmentBounds = (seriesIndex: number, categoryIndex: number) => {
     let bottom = 0;
 
     for (let i = 0; i < seriesIndex; i++) {
@@ -140,73 +152,6 @@ export default function BarChart({ chart }: Props) {
       bottom,
       top: bottom + value,
     };
-  };
-
-  // ------------------------------------------------------------
-  // Smooth ribbon generator
-  // ------------------------------------------------------------
-
-  const createRibbonPoints = (
-    x1: number,
-    top1: number,
-    bottom1: number,
-    x2: number,
-    top2: number,
-    bottom2: number
-  ) => {
-    const points: [number, number][] = [];
-
-    const distance = x2 - x1;
-    const curve = distance * 0.42;
-
-    const topControl1X = x1 + curve;
-    const topControl2X = x2 - curve;
-    const bottomControl1X = x1 + curve;
-    const bottomControl2X = x2 - curve;
-
-    const steps = 18;
-
-    // Top curve: left -> right
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const mt = 1 - t;
-
-      const x =
-        mt * mt * mt * x1 +
-        3 * mt * mt * t * topControl1X +
-        3 * mt * t * t * topControl2X +
-        t * t * t * x2;
-
-      const y =
-        mt * mt * mt * top1 +
-        3 * mt * mt * t * top1 +
-        3 * mt * t * t * top2 +
-        t * t * t * top2;
-
-      points.push([x, y]);
-    }
-
-    // Bottom curve: right -> left
-    for (let i = steps; i >= 0; i--) {
-      const t = i / steps;
-      const mt = 1 - t;
-
-      const x =
-        mt * mt * mt * x1 +
-        3 * mt * mt * t * bottomControl1X +
-        3 * mt * t * t * bottomControl2X +
-        t * t * t * x2;
-
-      const y =
-        mt * mt * mt * bottom1 +
-        3 * mt * mt * t * bottom1 +
-        3 * mt * t * t * bottom2 +
-        t * t * t * bottom2;
-
-      points.push([x, y]);
-    }
-
-    return points;
   };
 
   // ------------------------------------------------------------
@@ -240,27 +185,30 @@ export default function BarChart({ chart }: Props) {
       formatter: (params: any) => {
         const param = params[0];
         if (!param) return "";
-        
+
         const categoryIndex = param.dataIndex;
         const categoryName = categories[categoryIndex] || "";
-        
-        let html = `<div style="font-weight:bold;margin-bottom:8px;">${toPersianDigits(categoryName)}</div>`;
-        
-        // Sort by value descending for better readability
-        const sortedSeries = chart.series.map((s, i) => ({
-          name: s.name,
-          index: i,
-          value: getOriginalValue(i, categoryIndex),
-          percentage: getValue(i, categoryIndex)
-        })).sort((a, b) => b.value - a.value);
-        
+
+        let html = `<div style="font-weight:bold;margin-bottom:8px;">${toPersianDigits(
+          categoryName
+        )}</div>`;
+
+        const sortedSeries = chart.series
+          .map((s, i) => ({
+            name: s.name,
+            index: i,
+            value: getOriginalValue(i, categoryIndex),
+            percentage: getValue(i, categoryIndex),
+          }))
+          .sort((a, b) => b.value - a.value);
+
         sortedSeries.forEach((item) => {
-          if (item.percentage > 0.5) { // Only show items with > 0.5%
+          if (item.percentage > 0.5) {
             const color = colors[item.index % colors.length];
-            const formattedValue = isPercentage 
+            const formattedValue = isPercentage
               ? `${toPersianDigits(item.percentage.toFixed(1))}٪`
               : formatValue(item.value, chart.unit || "");
-            
+
             html += `
               <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:2px 0;">
                 <span>
@@ -272,7 +220,7 @@ export default function BarChart({ chart }: Props) {
             `;
           }
         });
-        
+
         return html;
       },
     },
@@ -285,7 +233,7 @@ export default function BarChart({ chart }: Props) {
       textStyle: {
         fontFamily: "inherit",
       },
-      data: chart.series.map(series => series.name),
+      data: chart.series.map((series) => series.name),
     },
 
     grid: {
@@ -320,10 +268,9 @@ export default function BarChart({ chart }: Props) {
     },
 
     series: [
-      // ========================================================
-      // CONNECTING RIBBONS
-      // ========================================================
-
+      // ------------------------------------------------------------
+      // CONNECTING STRIPS (Curved Bézier Ribbon)
+      // ------------------------------------------------------------
       {
         name: "__connectors__",
         type: "custom",
@@ -336,71 +283,28 @@ export default function BarChart({ chart }: Props) {
         renderItem: (params: any, api: any) => {
           const categoryIndex = Number(api.value(0));
           const seriesIndex = Number(api.value(1));
-
           const nextCategoryIndex = categoryIndex + 1;
 
-          const source = getSegmentBounds(
-            seriesIndex,
-            categoryIndex
-          );
+          const source = getSegmentBounds(seriesIndex, categoryIndex);
+          const target = getSegmentBounds(seriesIndex, nextCategoryIndex);
 
-          const target = getSegmentBounds(
-            seriesIndex,
-            nextCategoryIndex
-          );
-
-          const sourceCenter = api.coord([
-            categoryIndex,
-            0,
-          ])[0];
-
-          const targetCenter = api.coord([
-            nextCategoryIndex,
-            0,
-          ])[0];
-
-          const categoryWidth = Math.abs(
-            api.size([1, 0])[0]
-          );
-
+          const sourceCenter = api.coord([categoryIndex, 0])[0];
+          const targetCenter = api.coord([nextCategoryIndex, 0])[0];
+          const categoryWidth = Math.abs(api.size([1, 0])[0]);
           const barWidth = categoryWidth * 0.55;
 
           const x1 = sourceCenter + barWidth / 2;
           const x2 = targetCenter - barWidth / 2;
 
-          const top1 = api.coord([
-            categoryIndex,
-            source.top,
-          ])[1];
-
-          const bottom1 = api.coord([
-            categoryIndex,
-            source.bottom,
-          ])[1];
-
-          const top2 = api.coord([
-            nextCategoryIndex,
-            target.top,
-          ])[1];
-
-          const bottom2 = api.coord([
-            nextCategoryIndex,
-            target.bottom,
-          ])[1];
-
-          const points = createRibbonPoints(
-            x1,
-            top1,
-            bottom1,
-            x2,
-            top2,
-            bottom2
-          );
+          const top1 = api.coord([categoryIndex, source.top])[1];
+          const bottom1 = api.coord([categoryIndex, source.bottom])[1];
+          const top2 = api.coord([nextCategoryIndex, target.top])[1];
+          const bottom2 = api.coord([nextCategoryIndex, target.bottom])[1];
 
           return {
-            type: "polygon",
+            type: "path",
             shape: {
-              points,
+              d: createCurvedRibbonPath(x1, top1, bottom1, x2, top2, bottom2),
             },
             style: {
               fill: colors[seriesIndex % colors.length],
@@ -410,29 +314,32 @@ export default function BarChart({ chart }: Props) {
         },
       },
 
-      // ========================================================
+      // ------------------------------------------------------------
       // STACKED BARS
-      // ========================================================
+      // ------------------------------------------------------------
+      ...processedData.map((series, index) => {
+        const isTopSegment = index === chart.series.length - 1;
 
-      ...processedData.map((series, index) => ({
-        name: series.name,
-        type: "bar",
-        stack: "total",
-        z: 3,
-        barWidth: "55%",
-        itemStyle: {
-          color: colors[index % colors.length],
-          borderRadius: [4, 4, 0, 0],
-          borderWidth: 0,
-        },
-        emphasis: {
-          focus: "series",
+        return {
+          name: series.name,
+          type: "bar",
+          stack: "total",
+          z: 3,
+          barWidth: "55%",
           itemStyle: {
-            opacity: 0.9,
+            color: colors[index % colors.length],
+            borderRadius: isTopSegment ? [10, 10, 0, 0] : [0, 0, 0, 0],
+            borderWidth: 0,
           },
-        },
-        data: series.data || [],
-      })),
+          emphasis: {
+            focus: "series",
+            itemStyle: {
+              opacity: 0.9,
+            },
+          },
+          data: series.data || [],
+        };
+      }),
     ],
   };
 

@@ -60,7 +60,10 @@ const loadFont = async () => {
 
   const buffer = await response.arrayBuffer();
 
-  cachedFont = fontkit.create(new Uint8Array(buffer));
+  // Convert ArrayBuffer to Buffer (Node.js Buffer)
+  const nodeBuffer = Buffer.from(buffer);
+
+  cachedFont = fontkit.create(nodeBuffer);
 
   return cachedFont;
 };

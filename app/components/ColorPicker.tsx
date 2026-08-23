@@ -2,8 +2,57 @@
 "use client";
 
 import { useState } from "react";
-import { COLOR_THEMES, ThemeKey, getThemeNames } from "../lib/colorThemes";
 import { CHART_COLORS } from "../lib/chartTheme";
+
+// Define types locally
+type ThemeKey = "default" | "dark" | "light";
+
+// Define theme colors locally
+const COLOR_THEMES: Record<ThemeKey, { name: string; colors: string[] }> = {
+  default: {
+    name: "Default",
+    colors: CHART_COLORS,
+  },
+  dark: {
+    name: "Dark",
+    colors: [
+      "#4fc3f7",
+      "#81d4fa",
+      "#b3e5fc",
+      "#ff8a65",
+      "#ffab91",
+      "#ffccbc",
+      "#81c784",
+      "#a5d6a7",
+      "#c8e6c9",
+      "#ffd54f",
+      "#ffe082",
+    ],
+  },
+  light: {
+    name: "Light",
+    colors: [
+      "#90caf9",
+      "#bbdefb",
+      "#e3f2fd",
+      "#ef9a9a",
+      "#ef9a9a",
+      "#ffcdd2",
+      "#a5d6a7",
+      "#c8e6c9",
+      "#e8f5e9",
+      "#fff59d",
+      "#fff9c4",
+    ],
+  },
+};
+
+const getThemeNames = (): Array<{ key: ThemeKey; name: string }> => {
+  return Object.entries(COLOR_THEMES).map(([key, theme]) => ({
+    key: key as ThemeKey,
+    name: theme.name,
+  }));
+};
 
 interface Props {
   seriesNames: string[];

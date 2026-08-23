@@ -166,7 +166,7 @@ export default function DownloadButton({
                 <span>{format.label}</span>
 
                 {selectedFormat === format.value && (
-                  <Check className="h-4 w-4 text-[#2B9E65] flex-shrink-0" />
+                  <Check className="h-4 w-4 text-[#2B9E65] shrink-0" />
                 )}
               </button>
             ))}
