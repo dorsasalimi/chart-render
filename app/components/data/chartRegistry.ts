@@ -3,18 +3,15 @@ import tradeWeightByYear from "./charts/line/trade-weight-by-year.json";
 import customstradevalue from "./charts/ribbon/customs-trade-value.json";
 import topcustoms from "./charts/top-customs.json";
 
-
 import topexportcustomsweight from "./charts/mahsa/top-export-customs-weight.json";
 import topExportCustomsDollar from "./charts/mahsa/farvardin/top-export-customs-dollar.json";
 import topImportCustomsDollar from "./charts/mahsa/farvardin/top-import-customs-dollar.json";
 import topImportCustomsWeight from "./charts/mahsa/farvardin/top-import-customs-weight.json";
 
-import ordibeheshttopexportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-dollar.json"
-import ordibeheshttopexportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-weight.json"
-import ordibeheshttopimportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-dollar.json"
-import ordibeheshttopimportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-weight.json"
-
-
+import ordibeheshttopexportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-dollar.json";
+import ordibeheshttopexportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-weight.json";
+import ordibeheshttopimportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-dollar.json";
+import ordibeheshttopimportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-weight.json";
 
 import topcustomsbyyearribbon from "./charts/ribbon/top-customs-by-year-ribbon.json";
 import topcustomsbyyearribbon2 from "./charts/ribbon/top-customs-by-year-ribbon2.json";
@@ -33,10 +30,8 @@ import topcustomsdollar from "./charts/ribbon/top-customs-dollar.json";
 import topchaptersweightimport from "./charts/pie/toptenproductsbydollarimport/top-chapters-import.json";
 import topchaptersweight from "./charts/pie/toptenproductsbywieghtexport/top-chapters-weight.json";
 import tophsweightexport from "./charts/pie/toptenproductsbywieghtexport/top-hs-weight.json";
-import industrydollarimportdetailedtreemap from "./charts/treemap/import-detailed.json"
-import industrydollarexportdetailedtreemap from "./charts/treemap/export-detailed.json"
-
-
+import industrydollarimportdetailedtreemap from "./charts/treemap/import-detailed.json";
+import industrydollarexportdetailedtreemap from "./charts/treemap/export-detailed.json";
 
 export const chartRegistry = [
   tradeWeightByYear,
@@ -67,8 +62,8 @@ export const chartRegistry = [
   topImportCustomsWeight,
   topImportCustomsDollar,
   topExportCustomsDollar,
-ordibeheshttopexportcustomsweight,
-ordibeheshttopexportcustomsdollar,
-ordibeheshttopimportcustomsdollar,
-ordibeheshttopimportcustomsweight,
+  ordibeheshttopexportcustomsweight,
+  ordibeheshttopexportcustomsdollar,
+  ordibeheshttopimportcustomsdollar,
+  ordibeheshttopimportcustomsweight,
 ];
