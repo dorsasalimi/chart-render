@@ -206,8 +206,8 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
 
   if (!normalizedData || normalizedData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[92px] w-[92px] bg-[#F7F9F8] rounded-lg">
-        <p className="text-xs text-[#6B7A73]">No data</p>
+      <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
+        <p className="text-sm text-[#6B7A73]">No data available</p>
       </div>
     );
   }
@@ -222,16 +222,19 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
 
   const dataLength = sortedData.length;
 
-  // Fixed sizing for 92x92 chart
-  const containerMinHeight = 92;
+  const legendItemGap = dataLength <= 4 ? 60 : dataLength <= 6 ? 40 : 25;
 
- const pieRadius =
+  const containerMinHeight =
+    dataLength <= 4 ? 380 : 380 + Math.min((dataLength - 4) * 20, 80);
+
+  const pieRadius =
     dataLength <= 4
       ? ["40%", "72%"]
       : dataLength <= 6
         ? ["38%", "68%"]
-        : ["45%", "82%"];
-  const pieCenter = ["50%", "50%"];
+        : ["35%", "62%"];
+
+  const pieCenter = dataLength <= 4 ? ["50%", "46%"] : ["50%", "44%"];
 
   const dataWithColors = sortedData.map((item, index) => ({
     ...item,
@@ -248,6 +251,8 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
   const othersAngle = totalValue > 0 ? (othersValue / totalValue) * 360 : 0;
   
   // Start at 90° (top) and rotate to position "others" on the left
+  // Since we want the largest at the bottom, we use descending sort
+  // and adjust startAngle so the first item (others) appears on the left
   const startAngle = 90 - (othersAngle / 2);
 
   const option = {
@@ -258,15 +263,17 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
       backgroundColor: "rgba(255, 255, 255, 0.98)",
       borderColor: "#E5E7EB",
       borderWidth: 0,
-      padding: [8, 10],
+      padding: [12, 14],
+
       textStyle: {
         fontFamily: "Epsilon",
         color: "#111827",
-        fontSize: "12px",
+        fontSize: "45px",
       },
+
       extraCssText: `
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
       `,
 
       formatter: (params: any) => {
@@ -280,25 +287,24 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
         return `
           <div
             style="
-              min-width:120px;
+              min-width:160px;
               font-family:Epsilon, Tahoma, sans-serif;
               direction:rtl;
               unicode-bidi:plaintext;
-              font-size:12px;
             "
           >
             <div
               style="
                 display:flex;
                 align-items:center;
-                gap:6px;
-                margin-bottom:4px;
+                gap:10px;
+                margin-bottom:8px;
               "
             >
               <span
                 style="
-                  width:8px;
-                  height:8px;
+                  width:10px;
+                  height:10px;
                   border-radius:50%;
                   background:${params.color};
                   display:inline-block;
@@ -309,7 +315,7 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
                 style="
                   color:#111827;
                   font-weight:600;
-                  font-size:12px;
+                  font-size:16px;
                 "
               >
                 ${name}
@@ -320,14 +326,14 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
               style="
                 display:flex;
                 justify-content:space-between;
-                gap:16px;
-                padding:2px 0;
+                gap:24px;
+                padding:4px 0;
               "
             >
               <span
                 style="
                   color:#6B7280;
-                  font-size:11px;
+                  font-size:14px;
                 "
               >
                 مقدار
@@ -337,7 +343,6 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
                 style="
                   color:#111827;
                   font-weight:600;
-                  font-size:12px;
                 "
               >
                 ${value} ${unit}
@@ -348,14 +353,14 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
               style="
                 display:flex;
                 justify-content:space-between;
-                gap:16px;
-                padding:2px 0;
+                gap:24px;
+                padding:4px 0;
               "
             >
               <span
                 style="
                   color:#6B7280;
-                  font-size:11px;
+                  font-size:14px;
                 "
               >
                 سهم
@@ -365,7 +370,6 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
                 style="
                   color:#111827;
                   font-weight:600;
-                  font-size:12px;
                 "
               >
                 ${percentDisplay}
@@ -383,7 +387,7 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
         type: "pie",
         radius: pieRadius,
         center: pieCenter,
-        avoidLabelOverlap: false,
+        avoidLabelOverlap: true,
         
         // Sort data in descending order (largest first)
         sort: 'descending',
@@ -391,26 +395,19 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
         // Start angle to position "others" on the left
         startAngle: startAngle,
 
-        itemStyle: {
-          borderRadius: 2,
-          borderColor: "#ffffff",
-          borderWidth: 1.2,
-        },
+           padAngle: 3,
 
-        // Hide labels for small chart
+itemStyle: {
+  borderRadius: 20,
+  borderWidth: 0,
+},
+
+        // Hide labels
         label: {
           show: false,
         },
         labelLine: {
           show: false,
-        },
-
-        // Disable emphasis effects for small chart
-        emphasis: {
-          scale: false,
-          label: {
-            show: false,
-          },
         },
 
         data: dataWithColors,
@@ -419,6 +416,7 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
 
     grid: {
       containLabel: false,
+      bottom: dataLength > 5 ? 80 : 60,
     },
   };
 
@@ -465,9 +463,9 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
     <div
       ref={containerRef}
       style={{
-        width: "92px",
-        height: "92px",
-        flexShrink: 0,
+        width: "100%",
+        aspectRatio: "510 / 310",
+        minHeight: "310px",
       }}
     >
       <ReactECharts
@@ -476,6 +474,7 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
         style={{
           width: "100%",
           height: "100%",
+          minHeight: `${containerMinHeight}px`,
         }}
         opts={{
           renderer: "svg",

@@ -254,11 +254,12 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
         center: pieCenter,
         avoidLabelOverlap: true,
 
-        itemStyle: {
-          borderRadius: 20,
-          borderColor: "#ffffff",
-          borderWidth: 10,
-        },
+    padAngle: 3,
+
+itemStyle: {
+  borderRadius: 20,
+  borderWidth: 0,
+},
       label: {
   show: true,
   formatter: (params: any) => {
