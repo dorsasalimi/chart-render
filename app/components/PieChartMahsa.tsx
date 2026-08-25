@@ -396,9 +396,9 @@ export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Prop
         startAngle: startAngle,
 
         itemStyle: {
-          borderRadius: 8,
+          borderRadius: 20,
           borderColor: "#ffffff",
-          borderWidth: 5,
+          borderWidth: 10,
         },
 
         // Hide labels
