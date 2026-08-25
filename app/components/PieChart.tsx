@@ -108,9 +108,9 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
       ? ["40%", "72%"]
       : dataLength <= 6
         ? ["38%", "68%"]
-        : ["35%", "62%"];
+        : ["45%", "82%"];
 
-  const pieCenter = dataLength <= 4 ? ["50%", "46%"] : ["50%", "44%"];
+  const pieCenter = dataLength <= 4 ? ["50%", "50%"] : ["50%", "50%"];
 
   const dataWithColors = normalizedData.map((item, index) => ({
     ...item,
@@ -255,41 +255,80 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
         avoidLabelOverlap: true,
 
         itemStyle: {
-          borderRadius: 8,
+          borderRadius: 20,
           borderColor: "#ffffff",
-          borderWidth: 5,
+          borderWidth: 10,
         },
-
-  label: {
+      label: {
   show: true,
-
   formatter: (params: any) => {
     const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
-    return `{name|${params.name}}  {percent|${percentDisplay}}`;
+    const name = params.name;
+
+    // Wrap text to max 8 characters per line
+    const maxCharsPerLine = 25;
+    const words = name.split(" ");
+    let lines: string[] = [];
+    let currentLine = "";
+
+    for (const word of words) {
+      if (
+        (currentLine + word).length > maxCharsPerLine &&
+        currentLine.length > 0
+      ) {
+        lines.push(currentLine.trim());
+        currentLine = word + " ";
+      } else {
+        currentLine += word + " ";
+      }
+    }
+    if (currentLine.trim().length > 0) {
+      lines.push(currentLine.trim());
+    }
+
+    // If a single word is too long, break it at the middle
+    if (lines.length === 1 && lines[0].length > maxCharsPerLine) {
+      const word = lines[0];
+      const midPoint = Math.floor(word.length / 2);
+      // Try to break at a space first
+      const spaceIndex = word.indexOf(" ", Math.floor(word.length / 3));
+      if (spaceIndex > 0) {
+        lines = [
+          word.substring(0, spaceIndex),
+          word.substring(spaceIndex + 1),
+        ];
+      } else {
+        lines = [word.substring(0, midPoint), word.substring(midPoint)];
+      }
+    }
+
+    const formattedName = lines.join("\n");
+
+    // Add a space between name and percent
+    return `{name|${formattedName}} {percent|${percentDisplay}}`;
   },
+          fontFamily: "Epsilon",
+          color: "#636466",
 
-  fontFamily: "Epsilon",
-  color: "#636466",
+          position: "outside",
+          distanceToLabelLine: 5,
+          lineHeight: 35,
+          width: 1000,
 
-  position: "outside",
-  distanceToLabelLine: 5,
-  lineHeight: 35,
-  width: 700,
-  
-  rich: {
-    percent: {
-      fontSize: 45,
-      fontWeight: 500,
-      color: "#636466"
-    },
-    name: {
-      fontSize: 38,
-      fontWeight: 400,
-      color: "#636466"
-    },
-    
-  }
-},
+          rich: {
+            percent: {
+              fontSize: 45,
+              fontWeight: 500,
+              color: "#636466",
+            },
+            name: {
+              fontSize: 35,
+              fontWeight: 400,
+              color: "#636466",
+              lineHeight: 50,
+            },
+          },
+        },
         labelLine: {
           show: true,
 
