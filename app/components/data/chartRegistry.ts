@@ -8,10 +8,51 @@ import topExportCustomsDollar from "./charts/mahsa/farvardin/top-export-customs-
 import topImportCustomsDollar from "./charts/mahsa/farvardin/top-import-customs-dollar.json";
 import topImportCustomsWeight from "./charts/mahsa/farvardin/top-import-customs-weight.json";
 
-import ordibeheshttopexportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-dollar.json";
-import ordibeheshttopexportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-weight.json";
-import ordibeheshttopimportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-dollar.json";
-import ordibeheshttopimportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-weight.json";
+import ordibeheshttopexportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-dollar.json"
+import ordibeheshttopexportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-weight.json"
+import ordibeheshttopimportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-dollar.json"
+import ordibeheshttopimportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-weight.json"
+
+import khordadtopexportcustomsdollar from "./charts/mahsa/khordad/khordad-top-export-customs-dollar.json"
+import khordadtopexportcustomsweight from "./charts/mahsa/khordad/khordad-top-export-customs-weight.json"
+import khordadtopimportcustomsdollar from "./charts/mahsa/khordad/khordad-top-import-customs-dollar.json"
+import khordadtopimportcustomsweight from "./charts/mahsa/khordad/khordad-top-import-customs-weight.json"
+
+import tirtopexportcustomsdollar from "./charts/mahsa/tir/tir-top-export-customs-dollar.json"
+import tirtopexportcustomsweight from "./charts/mahsa/tir/tir-top-export-customs-weight.json"
+import tirtopimportcustomsdollar from "./charts/mahsa/tir/tir-top-import-customs-dollar.json"
+import tirtopimportcustomsweight from "./charts/mahsa/tir/tir-top-import-customs-weight.json"
+
+import mordadtopexportcustomsdollar from "./charts/mahsa/mordad/mordad-top-export-customs-dollar.json"
+import mordadtopexportcustomsweight from "./charts/mahsa/mordad/mordad-top-export-customs-weight.json"
+import mordadtopimportcustomsdollar from "./charts/mahsa/mordad/mordad-top-import-customs-dollar.json"
+import mordadtopimportcustomsweight from "./charts/mahsa/mordad/mordad-top-import-customs-weight.json"
+
+import shahrivartopexportcustomsdollar from "./charts/mahsa/shahrivar/shahrivar-top-export-customs-dollar.json"
+import shahrivartopexportcustomsweight from "./charts/mahsa/shahrivar/shahrivar-top-export-customs-weight.json"
+import shahrivartopimportcustomsdollar from "./charts/mahsa/shahrivar/shahrivar-top-import-customs-dollar.json"
+import shahrivartopimportcustomsweight from "./charts/mahsa/shahrivar/shahrivar-top-import-customs-weight.json"
+
+import mehrtopexportcustomsdollar from "./charts/mahsa/mehr/mehr-top-export-customs-dollar.json"
+import mehrtopexportcustomsweight from "./charts/mahsa/mehr/mehr-top-export-customs-weight.json"
+import mehrtopimportcustomsdollar from "./charts/mahsa/mehr/mehr-top-import-customs-dollar.json"
+import mehrtopimportcustomsweight from "./charts/mahsa/mehr/mehr-top-import-customs-weight.json"
+
+import abantopexportcustomsdollar from "./charts/mahsa/aban/aban-top-export-customs-dollar.json"
+import abantopexportcustomsweight from "./charts/mahsa/aban/aban-top-export-customs-weight.json"
+import abantopimportcustomsdollar from "./charts/mahsa/aban/aban-top-import-customs-dollar.json"
+import abantopimportcustomsweight from "./charts/mahsa/aban/aban-top-import-customs-weight.json"
+
+import azartopexportcustomsdollar from "./charts/mahsa/azar/azar-top-export-customs-dollar.json"
+import azartopexportcustomsweight from "./charts/mahsa/azar/azar-top-export-customs-weight.json"
+import azartopimportcustomsdollar from "./charts/mahsa/azar/azar-top-import-customs-dollar.json"
+import azartopimportcustomsweight from "./charts/mahsa/azar/azar-top-import-customs-weight.json"
+
+import deytopexportcustomsdollar from "./charts/mahsa/dey/dey-top-export-customs-dollar.json"
+import deytopexportcustomsweight from "./charts/mahsa/dey/dey-top-export-customs-weight.json"
+import deytopimportcustomsdollar from "./charts/mahsa/dey/dey-top-import-customs-dollar.json"
+import deytopimportcustomsweight from "./charts/mahsa/dey/dey-top-import-customs-weight.json"
+
 
 import topcustomsbyyearribbon from "./charts/ribbon/top-customs-by-year-ribbon.json";
 import topcustomsbyyearribbon2 from "./charts/ribbon/top-customs-by-year-ribbon2.json";
@@ -62,8 +103,48 @@ export const chartRegistry = [
   topImportCustomsWeight,
   topImportCustomsDollar,
   topExportCustomsDollar,
-  ordibeheshttopexportcustomsweight,
-  ordibeheshttopexportcustomsdollar,
-  ordibeheshttopimportcustomsdollar,
-  ordibeheshttopimportcustomsweight,
+ordibeheshttopexportcustomsweight,
+ordibeheshttopexportcustomsdollar,
+ordibeheshttopimportcustomsdollar,
+ordibeheshttopimportcustomsweight,
+
+khordadtopexportcustomsweight,
+khordadtopexportcustomsdollar,
+khordadtopimportcustomsdollar,
+khordadtopimportcustomsweight,
+
+tirtopexportcustomsweight,
+tirtopexportcustomsdollar,
+tirtopimportcustomsdollar,
+tirtopimportcustomsweight,
+
+mordadtopexportcustomsweight,
+mordadtopexportcustomsdollar,
+mordadtopimportcustomsdollar,
+mordadtopimportcustomsweight,
+
+shahrivartopexportcustomsweight,
+shahrivartopexportcustomsdollar,
+shahrivartopimportcustomsdollar,
+shahrivartopimportcustomsweight,
+
+mehrtopexportcustomsweight,
+mehrtopexportcustomsdollar,
+mehrtopimportcustomsdollar,
+mehrtopimportcustomsweight,
+
+abantopexportcustomsweight,
+abantopexportcustomsdollar,
+abantopimportcustomsdollar,
+abantopimportcustomsweight,
+
+azartopexportcustomsweight,
+azartopexportcustomsdollar,
+azartopimportcustomsdollar,
+azartopimportcustomsweight,
+
+deytopexportcustomsweight,
+deytopexportcustomsdollar,
+deytopimportcustomsdollar,
+deytopimportcustomsweight,
 ];
