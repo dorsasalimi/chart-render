@@ -322,7 +322,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
               color: "#636466",
             },
             name: {
-              fontSize: 38,
+              fontSize: 39,
               fontWeight: 400,
               color: "#636466",
               lineHeight: 50,
