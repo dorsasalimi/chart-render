@@ -260,16 +260,14 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
           borderWidth: 5,
         },
 
-   label: {
+  label: {
   show: true,
 
   formatter: (params: any) => {
     const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
-    return `${params.name}  ${percentDisplay}`;
+    return `{name|${params.name}}  {percent|${percentDisplay}}`;
   },
 
-  fontSize: "30px",
-  fontWeight: 500,
   fontFamily: "Epsilon",
   color: "#636466",
 
@@ -277,8 +275,21 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
   distanceToLabelLine: 5,
   lineHeight: 35,
   width: 700,
+  
+  rich: {
+    percent: {
+      fontSize: 45,
+      fontWeight: 500,
+      color: "#636466"
+    },
+    name: {
+      fontSize: 38,
+      fontWeight: 400,
+      color: "#636466"
+    },
+    
+  }
 },
-
         labelLine: {
           show: true,
 

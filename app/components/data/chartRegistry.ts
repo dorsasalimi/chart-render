@@ -9,6 +9,12 @@ import topExportCustomsDollar from "./charts/mahsa/farvardin/top-export-customs-
 import topImportCustomsDollar from "./charts/mahsa/farvardin/top-import-customs-dollar.json";
 import topImportCustomsWeight from "./charts/mahsa/farvardin/top-import-customs-weight.json";
 
+import ordibeheshttopexportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-dollar.json"
+import ordibeheshttopexportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-export-customs-weight.json"
+import ordibeheshttopimportcustomsdollar from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-dollar.json"
+import ordibeheshttopimportcustomsweight from "./charts/mahsa/ordibehesht/ordibehesht-top-import-customs-weight.json"
+
+
 
 import topcustomsbyyearribbon from "./charts/ribbon/top-customs-by-year-ribbon.json";
 import topcustomsbyyearribbon2 from "./charts/ribbon/top-customs-by-year-ribbon2.json";
@@ -61,4 +67,8 @@ export const chartRegistry = [
   topImportCustomsWeight,
   topImportCustomsDollar,
   topExportCustomsDollar,
+ordibeheshttopexportcustomsweight,
+ordibeheshttopexportcustomsdollar,
+ordibeheshttopimportcustomsdollar,
+ordibeheshttopimportcustomsweight,
 ];
