@@ -1,7 +1,6 @@
 "use client";
 
 import ReactECharts from "echarts-for-react";
-import { getRankedColorsForChart } from "../lib/colorThemes";
 import { useRef, useEffect } from "react";
 
 interface PieChartDataItem {
@@ -28,6 +27,84 @@ interface Props {
   onChartReady?: (instance: any) => void;
   downloadRef?: React.MutableRefObject<(() => void) | null>;
 }
+
+const IMPORT_COLORS = [
+  "#a84b41",
+  "#db978a",
+  "#fabfb7",
+  "#db978a",
+  "#e7b2a8",
+  "#f0cdc6",
+];
+
+const EXPORT_COLORS = [
+  "#1d3767",
+  "#6675a9",
+  "#87bad2",
+  "#8795bd",
+  "#aab5d1",
+  "#ccd3e3",
+];
+
+const OTHERS_COLOR = "#b8b9b9";
+
+const isOthers = (name: string) => {
+  const normalized = String(name || "").trim().toLowerCase();
+
+  return (
+    normalized === "سایر" ||
+    normalized === "سائر" ||
+    normalized === "others" ||
+    normalized === "other"
+  );
+};
+
+const getMahsaColors = (
+  title: string | undefined,
+  data: PieChartDataItem[],
+): string[] => {
+  const normalizedTitle = String(title || "").trim();
+
+  let palette: string[];
+
+  if (normalizedTitle.includes("واردات")) {
+    palette = IMPORT_COLORS;
+  } else if (normalizedTitle.includes("صادرات")) {
+    palette = EXPORT_COLORS;
+  } else {
+    // Default fallback
+    palette = EXPORT_COLORS;
+  }
+
+  // "سایر" must not consume a rank/color.
+  const rankedItems = data
+    .map((item, index) => ({
+      ...item,
+      originalIndex: index,
+    }))
+    .filter((item) => !isOthers(item.name))
+    .sort((a, b) => b.value - a.value);
+
+  const colorByIndex = new Map<number, string>();
+
+  rankedItems.forEach((item, rank) => {
+    const colorIndex = Math.min(rank, palette.length - 1);
+
+    colorByIndex.set(
+      item.originalIndex,
+      palette[colorIndex],
+    );
+  });
+
+  return data.map((item, index) => {
+    if (isOthers(item.name)) {
+      return OTHERS_COLOR;
+    }
+
+    return colorByIndex.get(index) ?? palette[0];
+  });
+};
+
 
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 
@@ -78,7 +155,50 @@ const normalizeChartData = (chart: PieChartType): PieChartDataItem[] => {
   return [];
 };
 
-export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
+// Sort data with "others" always at the left (first position)
+const sortPieData = (data: PieChartDataItem[]): PieChartDataItem[] => {
+  // Separate "others" from the rest
+  const othersItems = data.filter(item => isOthers(item.name));
+  const regularItems = data.filter(item => !isOthers(item.name));
+  
+  // Sort regular items by value (descending)
+  const sortedRegular = regularItems.sort((a, b) => b.value - a.value);
+  
+  // Return: others first, then regular items sorted descending
+  return [ ...sortedRegular,...othersItems];
+};
+
+//function for breaking the text label
+const wrapLabel = (text: string, maxChars = 12) => {
+  if (!text) return "";
+
+  const words = text.split(/\s+/);
+
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (const word of words) {
+    const nextLine = currentLine
+      ? `${currentLine} ${word}`
+      : word;
+
+    if (nextLine.length > maxChars && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = nextLine;
+    }
+  }
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines.join("\n");
+};
+
+
+export default function PieChartMahsa({ chart, onChartReady, downloadRef }: Props) {
   const chartRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -92,11 +212,15 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
     );
   }
 
-  const colors = getRankedColorsForChart({
-    data: normalizedData,
-  });
+  // Sort the data
+  const sortedData = sortPieData(normalizedData);
 
-  const dataLength = normalizedData.length;
+  const colors = getMahsaColors(
+    chart.title,
+    sortedData, // Use sorted data for colors
+  );
+
+  const dataLength = sortedData.length;
 
   const legendItemGap = dataLength <= 4 ? 60 : dataLength <= 6 ? 40 : 25;
 
@@ -112,13 +236,24 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
 
   const pieCenter = dataLength <= 4 ? ["50%", "46%"] : ["50%", "44%"];
 
-  const dataWithColors = normalizedData.map((item, index) => ({
+  const dataWithColors = sortedData.map((item, index) => ({
     ...item,
     name: toPersianLabel(item.name),
     itemStyle: {
       color: colors[index % colors.length],
     },
   }));
+
+  // Calculate start angle to position "others" on the left
+  const othersIndex = sortedData.findIndex(item => isOthers(item.name));
+  const totalValue = sortedData.reduce((sum, item) => sum + item.value, 0);
+  const othersValue = othersIndex !== -1 ? sortedData[othersIndex].value : 0;
+  const othersAngle = totalValue > 0 ? (othersValue / totalValue) * 360 : 0;
+  
+  // Start at 90° (top) and rotate to position "others" on the left
+  // Since we want the largest at the bottom, we use descending sort
+  // and adjust startAngle so the first item (others) appears on the left
+  const startAngle = 90 - (othersAngle / 2);
 
   const option = {
     color: colors,
@@ -253,6 +388,12 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
         radius: pieRadius,
         center: pieCenter,
         avoidLabelOverlap: true,
+        
+        // Sort data in descending order (largest first)
+        sort: 'descending',
+        
+        // Start angle to position "others" on the left
+        startAngle: startAngle,
 
         itemStyle: {
           borderRadius: 8,
@@ -260,60 +401,12 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
           borderWidth: 5,
         },
 
-   label: {
-  show: true,
-
-  formatter: (params: any) => {
-    const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
-    return `${params.name}  ${percentDisplay}`;
-  },
-
-  fontSize: "30px",
-  fontWeight: 500,
-  fontFamily: "Epsilon",
-  color: "#636466",
-
-  position: "outside",
-  distanceToLabelLine: 5,
-  lineHeight: 35,
-  width: 700,
-},
-
-        labelLine: {
-          show: true,
-
-          length: dataLength <= 4 ? 20 : 50,
-          length2: dataLength <= 4 ? 20 : 50,
-
-          smooth: false,
+        // Hide labels
+        label: {
+          show: false,
         },
-
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: "30px",
-            fontWeight: "bold",
-            fontFamily: "Epsilon",
-
-            formatter: (params: any) => {
-              const value = toPersianDigits(formatFullNumber(params.value));
-
-              const percentDisplay = `٪${formatPercent(
-                Number(params.percent),
-              )}`;
-
-              const valueWithUnit = chart.unit
-                ? `${value} ${toPersianLabel(chart.unit)}`
-                : value;
-
-              return `${params.name}\n\n${valueWithUnit}\n\n${percentDisplay}`;
-            },
-          },
-
-          itemStyle: {
-            shadowBlur: 8,
-            shadowColor: "rgba(0, 0, 0, 0.3)",
-          },
+        labelLine: {
+          show: false,
         },
 
         data: dataWithColors,
@@ -321,7 +414,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
     ],
 
     grid: {
-      containLabel: true,
+      containLabel: false,
       bottom: dataLength > 5 ? 80 : 60,
     },
   };

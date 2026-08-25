@@ -1,6 +1,6 @@
 {
   "id": "trade-weight-by-year",
-  "title": "وزن صادرات، واردات و تراز تجاری وزنی",
+  "title": "روند وزن صادرات و واردات",
   "type": "line",
   "unit": "کیلوگرم",
   "categories": [

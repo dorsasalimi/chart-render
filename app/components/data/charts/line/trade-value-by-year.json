@@ -1,6 +1,6 @@
 {
   "id": "trade-value-by-year",
-  "title": "ارزش صادرات، واردات و تراز تجاری",
+  "title": "روند ارزش صادرات و واردات",
   "type": "line",
   "unit": "دلار",
   "categories": [

@@ -189,7 +189,7 @@ export default function TreemapChart({
       textStyle: {
         fontFamily: "Epsilon",
         color: "#111827",
-        fontSize: 16,
+          fontSize: "20px",
       },
 
       extraCssText: `
@@ -284,7 +284,7 @@ export default function TreemapChart({
 
           rich: {
             name: {
-              fontSize: 16,
+          fontSize: "20px",
               fontFamily: "Epsilon",
               fontWeight: 400,
               color: "#FFFFFF",

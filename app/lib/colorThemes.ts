@@ -7,19 +7,20 @@ export type ThemeKey = "default" | "dark" | "light";
 /**
  * Fixed chart colors with ranking system.
  * Colors are assigned based on data rank (largest to smallest).
+ * The order of these colors determines which color goes to which rank.
+ * 1st = largest value, 2nd = second largest, etc.
  */
 export const CHART_COLORS_RANKED = [
-  "#1c439c", // 1 - largest (blue)
-  "#688ec9", // 2 (light blue)
-  "#b4c4da", // 3 (pale blue)
-  "#ef4136", // 4 (red)
-  "#ee7d7d", // 5 (light red)
-  "#fac1c0", // 6 (pale red)
-  "#52b787", // 7 (green)
-  "#91cfab", // 8 (light green)
-  "#d3ebdb", // 9 (pale green)
-  "#f3b71a", // 10 (yellow)
-  "#ffd694", // 11 (pale yellow)
+  "#1d3767", // 1 - largest (dark blue)
+  "#6675a9", // 2 (medium blue)
+  "#1e9abc", // 3 (teal blue)
+  "#87bad2", // 4 (light blue)
+  "#779775", // 5 (green)
+  "#a4cdb6", // 6 (light green)
+  "#a84b41", // 7 (red)
+  "#db978a", // 8 (light red)
+  "#fba919", // 9 (yellow)
+  "#f9cd94", // 10 (light yellow)
 ];
 
 // ADD THIS: Export COLOR_THEMES for the ColorPicker component
@@ -70,10 +71,10 @@ export const getThemeNames = (): Array<{ key: ThemeKey; name: string }> => {
   }));
 };
 
-// The rest of your code remains the same...
 export const getValueRanks = (values: number[]): number[] => {
   if (!values || values.length === 0) return [];
   
+  // Sort by value descending (largest first)
   const sortedIndices = values
     .map((value, index) => ({ value, index }))
     .sort((a, b) => b.value - a.value);
@@ -95,54 +96,117 @@ export const getColorsByRank = (values: number[]): string[] => {
   const colorCount = Math.min(CHART_COLORS_RANKED.length, values.length);
   
   return ranks.map((rank) => {
+    // Ensure we don't go out of bounds
     const colorIndex = Math.min(rank, colorCount - 1);
     return CHART_COLORS_RANKED[colorIndex];
   });
 };
 
+// MODIFIED: Updated to handle "سایر" with gray color
 export const getRankedColorsForChart = (data: {
   series?: Array<{ name: string; data: number[] }>;
   data?: Array<{ name: string; value: number }>;
   categories?: string[];
 }): string[] => {
+  const GRAY_COLOR = "#b8b9b9";
+
+  const isOthers = (name: string): boolean => {
+    const normalized = String(name || "").trim().toLowerCase();
+
+    return (
+      normalized === "سایر" ||
+      normalized === "سائر" ||
+      normalized === "others" ||
+      normalized === "other"
+    );
+  };
+
+  // =========================================================
+  // PIE / SIMPLE DATA
+  // =========================================================
   if (data.data && data.data.length > 0) {
-    const values = data.data.map(item => item.value);
-    return getColorsByRank(values);
-  }
-  
-  if (data.series && data.series.length > 0) {
-    const allValues: number[] = [];
-    data.series.forEach(series => {
-      if (series.data && series.data.length > 0) {
-        series.data.forEach(val => {
-          if (typeof val === 'number' && !isNaN(val)) {
-            allValues.push(val);
-          }
-        });
+    // Exclude "Others" completely from ranking
+    const rankedItems = data.data
+      .map((item, index) => ({
+        ...item,
+        originalIndex: index,
+      }))
+      .filter((item) => !isOthers(item.name))
+      .sort((a, b) => b.value - a.value);
+
+    // Map original index -> ranked color
+    const colorByIndex = new Map<number, string>();
+
+    rankedItems.forEach((item, rank) => {
+      const colorIndex = Math.min(
+        rank,
+        CHART_COLORS_RANKED.length - 1,
+      );
+
+      colorByIndex.set(
+        item.originalIndex,
+        CHART_COLORS_RANKED[colorIndex],
+      );
+    });
+
+    return data.data.map((item, index) => {
+      if (isOthers(item.name)) {
+        return GRAY_COLOR;
       }
-    });
-    
-    if (allValues.length > 0) {
-      const seriesTotals = data.series.map(series => {
-        const total = series.data.reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
-        return { name: series.name, total };
-      });
-      
-      const totals = seriesTotals.map(item => item.total);
-      const ranks = getValueRanks(totals);
-      
-      return ranks.map((rank) => {
-        const colorIndex = Math.min(rank, CHART_COLORS_RANKED.length - 1);
-        return CHART_COLORS_RANKED[colorIndex];
-      });
-    }
-    
-    return data.series.map((_, index) => {
-      return CHART_COLORS_RANKED[index % CHART_COLORS_RANKED.length];
+
+      return colorByIndex.get(index) ?? CHART_COLORS_RANKED[0];
     });
   }
-  
-  return CHART_COLORS_RANKED.slice(0, 11);
+
+  // =========================================================
+  // SERIES DATA
+  // =========================================================
+  if (data.series && data.series.length > 0) {
+    const seriesTotals = data.series.map((series, index) => ({
+      name: series.name,
+      originalIndex: index,
+      total: (series.data || []).reduce(
+        (sum, value) =>
+          sum +
+          (typeof value === "number" && !isNaN(value)
+            ? value
+            : 0),
+        0,
+      ),
+    }));
+
+    // Again: "Others" must NOT consume a rank
+    const rankedSeries = seriesTotals
+      .filter((item) => !isOthers(item.name))
+      .sort((a, b) => b.total - a.total);
+
+    const colorByIndex = new Map<number, string>();
+
+    rankedSeries.forEach((item, rank) => {
+      const colorIndex = Math.min(
+        rank,
+        CHART_COLORS_RANKED.length - 1,
+      );
+
+      colorByIndex.set(
+        item.originalIndex,
+        CHART_COLORS_RANKED[colorIndex],
+      );
+    });
+
+    return seriesTotals.map((item) => {
+      if (isOthers(item.name)) {
+        return GRAY_COLOR;
+      }
+
+      return (
+        colorByIndex.get(item.originalIndex) ??
+        CHART_COLORS_RANKED[0]
+      );
+    });
+  }
+
+  return CHART_COLORS_RANKED.slice(0, 10);
 };
 
 export const getRankedColor = (value: number, allValues: number[]): string => {

@@ -1,6 +1,6 @@
 {
-  "id": "top-hs-weight-by-year",
-  "title": "وزن کالاهای برتر بر اساس سال",
+  "id": "top-hs-weight-by-year-export",
+  "title": "تغییر جایگاه ده کالای نخست صادراتی وزنی",
   "type": "bar",
   "unit": "کیلوگرم",
   "categories": ["1400", "1401", "1402", "1403", "1404"],

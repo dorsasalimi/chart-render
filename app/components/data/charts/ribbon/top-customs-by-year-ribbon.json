@@ -1,6 +1,6 @@
 {
   "id": "top-customs-by-year",
-  "title": "Top Customs by Year",
+  "title": "گمرک‌های برتر وارداتی",
   "type": "bar",
   "unit": "دلار",
   "categories": ["1400", "1401", "1402", "1403", "1404"],

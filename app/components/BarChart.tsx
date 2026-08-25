@@ -465,7 +465,7 @@ export default function BarChart({
       textStyle: {
         fontFamily: "Epsilon",
         color: "#374151",
-        fontSize: 16,
+          fontSize: "20px",
       },
 
       formatter: (params: any[]) => {
@@ -635,7 +635,7 @@ export default function BarChart({
       },
 
       axisLabel: {
-        fontSize: 16,
+          fontSize: "20px",
         fontFamily: "Epsilon",
         color: "#9CA3AF",
         formatter: (value: number) => {
@@ -924,7 +924,7 @@ export default function BarChart({
                 fontSize:
                   segmentHeight < 34
                     ? 10
-                    : 16,
+                    : '20px',
 
                 fontWeight: 600,
 
@@ -1075,7 +1075,7 @@ export default function BarChart({
                   <span
                     className="text-[#5F6368]"
                     style={{
-                      fontSize: "16px",
+          fontSize: "20px",
                       fontFamily: "Epsilon",
                       fontWeight: 500,
                     }}

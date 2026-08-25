@@ -4,8 +4,8 @@ import * as fontkit from "fontkit";
 
 export type DownloadFormat = "png" | "jpg" | "svg" | "pdf";
 
-const DOWNLOAD_WIDTH = 510;
-const DOWNLOAD_HEIGHT = 310;
+const DOWNLOAD_WIDTH = 380;
+const DOWNLOAD_HEIGHT = 230;
 const EXPORT_PIXEL_RATIO = 3;
 
 // IMPORTANT:
@@ -100,28 +100,155 @@ interface TextRun {
  * Splits text into separate runs so that numbers/symbols stay LTR
  * while Persian text receives RTL Arabic cursive shaping.
  */
+interface TextRun {
+  text: string;
+  isRTL: boolean;
+  isNumeric: boolean;
+}
+
 const tokenizeBidiString = (input: string): TextRun[] => {
+  // IMPORTANT:
+  // Numeric characters must be matched BEFORE the general Arabic/Persian range,
+  // because Persian digits and ٪ are inside the Arabic Unicode block.
   const tokens =
     input.match(
-      /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+|[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g
+      /[0-9\u0660-\u0669\u06F0-\u06F9.,٫٬%٪+\-–\/\\:]+|[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+|[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF0-9\u0660-\u0669\u06F0-\u06F9]+/g
     ) || [input];
 
-  const runs: TextRun[] = [];
+  return tokens.map((token) => {
+    const isNumeric =
+      /^[\s0-9\u0660-\u0669\u06F0-\u06F9.,٫٬%٪+\-–\/\\:]+$/.test(
+        token,
+      );
 
-  for (const token of tokens) {
-    const isRTL = isPersianArabicChar(token[0]);
-    // Numbers (e.g. '30', '۳۰', '1401', '30.5', etc.) must always remain LTR
-    const isNumeric = /^[\s0-9\u0660-\u0669\u06F0-\u06F9.,%+\-–\/\\:]+$/.test(
-      token
-    );
+    const hasPersian =
+      /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(
+        token,
+      );
 
-    runs.push({
+    return {
       text: token,
-      isRTL: isRTL && !isNumeric,
-    });
+      isNumeric,
+      isRTL: hasPersian && !isNumeric,
+    };
+  });
+};
+
+/**
+ * Get font size from a text element with proper fallback
+ */
+const getFontSizeFromElement = (textNode: SVGTextElement, fallback = 30): number => {
+  // Try attribute first
+  const attrSize = textNode.getAttribute("font-size");
+  if (attrSize) {
+    const parsed = parseFloat(attrSize);
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
   }
 
-  return runs;
+  // Try style property
+  const styleSize = textNode.style.fontSize;
+  if (styleSize) {
+    const parsed = parseFloat(styleSize);
+    if (!isNaN(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  // Try computed style
+  try {
+    const computed = window.getComputedStyle(textNode);
+    const computedSize = parseFloat(computed.fontSize);
+    if (!isNaN(computedSize) && computedSize > 0) {
+      return computedSize;
+    }
+  } catch (e) {
+    // Silently fallback
+  }
+
+  // Check parent element for font size
+  let parent = textNode.parentElement;
+  while (parent) {
+    const parentSize = parent.getAttribute("font-size");
+    if (parentSize) {
+      const parsed = parseFloat(parentSize);
+      if (!isNaN(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+    parent = parent.parentElement;
+  }
+
+  return fallback;
+};
+
+/**
+ * Get the dominant font size from an SVG
+ */
+const getDominantFontSize = (svgElement: SVGSVGElement, fallback = 30): number => {
+  const textElements = svgElement.querySelectorAll("text");
+  
+  if (textElements.length === 0) {
+    return fallback;
+  }
+
+  // Collect all font sizes
+  const sizes: number[] = [];
+  for (const textEl of textElements) {
+    const size = getFontSizeFromElement(textEl, fallback);
+    if (size > 0) {
+      sizes.push(size);
+    }
+  }
+
+  if (sizes.length === 0) {
+    return fallback;
+  }
+
+  // Use the most common font size, or the average
+  const frequency: Record<number, number> = {};
+  for (const size of sizes) {
+    frequency[size] = (frequency[size] || 0) + 1;
+  }
+
+  let maxCount = 0;
+  let dominantSize = sizes[0];
+  for (const [size, count] of Object.entries(frequency)) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominantSize = parseFloat(size);
+    }
+  }
+
+  return dominantSize;
+};
+
+/**
+ * Extract legend data from chart
+ */
+interface LegendItemData {
+  name: string;
+  color: string;
+}
+
+const extractLegendData = (chartElement: HTMLElement): LegendItemData[] => {
+  const legendContainer = chartElement.querySelector(
+    '[data-chart-custom-legend="true"]'
+  );
+  if (!legendContainer) return [];
+
+  const buttons = Array.from(legendContainer.querySelectorAll("button"));
+  return buttons.map((button) => {
+    const colorEl = button.querySelector("span[style*='background-color']");
+    const labelEl = button.querySelector("span:not([style*='background-color'])");
+
+    const color =
+      (colorEl as HTMLElement)?.style?.backgroundColor || "#2B9E65";
+    const name = labelEl?.textContent?.trim() || "";
+
+    return { name, color };
+  });
 };
 
 /**
@@ -137,10 +264,8 @@ const textElementToPaths = (
     return [];
   }
 
-  const fontSize =
-    getNumericAttribute(textNode, "font-size", 0) ||
-    parseFloat(window.getComputedStyle(textNode).fontSize || "16px") ||
-    16;
+  // Get the actual font size from the element
+  const fontSize = getFontSizeFromElement(textNode, 30);
 
   const x = getNumericAttribute(textNode, "x", 0);
   const y = getNumericAttribute(textNode, "y", 0);
@@ -266,10 +391,9 @@ const textElementToPaths = (
   return paths;
 };
 
-/* =========================================================
-   Convert all SVG text to font outlines
-========================================================= */
-
+/**
+ * Convert all SVG text to font outlines
+ */
 const convertTextElementsToPaths = async (svgClone: SVGSVGElement) => {
   const font = await loadFont();
 
@@ -472,30 +596,6 @@ const downloadAsJPG = async (
    SVG with Custom Legend
 ========================================================= */
 
-interface LegendItemData {
-  name: string;
-  color: string;
-}
-
-const extractLegendData = (chartElement: HTMLElement): LegendItemData[] => {
-  const legendContainer = chartElement.querySelector(
-    '[data-chart-custom-legend="true"]'
-  );
-  if (!legendContainer) return [];
-
-  const buttons = Array.from(legendContainer.querySelectorAll("button"));
-  return buttons.map((button) => {
-    const colorEl = button.querySelector("span[style*='background-color']");
-    const labelEl = button.querySelector("span:not([style*='background-color'])");
-
-    const color =
-      (colorEl as HTMLElement)?.style?.backgroundColor || "#2B9E65";
-    const name = labelEl?.textContent?.trim() || "";
-
-    return { name, color };
-  });
-};
-
 const downloadAsSVG = async (
   chartElement: HTMLElement,
   title: string,
@@ -541,21 +641,25 @@ const downloadAsSVG = async (
 
     // --- Add Custom Legend into SVG ---
     const legendItems = extractLegendData(chartElement);
-    const legendHeight = legendItems.length > 0 ? 44 : 0;
+    const legendHeight = legendItems.length > 0 ? 50 : 0;
     const totalHeight = vbHeight + legendHeight;
 
     if (legendItems.length > 0) {
+      // Get the dominant font size from the chart
+      const chartFontSize = getDominantFontSize(svgClone, 30);
+      
       const legendGroup = document.createElementNS(SVG_NS, "g");
       legendGroup.setAttribute("id", "custom-legend");
 
-      const itemGap = 20;
-      const markerWidth = 16;
-      const markerHeight = 10;
-      const approxCharWidth = 8.5;
+      // Scale everything based on font size
+      const itemGap = chartFontSize * 2.67;
+      const markerWidth = chartFontSize * 0.6;
+      const markerHeight = chartFontSize * 0.4;
+      const approxCharWidth = chartFontSize * 0.33;
 
       const itemsWithWidth = legendItems.map((item) => ({
         ...item,
-        width: markerWidth + 8 + item.name.length * approxCharWidth,
+        width: markerWidth + 10 + item.name.length * approxCharWidth,
       }));
 
       const totalLegendContentWidth =
@@ -563,8 +667,8 @@ const downloadAsSVG = async (
         (itemsWithWidth.length - 1) * itemGap;
 
       let currentX =
-        vbX + Math.max(10, (vbWidth - totalLegendContentWidth) / 2);
-      const legendY = vbY + vbHeight + 14;
+        vbX + Math.max(15, (vbWidth - totalLegendContentWidth) / 2);
+      const legendY = vbY + vbHeight + 16;
 
       for (const item of itemsWithWidth) {
         // Legend Color Box
@@ -573,18 +677,19 @@ const downloadAsSVG = async (
         rect.setAttribute("y", String(legendY));
         rect.setAttribute("width", String(markerWidth));
         rect.setAttribute("height", String(markerHeight));
-        rect.setAttribute("rx", "3");
-        rect.setAttribute("ry", "3");
+        rect.setAttribute("rx", "4");
+        rect.setAttribute("ry", "4");
         rect.setAttribute("fill", item.color);
         legendGroup.appendChild(rect);
 
-        // Legend Text
+        // Legend Text - using dynamic font size
         const text = document.createElementNS(SVG_NS, "text");
-        text.setAttribute("x", String(currentX + markerWidth + 6));
-        text.setAttribute("y", String(legendY + markerHeight - 1));
-        text.setAttribute("font-size", "14");
+        text.setAttribute("x", String(currentX + markerWidth + 8));
+        text.setAttribute("y", String(legendY + markerHeight));
+        text.setAttribute("font-size", String(chartFontSize));
         text.setAttribute("fill", "#5F6368");
         text.setAttribute("text-anchor", "start");
+        text.setAttribute("dominant-baseline", "central");
         text.textContent = item.name;
         legendGroup.appendChild(text);
 
@@ -607,16 +712,6 @@ const downloadAsSVG = async (
 
     // Convert all text including legend labels into glyph paths
     await convertTextElementsToPaths(svgClone);
-
-    // Background fill
-    const background = document.createElementNS(SVG_NS, "rect");
-    background.setAttribute("x", String(vbX));
-    background.setAttribute("y", String(vbY));
-    background.setAttribute("width", String(vbWidth));
-    background.setAttribute("height", String(totalHeight));
-    background.setAttribute("fill", "#ffffff");
-
-    svgClone.insertBefore(background, svgClone.firstChild);
 
     // Output & Download
     const serializer = new XMLSerializer();

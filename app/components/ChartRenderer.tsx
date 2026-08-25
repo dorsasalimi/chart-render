@@ -5,6 +5,7 @@ import type { ChartDefinition } from "../types/charts";
 import BarChart from "./BarChart";
 import TreemapChart from "./TreemapChart";
 import PieChart from "./PieChart";
+import PieChartMahsa from "./PieChartMahsa";
 import LineChartNoCurve from "./LineChartNoCurve";
 
 interface Props {
@@ -27,9 +28,7 @@ export default function ChartRenderer({
   if (!chart || typeof chart !== "object") {
     return (
       <div className="flex items-center justify-center h-[420px] bg-[#F7F9F8] rounded-lg">
-        <p className="text-sm text-[#6B7A73]">
-          Invalid chart configuration
-        </p>
+        <p className="text-sm text-[#6B7A73]">Invalid chart configuration</p>
       </div>
     );
   }
@@ -42,25 +41,18 @@ export default function ChartRenderer({
         return (
           <LineChartNoCurve
             chart={chart as any}
-            height={height}
-            showLegend={showLegend}
-            showLabels={showLabels}
+            dashedSeries={["تراز تجاری وزنی", "تراز تجاری"]}
+            height={310}
+            showLegend={true}
+            showLabels={true}
           />
         );
 
       case "bar":
-        return (
-          <BarChart
-            chart={chart as any}
-          />
-        );
+        return <BarChart chart={chart as any} />;
 
       case "treemap":
-        return (
-          <TreemapChart
-            chart={chart as any}
-          />
-        );
+        return <TreemapChart chart={chart as any} />;
 
       case "area":
         return (
@@ -72,11 +64,11 @@ export default function ChartRenderer({
         );
 
       case "pie":
-        return (
-          <PieChart
-            chart={chart as any}
-          />
-        );
+  if ((chart as any).variant === "mahsa") {
+    return <PieChartMahsa chart={chart as any} />;
+  }
+
+  return <PieChart chart={chart as any} />;
 
       default:
         return (

@@ -1,10 +1,10 @@
 // lib/chartTheme.ts
 
 export const CHART_COLORS = [
-  "#1c439c", // 1 - largest (blue)
+  "#1d3767", // 1 - largest (blue)
   "#688ec9", // 2 (light blue)
   "#b4c4da", // 3 (pale blue)
-  "#ef4136", // 4 (red)
+  "#a84b41", // 4 (red)
   "#ee7d7d", // 5 (light red)
   "#fac1c0", // 6 (pale red)
   "#52b787", // 7 (green)

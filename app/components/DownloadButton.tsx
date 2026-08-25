@@ -17,8 +17,8 @@ const formats: { value: DownloadFormat; label: string }[] = [
 ];
 
 // High-resolution download dimensions
-const DOWNLOAD_WIDTH = 510;
-const DOWNLOAD_HEIGHT = 310;
+const DOWNLOAD_WIDTH = 380;
+const DOWNLOAD_HEIGHT = 230;
 
 export default function DownloadButton({
   chartId,
