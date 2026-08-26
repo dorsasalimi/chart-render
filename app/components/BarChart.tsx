@@ -10,14 +10,92 @@ interface Props {
   height?: number;
   showLegend?: boolean;
 }
+const getNiceYAxisScale = (
+  maxValue: number,
+  targetSplitCount = 7,
+) => {
+  if (!Number.isFinite(maxValue) || maxValue <= 0) {
+    return {
+      max: 1,
+      interval: 1,
+    };
+  }
 
-const toPersianDigits = (value: string | number) => {
-  return String(value).replace(
-    /\d/g,
-    (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]
-  );
+  const roughInterval =
+    maxValue / targetSplitCount;
+
+  const magnitude =
+    Math.pow(
+      10,
+      Math.floor(
+        Math.log10(
+          roughInterval,
+        ),
+      ),
+    );
+
+  const normalized =
+    roughInterval / magnitude;
+
+  let niceNormalized: number;
+
+  if (normalized <= 1) {
+    niceNormalized = 1;
+  } else if (normalized <= 2) {
+    niceNormalized = 2;
+  } else if (normalized <= 2.5) {
+    niceNormalized = 2.5;
+  } else if (normalized <= 5) {
+    niceNormalized = 5;
+  } else {
+    niceNormalized = 10;
+  }
+
+  const interval =
+    niceNormalized *
+    magnitude;
+
+  const max =
+    Math.ceil(
+      maxValue / interval,
+    ) * interval;
+
+  return {
+    max,
+    interval,
+  };
+};
+const getContrastTextColor = (hexColor: string) => {
+  const hex = hexColor.replace("#", "");
+
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Relative luminance approximation
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return luminance < 0.55 ? "#FFFFFF" : "#2F3640";
 };
 
+const toPersianDigits = (value: string | number) => {
+  return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+};
+const fixMirroredChars = (text: string) => {
+  return text
+    .replace(/\(/g, "___OPEN_PAREN___")
+    .replace(/\)/g, "(")
+    .replace(/___OPEN_PAREN___/g, ")");
+};
+
+const toPersianLabel = (value: string | number) => {
+  const withDigits = String(value).replace(
+    /\d/g,
+    (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)],
+  );
+
+  return fixMirroredChars(withDigits);
+};
 const formatValue = (value: number) => {
   // For display inside the chart bars, just show the number without unit
   if (value >= 1e12) {
@@ -65,9 +143,7 @@ const getAxisLabel = (value: number) => {
     const formatted = value / 1e9;
 
     return `${toPersianDigits(
-      Number.isInteger(formatted)
-        ? formatted
-        : formatted.toFixed(1)
+      Number.isInteger(formatted) ? formatted : formatted.toFixed(1),
     )} میلیارد`;
   }
 
@@ -75,9 +151,7 @@ const getAxisLabel = (value: number) => {
     const formatted = value / 1e6;
 
     return `${toPersianDigits(
-      Number.isInteger(formatted)
-        ? formatted
-        : formatted.toFixed(1)
+      Number.isInteger(formatted) ? formatted : formatted.toFixed(1),
     )} میلیون`;
   }
 
@@ -85,32 +159,20 @@ const getAxisLabel = (value: number) => {
     const formatted = value / 1e3;
 
     return `${toPersianDigits(
-      Number.isInteger(formatted)
-        ? formatted
-        : formatted.toFixed(1)
+      Number.isInteger(formatted) ? formatted : formatted.toFixed(1),
     )} هزار`;
   }
 
   return toPersianDigits(value);
 };
 
-const needsPercentageConversion = (
-  chart: CategoryChart
-): boolean => {
+const needsPercentageConversion = (chart: CategoryChart): boolean => {
   if (!chart.series?.length) return false;
 
-  for (
-    let seriesIndex = 0;
-    seriesIndex < chart.series.length;
-    seriesIndex++
-  ) {
+  for (let seriesIndex = 0; seriesIndex < chart.series.length; seriesIndex++) {
     const data = chart.series[seriesIndex].data || [];
 
-    for (
-      let dataIndex = 0;
-      dataIndex < data.length;
-      dataIndex++
-    ) {
+    for (let dataIndex = 0; dataIndex < data.length; dataIndex++) {
       if (Number(data[dataIndex]) > 100) {
         return false;
       }
@@ -129,11 +191,7 @@ const needsPercentageConversion = (
       seriesIndex < chart.series.length;
       seriesIndex++
     ) {
-      total += Number(
-        chart.series[seriesIndex]?.data?.[
-          categoryIndex
-        ] ?? 0
-      );
+      total += Number(chart.series[seriesIndex]?.data?.[categoryIndex] ?? 0);
     }
 
     if (Math.abs(total - 100) > 5) {
@@ -150,7 +208,7 @@ const createRibbonPath = (
   bottom1: number,
   x2: number,
   top2: number,
-  bottom2: number
+  bottom2: number,
 ) => {
   const width = x2 - x1;
   const curve = width * 0.5;
@@ -176,15 +234,20 @@ export default function BarChart({
   if (!chart.series?.length || !chart.categories?.length) {
     return (
       <div className="flex h-[420px] items-center justify-center rounded-lg bg-[#F7F9F8]">
-        <p className="text-sm text-[#6B7A73]">
-          No data available
-        </p>
+        <p className="text-sm text-[#6B7A73]">No data available</p>
       </div>
     );
   }
+  const formatNumberWithoutUnit = (value: number) => {
+    const formatted = new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(value);
 
+    return formatted.replace(/[^0-9.\-\u0660-\u0669]/g, "").trim();
+  };
   const [hiddenSeries, setHiddenSeries] = useState<Set<number>>(
-    () => new Set()
+    () => new Set(),
   );
 
   const categories = chart.categories;
@@ -197,7 +260,7 @@ export default function BarChart({
       getRankedColorsForChart({
         series: chart.series,
       }),
-    [chart.series]
+    [chart.series],
   );
 
   const isPercentage = needsPercentageConversion(chart);
@@ -206,11 +269,9 @@ export default function BarChart({
     () =>
       chart.series.map((series) => ({
         ...series,
-        data: series.data.map((value) =>
-          Number(value ?? 0)
-        ),
+        data: series.data.map((value) => Number(value ?? 0)),
       })),
-    [chart.series]
+    [chart.series],
   );
 
   // ============================================================
@@ -223,14 +284,9 @@ export default function BarChart({
         return processedData
           .map((series, seriesIndex) => ({
             seriesIndex,
-            value: Number(
-              series.data[categoryIndex] ?? 0
-            ),
+            value: Number(series.data[categoryIndex] ?? 0),
           }))
-          .filter(
-            (item) =>
-              !hiddenSeries.has(item.seriesIndex)
-          )
+          .filter((item) => !hiddenSeries.has(item.seriesIndex))
           .sort((a, b) => {
             if (b.value !== a.value) {
               return b.value - a.value;
@@ -238,37 +294,22 @@ export default function BarChart({
             return a.seriesIndex - b.seriesIndex;
           });
       }),
-    [
-      categories,
-      processedData,
-      hiddenSeries,
-    ]
+    [categories, processedData, hiddenSeries],
   );
 
   const getSeriesRankInCategory = (
     seriesIndex: number,
-    categoryIndex: number
+    categoryIndex: number,
   ) => {
-    return sortedSeriesByCategory[
-      categoryIndex
-    ].findIndex(
-      (item) =>
-        item.seriesIndex === seriesIndex
+    return sortedSeriesByCategory[categoryIndex].findIndex(
+      (item) => item.seriesIndex === seriesIndex,
     );
   };
 
-  const getSegmentBounds = (
-    seriesIndex: number,
-    categoryIndex: number
-  ) => {
-    const sortedItems =
-      sortedSeriesByCategory[categoryIndex] ?? [];
+  const getSegmentBounds = (seriesIndex: number, categoryIndex: number) => {
+    const sortedItems = sortedSeriesByCategory[categoryIndex] ?? [];
 
-    const currentRank =
-      getSeriesRankInCategory(
-        seriesIndex,
-        categoryIndex
-      );
+    const currentRank = getSeriesRankInCategory(seriesIndex, categoryIndex);
 
     if (currentRank === -1) {
       return {
@@ -281,18 +322,12 @@ export default function BarChart({
     }
 
     const value = Number(
-      processedData[seriesIndex]?.data?.[
-        categoryIndex
-      ] ?? 0
+      processedData[seriesIndex]?.data?.[categoryIndex] ?? 0,
     );
 
     let bottom = 0;
 
-    for (
-      let rank = sortedItems.length - 1;
-      rank > currentRank;
-      rank--
-    ) {
+    for (let rank = sortedItems.length - 1; rank > currentRank; rank--) {
       bottom += sortedItems[rank].value;
     }
 
@@ -308,72 +343,61 @@ export default function BarChart({
   const categoryTotals = useMemo(
     () =>
       categories.map((_, categoryIndex) => {
-        return processedData.reduce(
-          (total, series, seriesIndex) => {
-            if (hiddenSeries.has(seriesIndex)) {
-              return total;
-            }
+        return processedData.reduce((total, series, seriesIndex) => {
+          if (hiddenSeries.has(seriesIndex)) {
+            return total;
+          }
 
-            return (
-              total +
-              Number(
-                series.data[categoryIndex] ?? 0
-              )
-            );
-          },
-          0
-        );
+          return total + Number(series.data[categoryIndex] ?? 0);
+        }, 0);
       }),
-    [
-      categories,
-      processedData,
-      hiddenSeries,
-    ]
+    [categories, processedData, hiddenSeries],
   );
 
-  const maxTotal = Math.max(
+const maxTotal =
+  Math.max(
     ...categoryTotals,
-    1
+    1,
   );
 
-  const yMax = isPercentage
-    ? 100
-    : Math.ceil(maxTotal * 1.1);
+const yAxisScale =
+  isPercentage
+    ? {
+        max: 100,
+        interval: 20,
+      }
+    : getNiceYAxisScale(
+        maxTotal,
+        7,
+      );
+
+const yMax =
+  yAxisScale.max;
+
+const yInterval =
+  yAxisScale.interval;
 
   const barData = useMemo(() => {
     const data: [number, number][] = [];
 
-    categories.forEach(
-      (_, categoryIndex) => {
-        processedData.forEach(
-          (_, seriesIndex) => {
-            if (hiddenSeries.has(seriesIndex)) {
-              return;
-            }
+    categories.forEach((_, categoryIndex) => {
+      processedData.forEach((_, seriesIndex) => {
+        if (hiddenSeries.has(seriesIndex)) {
+          return;
+        }
 
-            const value = Number(
-              processedData[
-                seriesIndex
-              ]?.data?.[categoryIndex] ?? 0
-            );
-
-            if (value > 0) {
-              data.push([
-                categoryIndex,
-                seriesIndex,
-              ]);
-            }
-          }
+        const value = Number(
+          processedData[seriesIndex]?.data?.[categoryIndex] ?? 0,
         );
-      }
-    );
+
+        if (value > 0) {
+          data.push([categoryIndex, seriesIndex]);
+        }
+      });
+    });
 
     return data;
-  }, [
-    categories,
-    processedData,
-    hiddenSeries,
-  ]);
+  }, [categories, processedData, hiddenSeries]);
 
   const connectorData = useMemo(() => {
     const data: [number, number][] = [];
@@ -393,35 +417,21 @@ export default function BarChart({
         }
 
         const currentValue = Number(
-          processedData[
-            seriesIndex
-          ]?.data?.[categoryIndex] ?? 0
+          processedData[seriesIndex]?.data?.[categoryIndex] ?? 0,
         );
 
         const nextValue = Number(
-          processedData[
-            seriesIndex
-          ]?.data?.[categoryIndex + 1] ?? 0
+          processedData[seriesIndex]?.data?.[categoryIndex + 1] ?? 0,
         );
 
-        if (
-          currentValue > 0 &&
-          nextValue > 0
-        ) {
-          data.push([
-            categoryIndex,
-            seriesIndex,
-          ]);
+        if (currentValue > 0 && nextValue > 0) {
+          data.push([categoryIndex, seriesIndex]);
         }
       }
     }
 
     return data;
-  }, [
-    categories,
-    processedData,
-    hiddenSeries,
-  ]);
+  }, [categories, processedData, hiddenSeries]);
 
   const toggleSeries = (seriesIndex: number) => {
     setHiddenSeries((previous) => {
@@ -465,24 +475,19 @@ export default function BarChart({
       textStyle: {
         fontFamily: "Epsilon",
         color: "#374151",
-          fontSize: "20px",
+        fontSize: "40px",
       },
 
       formatter: (params: any[]) => {
         if (!params?.length) return "";
 
-        const categoryIndex =
-          params[0]?.dataIndex;
+        const categoryIndex = params[0]?.dataIndex;
 
-        if (
-          categoryIndex === undefined ||
-          categoryIndex === null
-        ) {
+        if (categoryIndex === undefined || categoryIndex === null) {
           return "";
         }
 
-        const categoryName =
-          categories[categoryIndex] ?? "";
+        const categoryName = categories[categoryIndex] ?? "";
 
         let html = `
           <div
@@ -493,8 +498,7 @@ export default function BarChart({
               border-bottom:1px solid #F0F0F0;
             "
           >
-            ${toPersianDigits(categoryName)}
-          </div>
+${toPersianLabel(categoryName)}          </div>
         `;
 
         const items = chart.series
@@ -502,37 +506,21 @@ export default function BarChart({
             name: series.name,
 
             value: Number(
-              processedData[
-                seriesIndex
-              ]?.data?.[
-                categoryIndex
-              ] ?? 0
+              processedData[seriesIndex]?.data?.[categoryIndex] ?? 0,
             ),
 
-            color:
-              colors[
-                seriesIndex % colors.length
-              ],
+            color: colors[seriesIndex % colors.length],
 
             seriesIndex,
           }))
           .filter(
-            (item) =>
-              item.value > 0 &&
-              !hiddenSeries.has(
-                item.seriesIndex
-              )
+            (item) => item.value > 0 && !hiddenSeries.has(item.seriesIndex),
           )
-          .sort(
-            (a, b) =>
-              b.value - a.value
-          );
+          .sort((a, b) => b.value - a.value);
 
         items.forEach((item) => {
           const valueText = isPercentage
-            ? `${toPersianDigits(
-                item.value.toFixed(1)
-              )}٪`
+            ? `${toPersianDigits(item.value.toFixed(1))}٪`
             : formatTooltipValue(item.value);
 
           html += `
@@ -580,83 +568,146 @@ export default function BarChart({
     legend: {
       show: false,
     },
-
+    // =========================================================
+    // GRID — same visual settings as LineChartNoCurve
+    // =========================================================
     grid: {
-      left: 56,
-      right: 24,
-      top: 24,
-      bottom: 34,
+      left: 10,
+      right: 40,
+      top: 70,
+      bottom: 40,
       containLabel: true,
     },
 
+    // =========================================================
+    // X AXIS
+    // =========================================================
     xAxis: {
       type: "category",
 
-      data: categories.map(
-        toPersianDigits
-      ),
-
+      data: categories.map(toPersianLabel),
+      // Keep TRUE for the ribbon/bar chart.
+      // false works for lines but can clip the first/last bars.
       boundaryGap: true,
 
       axisLine: {
-        lineStyle: {
-          color: "#E5E7EB",
-        },
+        show: false,
+        onZero: false,
       },
 
       axisTick: {
-        show: false,
-      },
-
-      axisLabel: {
-        fontSize: 16,
-        fontFamily: "Epsilon",
-        color: "#6B7280",
-        margin: 14,
-        rotate: categories && categories.length > 8 ? 30 : 0,
-      },
-
-      splitLine: {
-        show: false,
-      },
-    },
-
-    yAxis: {
-      type: "value",
-      min: 0,
-      max: yMax,
-
-      axisLine: {
-        show: false,
-      },
-
-      axisTick: {
-        show: false,
-      },
-
-      axisLabel: {
-          fontSize: "20px",
-        fontFamily: "Epsilon",
-        color: "#9CA3AF",
-        formatter: (value: number) => {
-          if (isPercentage) {
-            return `${toPersianDigits(
-              value
-            )}٪`;
-          }
-
-          return getAxisLabel(value);
-        },
-      },
-
-      splitLine: {
         show: true,
+        alignWithLabel: true,
+        inside: true,
+        length: 10,
+
         lineStyle: {
-          color: "#F0F1F3",
-          type: "solid",
+          color: "#b8b9b9",
+          width: 3,
         },
       },
+
+      axisLabel: {
+        show: true,
+
+        fontSize: 40,
+        fontFamily: "Epsilon",
+        color: "#808285",
+
+        margin: 30,
+
+        rotate: categories.length > 8 ? 30 : 0,
+      },
+
+      splitLine: {
+        show: false,
+      },
     },
+
+    // =========================================================
+    // Y AXIS
+    // =========================================================
+    yAxis: [
+      // Main Y axis:
+      // labels + horizontal dashed grid
+    {
+  type: "value",
+
+  min: 0,
+  max: yMax,
+  interval: yInterval,
+
+        axisLine: {
+          show: false,
+        },
+
+        axisTick: {
+          show: false,
+        },
+
+        splitLine: {
+          show: true,
+
+          lineStyle: {
+            color: "#b8b9b9",
+            type: [8, 8],
+          },
+        },
+
+        axisLabel: {
+          show: true,
+
+          fontSize: 40,
+          fontFamily: "Epsilon",
+          color: "#808285",
+
+          margin: 50,
+
+          formatter: (value: number) => {
+            if (isPercentage) {
+              return `${toPersianDigits(value)}٪`;
+            }
+
+            const formatted = formatNumberWithoutUnit(value);
+
+            return toPersianDigits(formatted);
+          },
+        },
+      },
+
+      // Second Y axis:
+      // only used to draw the left vertical dashed line
+{
+  type: "value",
+
+  position: "left",
+
+  min: 0,
+  max: yMax,
+  interval: yInterval,
+
+        axisLine: {
+          show: true,
+
+          lineStyle: {
+            color: "#b8b9b9",
+            type: [8, 8],
+          },
+        },
+
+        axisTick: {
+          show: false,
+        },
+
+        axisLabel: {
+          show: false,
+        },
+
+        splitLine: {
+          show: false,
+        },
+      },
+    ],
 
     series: [
       // 1. SMOOTH CONNECTING RIBBONS
@@ -673,113 +724,61 @@ export default function BarChart({
           show: false,
         },
 
-        renderItem: (
-          params: any,
-          api: any
-        ) => {
-          const categoryIndex = Number(
-            api.value(0)
-          );
+        renderItem: (params: any, api: any) => {
+          const categoryIndex = Number(api.value(0));
 
-          const seriesIndex = Number(
-            api.value(1)
-          );
+          const seriesIndex = Number(api.value(1));
 
-          const nextCategoryIndex =
-            categoryIndex + 1;
+          const nextCategoryIndex = categoryIndex + 1;
 
-          const source =
-            getSegmentBounds(
-              seriesIndex,
-              categoryIndex
-            );
+          const source = getSegmentBounds(seriesIndex, categoryIndex);
 
-          const target =
-            getSegmentBounds(
-              seriesIndex,
-              nextCategoryIndex
-            );
+          const target = getSegmentBounds(seriesIndex, nextCategoryIndex);
 
-          if (
-            source.value <= 0 ||
-            target.value <= 0
-          ) {
+          if (source.value <= 0 || target.value <= 0) {
             return null;
           }
 
-          const sourceCenterX =
-            api.coord([
-              categoryIndex,
-              0,
-            ])[0];
+         const sourceCenterX = api.coord([categoryIndex, 0])[0];
 
-          const targetCenterX =
-            api.coord([
-              nextCategoryIndex,
-              0,
-            ])[0];
+const targetCenterX = api.coord([nextCategoryIndex, 0])[0];
 
-          const categoryWidth =
-            Math.abs(
-              api.size([1, 0])[0]
-            );
+const categoryWidth = Math.abs(api.size([1, 0])[0]);
 
-          const barWidth =
-            categoryWidth * 0.52;
+const barWidth = categoryWidth * 0.52;
 
-          const x1 =
-            sourceCenterX +
-            barWidth / 2;
+// Both bars are aligned to the left edge of their category slot
+const sourceBarX =
+  sourceCenterX - categoryWidth / 2;
 
-          const x2 =
-            targetCenterX -
-            barWidth / 2;
+const targetBarX =
+  targetCenterX - categoryWidth / 2;
 
-          const top1 =
-            api.coord([
-              categoryIndex,
-              source.top,
-            ])[1];
+// Ribbon starts from right edge of source bar
+const x1 = sourceBarX + barWidth;
 
-          const bottom1 =
-            api.coord([
-              categoryIndex,
-              source.bottom,
-            ])[1];
+// Ribbon ends at left edge of target bar
+const x2 = targetBarX;
 
-          const top2 =
-            api.coord([
-              nextCategoryIndex,
-              target.top,
-            ])[1];
+          const top1 = api.coord([categoryIndex, source.top])[1];
 
-          const bottom2 =
-            api.coord([
-              nextCategoryIndex,
-              target.bottom,
-            ])[1];
+          const bottom1 = api.coord([categoryIndex, source.bottom])[1];
+
+          const top2 = api.coord([nextCategoryIndex, target.top])[1];
+
+          const bottom2 = api.coord([nextCategoryIndex, target.bottom])[1];
 
           return {
             type: "path",
 
             shape: {
-              d: createRibbonPath(
-                x1,
-                top1,
-                bottom1,
-                x2,
-                top2,
-                bottom2
-              ),
+              d: createRibbonPath(x1, top1, bottom1, x2, top2, bottom2),
             },
 
             style: {
-              fill:
-                colors[
-                  seriesIndex % colors.length
-                ],
+              fill: colors[seriesIndex % colors.length],
 
-              opacity: 0.5,
+              opacity: 0.7,
             },
           };
         },
@@ -794,86 +793,42 @@ export default function BarChart({
 
         data: barData,
 
-        renderItem: (
-          params: any,
-          api: any
-        ) => {
-          const categoryIndex = Number(
-            api.value(0)
-          );
+        renderItem: (params: any, api: any) => {
+          const categoryIndex = Number(api.value(0));
 
-          const seriesIndex = Number(
-            api.value(1)
-          );
+          const seriesIndex = Number(api.value(1));
 
-          const bounds =
-            getSegmentBounds(
-              seriesIndex,
-              categoryIndex
-            );
+          const bounds = getSegmentBounds(seriesIndex, categoryIndex);
 
           if (bounds.value <= 0) {
             return null;
           }
 
-          const centerX =
-            api.coord([
-              categoryIndex,
-              0,
-            ])[0];
+          const centerX = api.coord([categoryIndex, 0])[0];
 
-          const categoryWidth =
-            Math.abs(
-              api.size([1, 0])[0]
-            );
+          const categoryWidth = Math.abs(api.size([1, 0])[0]);
 
-          const barWidth =
-            categoryWidth * 0.52;
+          const barWidth = categoryWidth * 0.52;
 
-          const topY =
-            api.coord([
-              categoryIndex,
-              bounds.top,
-            ])[1];
+          const topY = api.coord([categoryIndex, bounds.top])[1];
 
-          const bottomY =
-            api.coord([
-              categoryIndex,
-              bounds.bottom,
-            ])[1];
+          const bottomY = api.coord([categoryIndex, bounds.bottom])[1];
 
-          const x =
-            centerX -
-            barWidth / 2;
+const x = centerX - categoryWidth / 2;
+          const segmentHeight = Math.max(0, bottomY - topY);
 
-          const segmentHeight =
-            Math.max(
-              0,
-              bottomY - topY
-            );
+          const isTopSegment = bounds.rank === 0;
 
-          const isTopSegment =
-            bounds.rank === 0;
+          const isBottomSegment = bounds.rank === bounds.totalSegments - 1;
 
-          const isBottomSegment =
-            bounds.rank ===
-            bounds.totalSegments - 1;
+          const radiusTop = isTopSegment ? 5 : 0;
 
-          const radiusTop =
-            isTopSegment ? 5 : 0;
+          const radiusBottom = isBottomSegment ? 5 : 0;
 
-          const radiusBottom =
-            isBottomSegment ? 5 : 0;
-
-          const color =
-            colors[
-              seriesIndex % colors.length
-            ];
-
+          const color = colors[seriesIndex % colors.length];
+          const labelColor = getContrastTextColor(color);
           const valueText = isPercentage
-            ? `${toPersianDigits(
-                bounds.value.toFixed(0)
-              )}٪`
+            ? `${toPersianDigits(bounds.value.toFixed(0))}٪`
             : formatValue(bounds.value);
 
           const children: any[] = [
@@ -886,12 +841,7 @@ export default function BarChart({
                 width: barWidth,
                 height: segmentHeight,
 
-                r: [
-                  radiusTop,
-                  radiusTop,
-                  radiusBottom,
-                  radiusBottom,
-                ],
+                r: [radiusTop, radiusTop, radiusBottom, radiusBottom],
               },
 
               style: {
@@ -903,40 +853,30 @@ export default function BarChart({
           ];
 
           if (segmentHeight >= 24) {
+            const labelX = x + barWidth / 2;
+            const labelY = (topY + bottomY) / 2;
+
             children.push({
               type: "text",
 
               style: {
-                x:
-                  x +
-                  barWidth / 2,
-
-                y:
-                  topY +
-                  segmentHeight / 2,
+                x: labelX,
+                y: labelY,
 
                 text: valueText,
-
-                fill: "#2F3640",
+                fill: labelColor,
 
                 fontFamily: "Epsilon",
 
-                fontSize:
-                  segmentHeight < 34
-                    ? 10
-                    : '20px',
+                fontSize: segmentHeight < 50 ? 35 : 40,
 
-                fontWeight: 600,
+                fontWeight: 500,
 
-                textAlign: "center",
-
-                textVerticalAlign:
-                  "middle",
+                align: "center",
+                verticalAlign: "middle",
 
                 overflow: "truncate",
-
-                width:
-                  barWidth - 12,
+                width: barWidth - 12,
               },
 
               silent: true,
@@ -951,143 +891,212 @@ export default function BarChart({
       },
 
       // 3. INVISIBLE SERIES
-      ...processedData.map(
-        (series, seriesIndex) => ({
-          name: series.name,
-          type: "bar",
+      ...processedData.map((series, seriesIndex) => ({
+        name: series.name,
+        type: "bar",
 
-          stack: "__tooltip__",
+        stack: "__tooltip__",
 
-          data: hiddenSeries.has(seriesIndex)
-            ? series.data.map(() => 0)
-            : series.data,
+        data: hiddenSeries.has(seriesIndex)
+          ? series.data.map(() => 0)
+          : series.data,
 
-          barWidth: 0,
+        barWidth: 0,
 
-          itemStyle: {
-            opacity: 0,
-          },
+        itemStyle: {
+          opacity: 0,
+        },
 
-          emphasis: {
-            disabled: true,
-          },
+        emphasis: {
+          disabled: true,
+        },
 
-          silent: true,
+        silent: true,
 
-          z: 0,
-        })
-      ),
+        z: 0,
+      })),
     ],
-  };
-
-  return (
-    <div className="w-full">
-      <div
+  };return (
+  <div
+    style={{
+      width: "100%",
+      aspectRatio: "600 / 230",
+      display: "flex",
+      alignItems: "stretch",
+    }}
+  >
+    {/* =====================================================
+        CHART
+    ===================================================== */}
+    <div
+      style={{
+        width: "63.333333%",
+        height: "100%",
+        minWidth: 0,
+        flexShrink: 0,
+      }}
+    >
+      <ReactECharts
+        option={option}
+        notMerge={true}
+        lazyUpdate={true}
         style={{
           width: "100%",
-          aspectRatio: "510 / 310",
-          minHeight: `${height}px`,
+          height: "100%",
+        }}
+        opts={{
+          renderer: "svg",
+        }}
+        onChartReady={(instance) => {
+          const dom = instance.getDom();
+
+          dom.setAttribute(
+            "data-echarts-instance",
+            "true",
+          );
+        }}
+      />
+    </div>
+
+    {/* =====================================================
+        LEGEND
+    ===================================================== */}
+    {showLegend && (
+      <div
+        data-chart-custom-legend="true"
+        dir="rtl"
+        style={{
+          width: "36.666667%",
+          height: "100%",
+          boxSizing: "border-box",
+
+          display: "flex",
+          flexDirection: "column",
+          flexWrap: "wrap",
+
+          alignContent: "flex-start",
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
+
+          columnGap: "18px",
+          rowGap: "6px",
+
+          paddingTop: "10px",
+          paddingRight: "12px",
+          paddingBottom: "10px",
+          paddingLeft: "4px",
+
+          overflow: "hidden",
         }}
       >
-        <ReactECharts
-          option={option}
-          notMerge={true}
-          lazyUpdate={true}
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-          opts={{
-            renderer: "svg",
-          }}
-          onChartReady={(instance) => {
-            const dom = instance.getDom();
-
-            dom.setAttribute(
-              "data-echarts-instance",
-              "true"
-            );
-          }}
-        />
-      </div>
-
-      {showLegend && (
-        <div
-          data-chart-custom-legend="true"
-          className="
-            mt-3
-            flex
-            flex-wrap
-            justify-center
-            gap-x-5
-            gap-y-2
-          "
-          dir="rtl"
-        >
-          {chart.series.map(
-            (series, seriesIndex) => {
-              const isHidden =
-                hiddenSeries.has(seriesIndex);
-
-              const color =
-                colors[
-                  seriesIndex % colors.length
-                ];
-
-              return (
-                <button
-                  key={`${series.name}-${seriesIndex}`}
-                  type="button"
-                  onClick={() =>
-                    toggleSeries(seriesIndex)
-                  }
-                  className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    text-xs
-                    transition-opacity
-                    duration-200
-                  "
-                  style={{
-                    opacity:
-                      isHidden ? 0.4 : 1,
-                  }}
-                  aria-pressed={!isHidden}
-                  title={
-                    isHidden
-                      ? `نمایش ${series.name}`
-                      : `مخفی کردن ${series.name}`
-                  }
-                >
-                  <span
-                    className="
-                      h-2.5
-                      w-4
-                      shrink-0
-                      rounded-[3px]
-                    "
-                    style={{
-                      backgroundColor: color,
-                    }}
-                  />
-
-                  <span
-                    className="text-[#5F6368]"
-                    style={{
-          fontSize: "20px",
-                      fontFamily: "Epsilon",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {toPersianDigits(series.name)}
-                  </span>
-                </button>
+        {chart.series.map(
+          (
+            series,
+            seriesIndex,
+          ) => {
+            const isHidden =
+              hiddenSeries.has(
+                seriesIndex,
               );
-            }
-          )}
-        </div>
-      )}
-    </div>
-  );
+
+            const color =
+              colors[
+                seriesIndex %
+                  colors.length
+              ];
+
+            return (
+              <button
+                key={`${series.name}-${seriesIndex}`}
+                type="button"
+                onClick={() =>
+                  toggleSeries(
+                    seriesIndex,
+                  )
+                }
+                aria-pressed={
+                  !isHidden
+                }
+                title={
+                  isHidden
+                    ? `نمایش ${series.name}`
+                    : `مخفی کردن ${series.name}`
+                }
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+
+                  gap: "8px",
+
+                  flexShrink: 0,
+
+                  maxWidth: "100%",
+
+                  margin: 0,
+                  padding: 0,
+
+                  border: "none",
+                  background: "none",
+
+                  opacity:
+                    isHidden
+                      ? 0.4
+                      : 1,
+
+                  cursor: "pointer",
+
+                  transition:
+                    "opacity 0.2s",
+
+                  textAlign: "right",
+                }}
+              >
+                {/* COLOR */}
+                <span
+                  style={{
+                    width: "16px",
+                    height: "10px",
+
+                    flexShrink: 0,
+
+                    borderRadius:
+                      "3px",
+
+                    backgroundColor:
+                      color,
+                  }}
+                />
+
+                {/* LABEL */}
+                <span
+                  style={{
+                    fontSize: "40px",
+                    fontFamily:
+                      "Epsilon",
+                    fontWeight: 500,
+
+                    lineHeight: 1.15,
+
+                    color:
+                      "#5F6368",
+
+                    whiteSpace:
+                      "nowrap",
+                  }}
+                >
+                  {toPersianLabel(
+                    series.name,
+                  )}
+                </span>
+              </button>
+            );
+          },
+        )}
+      </div>
+    )}
+  </div>
+);
 }
