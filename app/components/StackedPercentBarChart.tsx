@@ -11,6 +11,7 @@ interface Props {
 }
 
 const SERIES_COLORS = ["#2f4b9e", "#8ea0d8", "#a4cdb6", "#fba919"];
+const LABEL_COLORS = ["#2f4b9e", "#4c5d9e", "#4c7a56", "#a56a10"];
 
 const toPersianDigits = (value: string | number) => {
   return String(value).replace(
@@ -193,16 +194,44 @@ export default function StackedPercentBarChart({
 
     barCategoryGap: "22%",
 
-    series: sortedSeries.map((series, seriesIndex) => ({
-      name: series.name,
-      type: "bar",
-      stack: "total",
-      data: series.data,
-      itemStyle: {
-        color: colors[seriesIndex],
-      },
-      label: { show: false },
-    })),
+    series: sortedSeries.map((series, seriesIndex) => {
+      const isExport = series.name === "صادرات";
+      const isImport = series.name === "واردات";
+      const categoryCount = categories.length;
+
+      return {
+        name: series.name,
+        type: "bar",
+        stack: "total",
+        data: series.data.map((value, dataIndex) => {
+          const show = isExport
+            ? dataIndex < 7
+            : isImport
+            ? dataIndex >= categoryCount - 8
+            : false;
+
+          return {
+            value,
+            label: { show },
+          };
+        }),
+        itemStyle: {
+          color: colors[seriesIndex],
+        },
+        label: {
+          show: false,
+          position: "inside",
+          color: LABEL_COLORS[seriesIndex % LABEL_COLORS.length],
+          textBorderColor: "#fff",
+          textBorderWidth: 2,
+          fontFamily: "Epsilon",
+          fontSize: 12,
+          fontWeight: 600,
+          formatter: (params: any) =>
+            `${toPersianDigits(Number(params.value).toFixed(1))}٪`,
+        },
+      };
+    }),
   };
 
   return (
