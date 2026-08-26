@@ -52,15 +52,38 @@ export default function StackedPercentBarChart({
     );
   }
 
-  const categories = chart.categories;
   const rawUnit = chart.rawUnit ?? chart.unit ?? "";
+
+  const sortSeries = chart.series.find((s) => s.name === "صادرات") ?? chart.series[0];
+
+  const sortedIndices = useMemo(
+    () =>
+      chart.categories
+        .map((_, index) => index)
+        .sort((a, b) => Number(sortSeries.data[b] ?? 0) - Number(sortSeries.data[a] ?? 0)),
+    [chart.categories, sortSeries]
+  );
+
+  const categories = sortedIndices.map((index) => chart.categories[index]);
+
+  const sortedSeries = useMemo(
+    () =>
+      chart.series.map((series) => ({
+        ...series,
+        data: sortedIndices.map((index) => series.data[index]),
+        rawData: series.rawData
+          ? sortedIndices.map((index) => series.rawData![index])
+          : undefined,
+      })),
+    [chart.series, sortedIndices]
+  );
 
   const colors = useMemo(
     () =>
-      chart.series.map(
+      sortedSeries.map(
         (_, index) => SERIES_COLORS[index % SERIES_COLORS.length]
       ),
-    [chart.series]
+    [sortedSeries]
   );
 
   const option = {
@@ -100,10 +123,10 @@ export default function StackedPercentBarChart({
         `;
 
         params.forEach((p) => {
-          const seriesIndex = chart.series.findIndex(
+          const seriesIndex = sortedSeries.findIndex(
             (s) => s.name === p.seriesName
           );
-          const rawValue = chart.series[seriesIndex]?.rawData?.[
+          const rawValue = sortedSeries[seriesIndex]?.rawData?.[
             categoryIndex
           ];
 
@@ -157,6 +180,7 @@ export default function StackedPercentBarChart({
 
     yAxis: {
       type: "category",
+      inverse: true,
       data: categories.map(toPersianDigits),
       axisLine: { lineStyle: { color: "#E5E7EB" } },
       axisTick: { show: false },
@@ -169,7 +193,7 @@ export default function StackedPercentBarChart({
 
     barCategoryGap: "22%",
 
-    series: chart.series.map((series, seriesIndex) => ({
+    series: sortedSeries.map((series, seriesIndex) => ({
       name: series.name,
       type: "bar",
       stack: "total",
