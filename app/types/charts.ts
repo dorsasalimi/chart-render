@@ -10,13 +10,16 @@ export type ChartType =
 export interface SeriesData {
   name: string;
   data: number[];
+  rawData?: number[];
 }
 
 export interface CategoryChart {
   id: string;
   title: string;
   type: "line" | "bar" | "area";
+  variant?: string;
   unit?: string;
+  rawUnit?: string;
   categories: string[];
   series: SeriesData[];
 }
