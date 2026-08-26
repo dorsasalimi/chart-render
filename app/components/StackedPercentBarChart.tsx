@@ -11,7 +11,6 @@ interface Props {
 }
 
 const SERIES_COLORS = ["#2f4b9e", "#8ea0d8", "#a4cdb6", "#fba919"];
-const LABEL_COLORS = ["#2f4b9e", "#4c5d9e", "#4c7a56", "#a56a10"];
 
 const toPersianDigits = (value: string | number) => {
   return String(value).replace(
@@ -20,21 +19,31 @@ const toPersianDigits = (value: string | number) => {
   );
 };
 
+// Matches formatPrice() in persian.js: Persian digits with the Arabic
+// decimal separator (U+066B ٫) instead of a period, trimming a bare ".0".
+const formatDecimal = (value: number) => {
+  const fixed = value.toFixed(1);
+  const trimmed = fixed.endsWith(".0") ? fixed.slice(0, -2) : fixed;
+  return toPersianDigits(trimmed.replace(".", "٫"));
+};
+
+const formatPercent = formatDecimal;
+
 const formatTooltipValue = (value: number) => {
   if (value >= 1e12) {
-    return `${toPersianDigits((value / 1e12).toFixed(1))} تریلیون`;
+    return `${formatDecimal(value / 1e12)} تریلیون`;
   }
 
   if (value >= 1e9) {
-    return `${toPersianDigits((value / 1e9).toFixed(1))} میلیارد`;
+    return `${formatDecimal(value / 1e9)} میلیارد`;
   }
 
   if (value >= 1e6) {
-    return `${toPersianDigits((value / 1e6).toFixed(1))} میلیون`;
+    return `${formatDecimal(value / 1e6)} میلیون`;
   }
 
   if (value >= 1e3) {
-    return `${toPersianDigits((value / 1e3).toFixed(1))} هزار`;
+    return `${formatDecimal(value / 1e3)} هزار`;
   }
 
   return toPersianDigits(value);
@@ -164,7 +173,7 @@ export default function StackedPercentBarChart({
                 <span>${p.seriesName}</span>
               </div>
               <span style="font-weight:700;">
-                ${toPersianDigits(Number(p.value).toFixed(1))}٪${
+                ${formatPercent(Number(p.value))}٪${
             rawValue !== undefined
               ? ` (${formatTooltipValue(rawValue)} ${rawUnit})`
               : ""
@@ -257,14 +266,11 @@ export default function StackedPercentBarChart({
         label: {
           show: false,
           position: "inside",
-          color: LABEL_COLORS[seriesIndex % LABEL_COLORS.length],
-          textBorderColor: "#fff",
-          textBorderWidth: 2,
+          color: "#FFFFFF",
           fontFamily: "Epsilon",
-          fontSize: 12,
-          fontWeight: 600,
-          formatter: (params: any) =>
-            `${toPersianDigits(Number(params.value).toFixed(1))}٪`,
+          fontSize: 14,
+          fontWeight: 700,
+          formatter: (params: any) => `${formatPercent(Number(params.value))}٪`,
         },
       };
     }),
