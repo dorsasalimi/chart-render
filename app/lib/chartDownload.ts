@@ -10,6 +10,8 @@ export type DownloadFormat =
 
 const DOWNLOAD_WIDTH = 380;
 const DOWNLOAD_HEIGHT = 230;
+const SANKEY_DOWNLOAD_WIDTH = 270;
+const SANKEY_DOWNLOAD_HEIGHT = 265;
 const BAR_LEGEND_WIDTH = 220;
 
 const EXPORT_PIXEL_RATIO = 3;
@@ -1258,6 +1260,12 @@ const buildExportSVG =
         true,
       ) as SVGSVGElement;
 
+    const useTightViewBox = Boolean(
+      chartElement.querySelector(
+        '[data-tight-svg-export="true"]',
+      ),
+    );
+
     preserveTextGeometry(
       svgElement,
       svgClone,
@@ -1281,11 +1289,22 @@ const buildExportSVG =
       svgElement.clientHeight ||
       height;
 
-    const viewBox =
-      svgElement.getAttribute(
-        "viewBox",
-      ) ||
-      `0 0 ${originalWidth} ${originalHeight}`;
+    const contentBounds = useTightViewBox
+      ? svgElement.getBBox()
+      : null;
+
+    const hasContentBounds = Boolean(
+      contentBounds &&
+      contentBounds.width > 0 &&
+      contentBounds.height > 0,
+    );
+
+    const viewBox = hasContentBounds
+      ? `${contentBounds!.x} ${contentBounds!.y} ${contentBounds!.width} ${contentBounds!.height}`
+      : svgElement.getAttribute(
+          "viewBox",
+        ) ||
+        `0 0 ${originalWidth} ${originalHeight}`;
 
     const values =
       viewBox
@@ -1342,10 +1361,16 @@ const buildExportSVG =
      *   600 × 230
      */
     const exportWidth =
-      hasCustomLegend
+      useTightViewBox
+        ? SANKEY_DOWNLOAD_WIDTH
+        : hasCustomLegend
         ? width +
           BAR_LEGEND_WIDTH
         : width;
+
+    const exportHeight = useTightViewBox
+      ? SANKEY_DOWNLOAD_HEIGHT
+      : height;
 
     /*
      * Convert the physical 220px legend width into
@@ -1426,26 +1451,34 @@ const buildExportSVG =
             legendLeft,
         );
 
-      /*
-       * Find how tall the whole vertical list will be.
-       */
-      const totalLegendHeight =
-        legendItems.length *
-          rowHeight +
-        Math.max(
-          0,
-          legendItems.length -
-            1,
-        ) *
-          rowGap;
+    /*
+ * Find how tall the whole vertical list will be.
+ */
+const totalLegendHeight =
+  legendItems.length * rowHeight +
+  Math.max(
+    0,
+    legendItems.length - 1,
+  ) * rowGap;
 
-      /*
-       * Center the legend vertically relative to the chart.
-       */
+/*
+ * Bottom-right alignment.
+ *
+ * legendRight already anchors the legend
+ * horizontally to the right side.
+ *
+ * currentY now starts high enough that the
+ * final legend row finishes near the bottom
+ * of the chart.
+ */
+const legendBottomPadding =
+  legendFontSize * 0.5;
+
 let currentY =
   vbY +
-  legendFontSize * 0.6;
-
+  vbHeight -
+  totalLegendHeight -
+  legendBottomPadding;
       const legendGroup =
         document.createElementNS(
           SVG_NS,
@@ -1623,7 +1656,7 @@ let currentY =
 
     svgClone.setAttribute(
       "height",
-      String(height),
+      String(exportHeight),
     );
 
     svgClone.setAttribute(
@@ -1637,7 +1670,9 @@ let currentY =
      */
     svgClone.setAttribute(
       "preserveAspectRatio",
-      "xMinYMid meet",
+      useTightViewBox
+        ? "xMidYMid meet"
+        : "xMinYMid meet",
     );
 
     svgClone.setAttribute(
@@ -1680,7 +1715,7 @@ let currentY =
       svgString,
       width:
         exportWidth,
-      height,
+      height: exportHeight,
     };
   };
 

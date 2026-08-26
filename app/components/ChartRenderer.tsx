@@ -1,6 +1,9 @@
 "use client";
 
-import type { ChartDefinition } from "../types/charts";
+import type {
+  ChartDefinition,
+  SankeyChartDefinition,
+} from "../types/charts";
 
 import BarChart from "./BarChart";
 import StackedPercentBarChart from "./StackedPercentBarChart";
@@ -8,6 +11,7 @@ import TreemapChart from "./TreemapChart";
 import PieChart from "./PieChart";
 import PieChartMahsa from "./PieChartMahsa";
 import LineChartNoCurve from "./LineChartNoCurve";
+import SankeyChart from "./SankeyChart";
 
 interface Props {
   chart: ChartDefinition;
@@ -74,6 +78,17 @@ export default function ChartRenderer({
   }
 
   return <PieChart chart={chart as any} />;
+
+      case "sankey":
+        const sankeyChart = chart as SankeyChartDefinition;
+
+        return (
+          <SankeyChart
+            chartId={`sankey-chart-${chart.id}`}
+            dataset={sankeyChart.dataset}
+            height={620}
+          />
+        );
 
       default:
         return (

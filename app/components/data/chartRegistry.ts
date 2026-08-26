@@ -73,6 +73,14 @@ import tophsweightexport from "./charts/pie/toptenproductsbywieghtexport/top-hs-
 import industrydollarimportdetailedtreemap from "./charts/treemap/import-detailed.json";
 import industrydollarexportdetailedtreemap from "./charts/treemap/export-detailed.json";
 import customsexportimportshare from "./charts/stacked-percent-bar/customs-export-import-share.json";
+import { sankeyDatasets } from "../../lib/sankeyConfig";
+
+const sankeyCharts = sankeyDatasets.map((dataset) => ({
+  id: `sankey-${dataset.code}-${String(dataset.monthNumber).padStart(2, "0")}`,
+  title: dataset.title,
+  type: "sankey" as const,
+  dataset,
+}));
 
 export const chartRegistry = [
   tradeWeightByYear,
@@ -147,4 +155,5 @@ deytopexportcustomsweight,
 deytopexportcustomsdollar,
 deytopimportcustomsdollar,
 deytopimportcustomsweight,
+...sankeyCharts,
 ];

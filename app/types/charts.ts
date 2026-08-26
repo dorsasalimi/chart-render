@@ -5,7 +5,33 @@ export type ChartType =
   | "bar"
   | "area"
   | "treemap"
-  | "pie";
+  | "pie"
+  | "sankey";
+
+export interface SankeyLabels {
+  trade: string;
+  total: string;
+  otherCountries: string;
+  otherChapters: string;
+}
+
+export interface SankeyDataset {
+  code: "ex" | "im";
+  title: string;
+  direction: "ltr" | "rtl";
+  shareColumn: string;
+  labels: SankeyLabels;
+  month?: string;
+  monthNumber?: number;
+  csvUrl: string;
+}
+
+export interface SankeyChartDefinition {
+  id: string;
+  title: string;
+  type: "sankey";
+  dataset: SankeyDataset;
+}
 
 export interface SeriesData {
   name: string;
@@ -54,7 +80,8 @@ export interface PieChartData {
 export type ChartDefinition =
   | CategoryChart
   | TreemapChart
-  | PieChartData;
+  | PieChartData
+  | SankeyChartDefinition;
 
 export interface ChartSeries {
   name: string;

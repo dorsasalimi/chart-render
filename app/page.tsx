@@ -64,6 +64,12 @@ const chartTypeInfo = {
     color: "bg-rose-50 text-rose-700 border-rose-200",
     gradient: "from-rose-500 to-rose-600",
   },
+  sankey: {
+    icon: "🔀",
+    label: "Sankey Charts",
+    color: "bg-cyan-50 text-cyan-700 border-cyan-200",
+    gradient: "from-cyan-500 to-cyan-600",
+  },
 };
 
 export default function ChartsPage() {

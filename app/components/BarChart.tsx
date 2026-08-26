@@ -475,7 +475,7 @@ const yInterval =
       textStyle: {
         fontFamily: "Epsilon",
         color: "#374151",
-        fontSize: "40px",
+        fontSize: "35px",
       },
 
       formatter: (params: any[]) => {
@@ -610,7 +610,7 @@ ${toPersianLabel(categoryName)}          </div>
       axisLabel: {
         show: true,
 
-        fontSize: 40,
+              fontSize: 35,
         fontFamily: "Epsilon",
         color: "#808285",
 
@@ -657,11 +657,11 @@ ${toPersianLabel(categoryName)}          </div>
         axisLabel: {
           show: true,
 
-          fontSize: 40,
+              fontSize: 30,
           fontFamily: "Epsilon",
           color: "#808285",
 
-          margin: 50,
+          margin: 30,
 
           formatter: (value: number) => {
             if (isPercentage) {
@@ -868,7 +868,7 @@ const x = centerX - categoryWidth / 2;
 
                 fontFamily: "Epsilon",
 
-                fontSize: segmentHeight < 50 ? 35 : 40,
+                fontSize: segmentHeight < 50 ? 35 : 35,
 
                 fontWeight: 500,
 
@@ -961,142 +961,118 @@ const x = centerX - categoryWidth / 2;
     {/* =====================================================
         LEGEND
     ===================================================== */}
-    {showLegend && (
-      <div
-        data-chart-custom-legend="true"
-        dir="rtl"
-        style={{
-          width: "36.666667%",
-          height: "100%",
-          boxSizing: "border-box",
+ {showLegend && (
+  <div
+    data-chart-custom-legend="true"
+    dir="rtl"
+    style={{
+      width: "36.666667%",
+      height: "100%",
+      boxSizing: "border-box",
 
-          display: "flex",
-          flexDirection: "column",
-          flexWrap: "wrap",
+      display: "flex",
+      flexDirection: "column",
+      flexWrap: "wrap",
 
-          alignContent: "flex-start",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
+      // bottom
+      justifyContent: "flex-end",
 
-          columnGap: "18px",
-          rowGap: "6px",
+      // right
+      alignItems: "flex-start",
+      alignContent: "flex-start",
 
-          paddingTop: "10px",
-          paddingRight: "12px",
-          paddingBottom: "10px",
-          paddingLeft: "4px",
+      columnGap: "18px",
+      rowGap: "6px",
 
-          overflow: "hidden",
-        }}
-      >
-        {chart.series.map(
-          (
-            series,
-            seriesIndex,
-          ) => {
-            const isHidden =
-              hiddenSeries.has(
-                seriesIndex,
-              );
+      paddingTop: "10px",
+      paddingRight: "12px",
+      paddingBottom: "10px",
+      paddingLeft: "4px",
 
-            const color =
-              colors[
-                seriesIndex %
-                  colors.length
-              ];
+      overflow: "hidden",
+    }}
+  >
+    {chart.series.map((series, seriesIndex) => {
+      const isHidden =
+        hiddenSeries.has(seriesIndex);
 
-            return (
-              <button
-                key={`${series.name}-${seriesIndex}`}
-                type="button"
-                onClick={() =>
-                  toggleSeries(
-                    seriesIndex,
-                  )
-                }
-                aria-pressed={
-                  !isHidden
-                }
-                title={
-                  isHidden
-                    ? `نمایش ${series.name}`
-                    : `مخفی کردن ${series.name}`
-                }
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
+      const color =
+        colors[
+          seriesIndex % colors.length
+        ];
 
-                  alignItems: "center",
-                  justifyContent: "flex-start",
+      return (
+        <button
+          key={`${series.name}-${seriesIndex}`}
+          type="button"
+          onClick={() =>
+            toggleSeries(seriesIndex)
+          }
+          aria-pressed={!isHidden}
+          title={
+            isHidden
+              ? `نمایش ${series.name}`
+              : `مخفی کردن ${series.name}`
+          }
+          style={{
+            display: "flex",
+            flexDirection: "row",
 
-                  gap: "8px",
+            alignItems: "center",
+            justifyContent: "flex-start",
 
-                  flexShrink: 0,
+            gap: "8px",
 
-                  maxWidth: "100%",
+            flexShrink: 0,
+            maxWidth: "100%",
 
-                  margin: 0,
-                  padding: 0,
+            margin: 0,
+            padding: 0,
 
-                  border: "none",
-                  background: "none",
+            border: "none",
+            background: "none",
 
-                  opacity:
-                    isHidden
-                      ? 0.4
-                      : 1,
+            opacity: isHidden
+              ? 0.4
+              : 1,
 
-                  cursor: "pointer",
+            cursor: "pointer",
 
-                  transition:
-                    "opacity 0.2s",
+            transition:
+              "opacity 0.2s",
 
-                  textAlign: "right",
-                }}
-              >
-                {/* COLOR */}
-                <span
-                  style={{
-                    width: "16px",
-                    height: "10px",
+            textAlign: "right",
+          }}
+        >
+          <span
+            style={{
+              width: "16px",
+              height: "10px",
+              flexShrink: 0,
+              borderRadius: "3px",
+              backgroundColor: color,
+            }}
+          />
 
-                    flexShrink: 0,
-
-                    borderRadius:
-                      "3px",
-
-                    backgroundColor:
-                      color,
-                  }}
-                />
-
-                {/* LABEL */}
-                <span
-                  style={{
-                    fontSize: "40px",
-                    fontFamily:
-                      "Epsilon",
-                    fontWeight: 500,
-
-                    lineHeight: 1.15,
-
-                    color:
-                      "#5F6368",
-
-                    whiteSpace:
-                      "nowrap",
-                  }}
-                >
-                  {toPersianLabel(
-                    series.name,
-                  )}
-                </span>
-              </button>
-            );
-          },
-        )}
-      </div>
-    )}
+          <span
+            style={{
+              fontSize: "35px",
+              fontFamily: "Epsilon",
+              fontWeight: 500,
+              lineHeight: 1.15,
+              color: "#5F6368",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {toPersianLabel(
+              series.name,
+            )}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+)}
   </div>
 );
 }
