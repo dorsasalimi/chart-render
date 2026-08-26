@@ -19,21 +19,31 @@ const toPersianDigits = (value: string | number) => {
   );
 };
 
+// Matches formatPrice() in persian.js: Persian digits with the Arabic
+// decimal separator (U+066B ٫) instead of a period, trimming a bare ".0".
+const formatDecimal = (value: number) => {
+  const fixed = value.toFixed(1);
+  const trimmed = fixed.endsWith(".0") ? fixed.slice(0, -2) : fixed;
+  return toPersianDigits(trimmed.replace(".", "٫"));
+};
+
+const formatPercent = formatDecimal;
+
 const formatTooltipValue = (value: number) => {
   if (value >= 1e12) {
-    return `${toPersianDigits((value / 1e12).toFixed(1))} تریلیون`;
+    return `${formatDecimal(value / 1e12)} تریلیون`;
   }
 
   if (value >= 1e9) {
-    return `${toPersianDigits((value / 1e9).toFixed(1))} میلیارد`;
+    return `${formatDecimal(value / 1e9)} میلیارد`;
   }
 
   if (value >= 1e6) {
-    return `${toPersianDigits((value / 1e6).toFixed(1))} میلیون`;
+    return `${formatDecimal(value / 1e6)} میلیون`;
   }
 
   if (value >= 1e3) {
-    return `${toPersianDigits((value / 1e3).toFixed(1))} هزار`;
+    return `${formatDecimal(value / 1e3)} هزار`;
   }
 
   return toPersianDigits(value);
@@ -52,16 +62,65 @@ export default function StackedPercentBarChart({
     );
   }
 
-  const categories = chart.categories;
   const rawUnit = chart.rawUnit ?? chart.unit ?? "";
+
+  const sortSeries = chart.series.find((s) => s.name === "صادرات") ?? chart.series[0];
+
+  const sortedIndices = useMemo(
+    () =>
+      chart.categories
+        .map((_, index) => index)
+        .sort((a, b) => Number(sortSeries.data[b] ?? 0) - Number(sortSeries.data[a] ?? 0)),
+    [chart.categories, sortSeries]
+  );
+
+  const categories = sortedIndices.map((index) => chart.categories[index]);
+
+  const sortedSeries = useMemo(
+    () =>
+      chart.series.map((series) => ({
+        ...series,
+        data: sortedIndices.map((index) => series.data[index]),
+        rawData: series.rawData
+          ? sortedIndices.map((index) => series.rawData![index])
+          : undefined,
+      })),
+    [chart.series, sortedIndices]
+  );
 
   const colors = useMemo(
     () =>
-      chart.series.map(
+      sortedSeries.map(
         (_, index) => SERIES_COLORS[index % SERIES_COLORS.length]
       ),
-    [chart.series]
+    [sortedSeries]
   );
+
+  const exportSeriesData =
+    sortedSeries.find((s) => s.name === "صادرات")?.data ?? [];
+  const importSeriesData =
+    sortedSeries.find((s) => s.name === "واردات")?.data ?? [];
+
+  const bandarIndex = categories.indexOf(
+    "منطقه ویژه اقتصادی بندر امام خمینی (ره)"
+  );
+  const meshhadIndex = categories.indexOf("مشهد");
+
+  const bandarExportValue = Number(exportSeriesData[bandarIndex] ?? 0);
+  const meshhadExportValue = Number(exportSeriesData[meshhadIndex] ?? 0);
+  const meshhadImportValue = Number(importSeriesData[meshhadIndex] ?? 0);
+
+  const targetExportX = bandarExportValue / 2;
+  const targetImportX = meshhadExportValue + meshhadImportValue / 2;
+
+  const exportLabelPercent = (value: number) =>
+    value > 0 ? `${(100 * targetExportX) / value}%` : "50%";
+
+  const importLabelPercent = (dataIndex: number, value: number) => {
+    if (value <= 0) return "50%";
+    const rowExportValue = Number(exportSeriesData[dataIndex] ?? 0);
+    return `${(100 * (targetImportX - rowExportValue)) / value}%`;
+  };
 
   const option = {
     animation: true,
@@ -100,10 +159,10 @@ export default function StackedPercentBarChart({
         `;
 
         params.forEach((p) => {
-          const seriesIndex = chart.series.findIndex(
+          const seriesIndex = sortedSeries.findIndex(
             (s) => s.name === p.seriesName
           );
-          const rawValue = chart.series[seriesIndex]?.rawData?.[
+          const rawValue = sortedSeries[seriesIndex]?.rawData?.[
             categoryIndex
           ];
 
@@ -114,7 +173,7 @@ export default function StackedPercentBarChart({
                 <span>${p.seriesName}</span>
               </div>
               <span style="font-weight:700;">
-                ${toPersianDigits(Number(p.value).toFixed(1))}٪${
+                ${formatPercent(Number(p.value))}٪${
             rawValue !== undefined
               ? ` (${formatTooltipValue(rawValue)} ${rawUnit})`
               : ""
@@ -157,6 +216,7 @@ export default function StackedPercentBarChart({
 
     yAxis: {
       type: "category",
+      inverse: true,
       data: categories.map(toPersianDigits),
       axisLine: { lineStyle: { color: "#E5E7EB" } },
       axisTick: { show: false },
@@ -169,16 +229,51 @@ export default function StackedPercentBarChart({
 
     barCategoryGap: "22%",
 
-    series: chart.series.map((series, seriesIndex) => ({
-      name: series.name,
-      type: "bar",
-      stack: "total",
-      data: series.data,
-      itemStyle: {
-        color: colors[seriesIndex],
-      },
-      label: { show: false },
-    })),
+    series: sortedSeries.map((series, seriesIndex) => {
+      const isExport = series.name === "صادرات";
+      const isImport = series.name === "واردات";
+      const categoryCount = categories.length;
+
+      return {
+        name: series.name,
+        type: "bar",
+        stack: "total",
+        data: series.data.map((value, dataIndex) => {
+          const show = isExport
+            ? dataIndex < 7
+            : isImport
+            ? dataIndex >= categoryCount - 8
+            : false;
+
+          const numericValue = Number(value);
+          const position = isExport
+            ? [exportLabelPercent(numericValue), "50%"]
+            : isImport
+            ? [importLabelPercent(dataIndex, numericValue), "50%"]
+            : undefined;
+
+          return {
+            value,
+            label: {
+              show,
+              ...(position ? { position } : {}),
+            },
+          };
+        }),
+        itemStyle: {
+          color: colors[seriesIndex],
+        },
+        label: {
+          show: false,
+          position: "inside",
+          color: "#FFFFFF",
+          fontFamily: "Epsilon",
+          fontSize: 14,
+          fontWeight: 700,
+          formatter: (params: any) => `${formatPercent(Number(params.value))}٪`,
+        },
+      };
+    }),
   };
 
   return (
