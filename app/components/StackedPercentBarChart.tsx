@@ -87,6 +87,32 @@ export default function StackedPercentBarChart({
     [sortedSeries]
   );
 
+  const exportSeriesData =
+    sortedSeries.find((s) => s.name === "صادرات")?.data ?? [];
+  const importSeriesData =
+    sortedSeries.find((s) => s.name === "واردات")?.data ?? [];
+
+  const bandarIndex = categories.indexOf(
+    "منطقه ویژه اقتصادی بندر امام خمینی (ره)"
+  );
+  const meshhadIndex = categories.indexOf("مشهد");
+
+  const bandarExportValue = Number(exportSeriesData[bandarIndex] ?? 0);
+  const meshhadExportValue = Number(exportSeriesData[meshhadIndex] ?? 0);
+  const meshhadImportValue = Number(importSeriesData[meshhadIndex] ?? 0);
+
+  const targetExportX = bandarExportValue / 2;
+  const targetImportX = meshhadExportValue + meshhadImportValue / 2;
+
+  const exportLabelPercent = (value: number) =>
+    value > 0 ? `${(100 * targetExportX) / value}%` : "50%";
+
+  const importLabelPercent = (dataIndex: number, value: number) => {
+    if (value <= 0) return "50%";
+    const rowExportValue = Number(exportSeriesData[dataIndex] ?? 0);
+    return `${(100 * (targetImportX - rowExportValue)) / value}%`;
+  };
+
   const option = {
     animation: true,
     animationDuration: 800,
@@ -210,9 +236,19 @@ export default function StackedPercentBarChart({
             ? dataIndex >= categoryCount - 8
             : false;
 
+          const numericValue = Number(value);
+          const position = isExport
+            ? [exportLabelPercent(numericValue), "50%"]
+            : isImport
+            ? [importLabelPercent(dataIndex, numericValue), "50%"]
+            : undefined;
+
           return {
             value,
-            label: { show },
+            label: {
+              show,
+              ...(position ? { position } : {}),
+            },
           };
         }),
         itemStyle: {
