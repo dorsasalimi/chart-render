@@ -1,6 +1,5 @@
 import tradeValueByYear from "./charts/line/trade-value-by-year.json";
 import tradeWeightByYear from "./charts/line/trade-weight-by-year.json";
-import customstradevalue from "./charts/ribbon/customs-trade-value.json";
 import topcustoms from "./charts/top-customs.json";
 
 import topexportcustomsweight from "./charts/mahsa/top-export-customs-weight.json";
@@ -77,7 +76,6 @@ import industrydollarexportdetailedtreemap from "./charts/treemap/export-detaile
 export const chartRegistry = [
   tradeWeightByYear,
   tradeValueByYear,
-  customstradevalue,
   topcustomsbyyearribbon,
   topcustomsbyyearribbon2,
   tophsweightbyyear,
