@@ -3,6 +3,7 @@
 import type { ChartDefinition } from "../types/charts";
 
 import BarChart from "./BarChart";
+import StackedPercentBarChart from "./StackedPercentBarChart";
 import TreemapChart from "./TreemapChart";
 import PieChart from "./PieChart";
 import PieChartMahsa from "./PieChartMahsa";
@@ -49,6 +50,10 @@ export default function ChartRenderer({
         );
 
       case "bar":
+        if ((chart as any).variant === "stackedPercent") {
+          return <StackedPercentBarChart chart={chart as any} />;
+        }
+
         return <BarChart chart={chart as any} />;
 
       case "treemap":

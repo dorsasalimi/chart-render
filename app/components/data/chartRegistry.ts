@@ -73,6 +73,7 @@ import topchaptersweight from "./charts/pie/toptenproductsbywieghtexport/top-cha
 import tophsweightexport from "./charts/pie/toptenproductsbywieghtexport/top-hs-weight.json";
 import industrydollarimportdetailedtreemap from "./charts/treemap/import-detailed.json";
 import industrydollarexportdetailedtreemap from "./charts/treemap/export-detailed.json";
+import customsexportimportshare from "./charts/stacked-percent-bar/customs-export-import-share.json";
 
 export const chartRegistry = [
   tradeWeightByYear,
@@ -98,6 +99,7 @@ export const chartRegistry = [
   toptradecountriesimport,
   toptradecountriesexport,
   topcustomsdollar,
+  customsexportimportshare,
 
   topexportcustomsweight,
   topImportCustomsWeight,
