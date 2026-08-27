@@ -610,7 +610,7 @@ ${toPersianLabel(categoryName)}          </div>
       axisLabel: {
         show: true,
 
-              fontSize: 35,
+              fontSize: 26,
         fontFamily: "Epsilon",
         color: "#808285",
 
@@ -657,7 +657,7 @@ ${toPersianLabel(categoryName)}          </div>
         axisLabel: {
           show: true,
 
-              fontSize: 30,
+              fontSize: 26,
           fontFamily: "Epsilon",
           color: "#808285",
 
@@ -868,7 +868,7 @@ const x = centerX - categoryWidth / 2;
 
                 fontFamily: "Epsilon",
 
-                fontSize: segmentHeight < 50 ? 35 : 35,
+                fontSize: segmentHeight < 26 ? 26 : 26,
 
                 fontWeight: 500,
 

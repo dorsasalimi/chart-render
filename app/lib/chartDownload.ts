@@ -6,7 +6,7 @@ export type DownloadFormat = "png" | "jpg" | "svg" | "pdf";
 
 const DOWNLOAD_WIDTH = 380;
 const DOWNLOAD_HEIGHT = 230;
-const SANKEY_DOWNLOAD_WIDTH = 540;
+const SANKEY_DOWNLOAD_WIDTH = 600;
 const SANKEY_DOWNLOAD_HEIGHT = 530;
 const BAR_LEGEND_WIDTH = 220;
 

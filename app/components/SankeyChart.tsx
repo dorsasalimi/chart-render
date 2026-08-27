@@ -1,7 +1,7 @@
 "use client";
 
 import ReactECharts from "echarts-for-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SankeyDataset } from "../types/charts";
 
 interface SankeyChartProps {
@@ -15,10 +15,6 @@ interface SankeyChartProps {
   showSummary?: boolean;
   showStatus?: boolean;
 }
-
-const faNumber = new Intl.NumberFormat("fa-IR", {
-  maximumFractionDigits: 2,
-});
 
 const faPercent1 = new Intl.NumberFormat("fa-IR", {
   maximumFractionDigits: 1,
@@ -58,6 +54,74 @@ function formatNodeDisplayName(
   return `${name}${separator}${shareText}`;
 }
 
+const NODE_GAP = 70;
+const RIBBON_NODE_GAP = 8;
+
+function addRibbonNodeGaps(instance: any) {
+  const series = instance.getModel()?.getSeriesByIndex(0);
+  const nodeData = series?.getData();
+  const edgeData = series?.getData("edge");
+  const zr = instance.getZr();
+
+  if (!nodeData || !edgeData || !zr) return;
+
+  const nodeShapes = new Map<string, any>();
+
+  nodeData.eachItemGraphicEl((node: any, index: number) => {
+    const item = nodeData.getRawDataItem(index);
+    if (item?.name && node?.shape) {
+      nodeShapes.set(item.name, { ...node.shape });
+    }
+  });
+
+  let modified = false;
+
+  edgeData.eachItemGraphicEl((edge: any, index: number) => {
+    const item = edgeData.getRawDataItem(index);
+    if (!edge?.shape || !item) return;
+
+    const sourceShape = nodeShapes.get(item.source);
+    const targetShape = nodeShapes.get(item.target);
+    if (!sourceShape || !targetShape) return;
+
+    const shape = edge.shape;
+    const sourceCenter = sourceShape.x + sourceShape.width / 2;
+    const targetCenter = targetShape.x + targetShape.width / 2;
+    const leftToRight = sourceCenter < targetCenter;
+
+    if (shape.x1 !== undefined && shape.x2 !== undefined) {
+      if (leftToRight) {
+        shape.x1 = sourceShape.x + sourceShape.width + RIBBON_NODE_GAP;
+        shape.x2 = targetShape.x - RIBBON_NODE_GAP;
+      } else {
+        shape.x1 = sourceShape.x - RIBBON_NODE_GAP;
+        shape.x2 = targetShape.x + targetShape.width + RIBBON_NODE_GAP;
+      }
+
+      const curvature = 0.5;
+      shape.cpx1 = shape.x1 * (1 - curvature) + shape.x2 * curvature;
+      shape.cpx2 = shape.x1 * curvature + shape.x2 * (1 - curvature);
+
+      edge.dirtyShape();
+      modified = true;
+    } else if (Array.isArray(shape.points)) {
+      shape.points = shape.points.map((pt: [number, number], i: number) => {
+        if (leftToRight) {
+          return [i < 2 ? pt[0] + RIBBON_NODE_GAP : pt[0] - RIBBON_NODE_GAP, pt[1]];
+        }
+        return [i < 2 ? pt[0] - RIBBON_NODE_GAP : pt[0] + RIBBON_NODE_GAP, pt[1]];
+      });
+
+      edge.dirtyShape();
+      modified = true;
+    }
+  });
+
+  if (modified) {
+    zr.refresh();
+  }
+}
+
 const COUNTRY_COLORS = new Map([
   ["چین", "#1e9abc"],
   ["امارات متحده عربی", "#779775"],
@@ -93,10 +157,6 @@ function getCountryColor(country: string) {
 
   return COUNTRY_PALETTE[hash % COUNTRY_PALETTE.length];
 }
-
-/* -------------------------------------------------------------------------- */
-/* CSV Parser                                                                 */
-/* -------------------------------------------------------------------------- */
 
 function parseCsv(text: string) {
   const rows: string[][] = [];
@@ -172,10 +232,6 @@ function addToMap(
   map.set(key, (map.get(key) ?? 0) + value);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Aggregate Data                                                             */
-/* -------------------------------------------------------------------------- */
-
 function aggregateData(
   rows: Record<string, string>[],
   shareColumn: string,
@@ -228,10 +284,6 @@ function aggregateData(
     chaptersByCountry,
   };
 }
-
-/* -------------------------------------------------------------------------- */
-/* Build Sankey Data                                                          */
-/* -------------------------------------------------------------------------- */
 
 function buildSankeyData(
   aggregated: ReturnType<typeof aggregateData>,
@@ -366,8 +418,6 @@ function buildSankeyData(
         shareOfCountry,
         shareOfFile: otherShareOfFile,
         depth: isRtl ? 0 : 2,
-        // Set "other" slightly back toward its parent while keeping it
-        // vertically beside the regular nodes in this country group.
         localX: isRtl ? 0.025 : 0.93,
       });
 
@@ -417,9 +467,6 @@ function buildSankeyData(
 
   return { nodes, links };
 }
-/* -------------------------------------------------------------------------- */
-/* Tooltip Formatter                                                          */
-/* -------------------------------------------------------------------------- */
 
 function tooltipFormatter(
   params: any,
@@ -473,10 +520,6 @@ function tooltipFormatter(
   return parts.join("");
 }
 
-/* -------------------------------------------------------------------------- */
-/* Main Component                                                             */
-/* -------------------------------------------------------------------------- */
-
 export default function SankeyChart({
   chartId,
   dataset,
@@ -495,6 +538,7 @@ export default function SankeyChart({
   const [rowCount, setRowCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [nodeLabels, setNodeLabels] = useState<Map<string, string>>(new Map());
+  const chartInstanceRef = useRef<any>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -560,96 +604,95 @@ export default function SankeyChart({
 
         const isRtl = dataset.direction === "rtl";
 
-      setOption({
-  animationDuration: 850,
-  animationEasing: "cubicOut",
+        setOption({
+          animationDuration: 850,
+          animationEasing: "cubicOut",
 
-  tooltip: {
-    trigger: "item",
-    triggerOn: "mousemove|click",
-    confine: true,
-    extraCssText:
-      "direction:rtl; text-align:right; line-height:1.8; border-radius:10px; font-size:26px;",
-    formatter: (params: any) =>
-      tooltipFormatter(params, dataset, labels),
-  },
+          tooltip: {
+            trigger: "item",
+            triggerOn: "mousemove|click",
+            confine: true,
+            extraCssText:
+              "direction:rtl; text-align:right; line-height:1.8; border-radius:10px; font-size:26px;",
+            formatter: (params: any) =>
+              tooltipFormatter(params, dataset, labels),
+          },
 
-  series: [
-    {
-      type: "sankey",
-      name: dataset.labels.trade,
-      nodeWidth: 30,
-      nodeGap: 50,
-      nodeAlign: "justify",
-      layout: "none",
-      layoutIterations: 0,
-      draggable: false,
+          series: [
+            {
+              type: "sankey",
+              name: dataset.labels.trade,
+              nodeWidth: 30,
+              nodeGap: NODE_GAP,
+              nodeAlign: "justify",
+              layout: "none",
+              layoutIterations: 0,
+              draggable: false,
 
-      // Adjust margins based on direction
-      // For RTL: more space on left (for labels), less on right
-      left: isRtl ? "25%" : "1%",   // More space on left for RTL
-      right: isRtl ? "1%" : "27%",  // More space on right for LTR
-      top: 10,
-      bottom: 10,
+              left: isRtl ? "22%" : "1%",
+              right: isRtl ? "1%" : "22%",
+              top: 10,
+              bottom: 20,
 
-      emphasis: {
-        focus: "adjacency",
-      },
-      data: sankey.nodes,
-      links: sankey.links,
-      label: {
-        show: true,
-        position: isRtl ? "left" : "right",
-        distance: 18,
-        color: "#636466",
-        fontFamily: "w_Epsilon",
-        fontSize: 59,
-        lineHeight: 40,
-        overflow: "truncate",
-        fontWeight: "normal",
-        formatter: (params: any) => {
-          let label = toPersianText(params.data.displayName ?? params.name);
-          if (label.length > 30) {
-            label = label.substring(0, 30) + '...';
-          }
-          // Use the label side as the base direction so the name stays
-          // attached to the node and the percentage extends away from it.
-          return `${isRtl ? "\u2067" : "\u2066"}${label}\u2069`;
-        },
-      },
-itemStyle: {
-  borderColor: "#F7F9F8", // Match background
-  borderWidth: 3, // Creates visual gap
-  borderRadius: 4,
-  shadowBlur: 6,
-  shadowColor: "rgba(0,0,0,0.06)",
-  shadowOffsetY: 1,
-},
-      lineStyle: {
-        color: "gradient",
-        curveness: 0.5,
-        opacity: 1,
-      },
-      levels: [
-        {
-          depth: 0,
-          itemStyle: { color: "#1d3767" },
-          lineStyle: { opacity: 1 },
-        },
-        {
-          depth: 1,
-          itemStyle: { color: "#4d6f91" },
-          lineStyle: { opacity: 1 },
-        },
-        {
-          depth: 2,
-          itemStyle: { color: "#9aa9b8" },
-          lineStyle: { opacity: 1 },
-        },
-      ],
-    },
-  ],
-});
+              emphasis: {
+                focus: "adjacency",
+              },
+              data: sankey.nodes,
+              links: sankey.links,
+              label: {
+                show: true,
+                position: isRtl ? "left" : "right",
+                distance: 18,
+                color: "#636466",
+                fontFamily: "w_Epsilon",
+                fontSize: 50,
+                lineHeight: 40,
+                overflow: "truncate",
+                fontWeight: "normal",
+                formatter: (params: any) => {
+                  let label = toPersianText(
+                    params.data.displayName ?? params.name,
+                  );
+                  if (label.length > 30) {
+                    label = label.substring(0, 30) + "...";
+                  }
+                  return `${isRtl ? "\u2067" : "\u2066"}${label}\u2069`;
+                },
+              },
+              itemStyle: {
+                borderWidth: 0,
+                borderRadius: 4,
+                shadowBlur: 6,
+                shadowColor: "rgba(0,0,0,0.06)",
+                shadowOffsetY: 1,
+              },
+              lineStyle: {
+                color: "gradient",
+                curveness: 0.5,
+                opacity: 1,
+              },
+              levels: [
+                {
+                  depth: 0,
+                  itemStyle: { color: "#1d3767" },
+                  lineStyle: { opacity: 1 },
+                      label: { show: false }, // Add this to hide label for total node
+
+                },
+                {
+                  depth: 1,
+                  itemStyle: { color: "#4d6f91" },
+                  lineStyle: { opacity: 1 },
+                },
+                {
+                  depth: 2,
+                  itemStyle: { color: "#9aa9b8" },
+                  lineStyle: { opacity: 1 },
+                },
+              ],
+            },
+          ],
+        });
       } catch (err) {
         if (cancelled) return;
         console.error(err);
@@ -690,9 +733,9 @@ itemStyle: {
       data-tight-svg-export="true"
       data-chart-type="sankey"
       style={{
-        aspectRatio: "540 / 530",
+        aspectRatio: "600 / 530",
         width: "100%",
-        overflow: "visible", // Allow labels to be visible outside container
+        overflow: "visible",
       }}
     >
       <ReactECharts
@@ -707,10 +750,21 @@ itemStyle: {
           renderer: "svg",
         }}
         onChartReady={(instance) => {
+          chartInstanceRef.current = instance;
           const dom = instance.getDom();
           dom.setAttribute("data-echarts-instance", "true");
-          // Allow labels to overflow the chart container
           dom.style.overflow = "visible";
+
+          instance.on("finished", () => {
+            addRibbonNodeGaps(instance);
+          });
+        }}
+        onEvents={{
+          rendered: () => {
+            if (chartInstanceRef.current) {
+              addRibbonNodeGaps(chartInstanceRef.current);
+            }
+          },
         }}
       />
     </div>
