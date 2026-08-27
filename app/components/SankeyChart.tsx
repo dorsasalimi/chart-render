@@ -671,25 +671,25 @@ export default function SankeyChart({
                 curveness: 0.5,
                 opacity: 1,
               },
-              levels: [
-                {
-                  depth: 0,
-                  itemStyle: { color: "#1d3767" },
-                  lineStyle: { opacity: 1 },
-                      label: { show: false }, // Add this to hide label for total node
-
-                },
-                {
-                  depth: 1,
-                  itemStyle: { color: "#4d6f91" },
-                  lineStyle: { opacity: 1 },
-                },
-                {
-                  depth: 2,
-                  itemStyle: { color: "#9aa9b8" },
-                  lineStyle: { opacity: 1 },
-                },
-              ],
+     levels: [
+  {
+    depth: 0,
+    itemStyle: { color: "#1d3767" },
+    lineStyle: { opacity: 1 },
+    label: { show: !isRtl ? false : true }, // Hide if LTR, show if RTL
+  },
+  {
+    depth: 1,
+    itemStyle: { color: "#4d6f91" },
+    lineStyle: { opacity: 1 },
+  },
+  {
+    depth: 2,
+    itemStyle: { color: "#9aa9b8" },
+    lineStyle: { opacity: 1 },
+    label: { show: !isRtl }
+  },
+],
             },
           ],
         });
