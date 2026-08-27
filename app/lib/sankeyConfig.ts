@@ -1,5 +1,7 @@
 import type { SankeyDataset } from "../types/charts";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const months = [
   "فروردین",
   "اردیبهشت",
@@ -16,68 +18,48 @@ const months = [
 const reportTypes = [
   {
     code: "ex" as const,
-
     title: "صادرات",
-
     direction: "ltr" as const,
-
-    shareColumn:
-      "%GT Total Export",
-
+    shareColumn: "%GT Total Export",
     labels: {
       trade: "صادرات",
       total: "کل صادرات",
-      otherCountries:
-        "سایر کشورها",
-      otherChapters:
-        "سایر فصل‌ها",
+      otherCountries: "سایر کشورها",
+      otherChapters: "سایر فصل‌ها",
     },
   },
 
   {
     code: "im" as const,
-
     title: "واردات",
-
     direction: "rtl" as const,
-
-    shareColumn:
-      "%GT Total Import",
-
+    shareColumn: "%GT Total Import",
     labels: {
       trade: "واردات",
       total: "کل واردات",
-      otherCountries:
-        "سایر کشورها",
-      otherChapters:
-        "سایر فصل‌ها",
+      otherCountries: "سایر کشورها",
+      otherChapters: "سایر فصل‌ها",
     },
   },
 ];
 
-export const sankeyDatasets:
-  SankeyDataset[] =
+export const sankeyDatasets: SankeyDataset[] =
   reportTypes.flatMap((type) =>
-    months.map(
-      (month, index) => ({
-        ...type,
+    months.map((month, index) => ({
+      ...type,
 
-        labels: {
-          ...type.labels,
-        },
+      labels: {
+        ...type.labels,
+      },
 
-        month,
+      month,
 
-        monthNumber:
-          index + 1,
+      monthNumber: index + 1,
 
-        title:
-          `گزارش ${type.title} ${month}`,
+      title: `گزارش ${type.title} ${month}`,
 
-        csvUrl:
-          `/sankeydata/${type.code}-${String(
-            index + 1,
-          ).padStart(2, "0")}.csv`,
-      }),
-    ),
+      csvUrl: `${basePath}/sankeydata/${type.code}-${String(
+        index + 1,
+      ).padStart(2, "0")}.csv`,
+    })),
   );
