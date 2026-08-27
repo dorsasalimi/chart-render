@@ -178,7 +178,7 @@ export default function LineChartNoCurve({
 
       fontSize: "45px",
       fontFamily: "Epsilon",
-      fontWeight: 600,
+      fontWeight: 500,
       color: seriesColor,
 
       borderRadius: 5,

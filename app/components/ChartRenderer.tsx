@@ -86,7 +86,7 @@ export default function ChartRenderer({
           <SankeyChart
             chartId={`sankey-chart-${chart.id}`}
             dataset={sankeyChart.dataset}
-            height={620}
+            height={265}
           />
         );
 

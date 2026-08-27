@@ -7,15 +7,11 @@ import type { SankeyDataset } from "../types/charts";
 interface SankeyChartProps {
   chartId: string;
   dataset: SankeyDataset;
-
   countryColumn?: string;
   chapterColumn?: string;
-
   topCountries?: number;
   topChaptersPerCountry?: number;
-
   height?: number;
-
   showSummary?: boolean;
   showStatus?: boolean;
 }
@@ -46,22 +42,20 @@ function toPersianText(value: unknown) {
     .replace(/ك/g, "ک");
 }
 
-function getContrastTextColor(hexColor: string) {
-  const hex = hexColor.replace("#", "");
-  const r = Number.parseInt(hex.substring(0, 2), 16);
-  const g = Number.parseInt(hex.substring(2, 4), 16);
-  const b = Number.parseInt(hex.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  return luminance < 0.55 ? "#FFFFFF" : "#2F3640";
-}
-
 function formatPercent1(value: number) {
   return `٪${faPercent1.format(value)}`;
 }
 
 function formatPercent2(value: number) {
   return `٪${faPercent2.format(value)}`;
+}
+
+function formatNodeDisplayName(
+  name: string,
+  shareText: string,
+  separator = "  ",
+) {
+  return `${name}${separator}${shareText}`;
 }
 
 const COUNTRY_COLORS = new Map([
@@ -93,7 +87,6 @@ function getCountryColor(country: string) {
   }
 
   let hash = 0;
-
   for (const character of normalizedCountry) {
     hash = (hash * 31 + character.codePointAt(0)!) >>> 0;
   }
@@ -102,12 +95,11 @@ function getCountryColor(country: string) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* CSV                                                                        */
+/* CSV Parser                                                                 */
 /* -------------------------------------------------------------------------- */
 
 function parseCsv(text: string) {
   const rows: string[][] = [];
-
   let row: string[] = [];
   let cell = "";
   let inQuotes = false;
@@ -128,14 +120,11 @@ function parseCsv(text: string) {
       if (char === "\r" && next === "\n") {
         i += 1;
       }
-
       row.push(cell);
       cell = "";
-
       if (row.some((value) => value.trim())) {
         rows.push(row);
       }
-
       row = [];
     } else {
       cell += char;
@@ -144,7 +133,6 @@ function parseCsv(text: string) {
 
   if (cell.length || row.length) {
     row.push(cell);
-
     if (row.some((value) => value.trim())) {
       rows.push(row);
     }
@@ -155,9 +143,7 @@ function parseCsv(text: string) {
   }
 
   const headers = rows[0].map((header, index) =>
-    index === 0
-      ? header.replace(/^\uFEFF/, "").trim()
-      : header.trim(),
+    index === 0 ? header.replace(/^\uFEFF/, "").trim() : header.trim(),
   );
 
   return rows.slice(1).map((values) =>
@@ -187,7 +173,7 @@ function addToMap(
 }
 
 /* -------------------------------------------------------------------------- */
-/* Aggregate data                                                             */
+/* Aggregate Data                                                             */
 /* -------------------------------------------------------------------------- */
 
 function aggregateData(
@@ -198,18 +184,12 @@ function aggregateData(
   topCountriesCount: number,
 ) {
   const countryTotals = new Map<string, number>();
-
-  const chaptersByCountry = new Map<
-    string,
-    Map<string, number>
-  >();
-
+  const chaptersByCountry = new Map<string, Map<string, number>>();
   let grandTotal = 0;
 
   for (const row of rows) {
     const country = row[countryColumn]?.trim();
     const chapter = row[chapterColumn]?.trim();
-
     const share = parseShare(row[shareColumn]);
 
     if (
@@ -222,27 +202,20 @@ function aggregateData(
     }
 
     grandTotal += share;
-
     addToMap(countryTotals, country, share);
 
     if (!chaptersByCountry.has(country)) {
       chaptersByCountry.set(country, new Map());
     }
 
-    addToMap(
-      chaptersByCountry.get(country)!,
-      chapter,
-      share,
-    );
+    addToMap(chaptersByCountry.get(country)!, chapter, share);
   }
 
   const topCountries = [...countryTotals.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, topCountriesCount);
 
-  const topNames = new Set(
-    topCountries.map(([country]) => country),
-  );
+  const topNames = new Set(topCountries.map(([country]) => country));
 
   const otherCountriesValue = [...countryTotals.entries()]
     .filter(([country]) => !topNames.has(country))
@@ -257,7 +230,7 @@ function aggregateData(
 }
 
 /* -------------------------------------------------------------------------- */
-/* Build Sankey                                                               */
+/* Build Sankey Data                                                          */
 /* -------------------------------------------------------------------------- */
 
 function buildSankeyData(
@@ -269,241 +242,141 @@ function buildSankeyData(
   const links: any[] = [];
 
   const { labels } = dataset;
-
   const isRtl = dataset.direction === "rtl";
-
-  const totalColor =
-    dataset.code === "im"
-      ? "#a84b41"
-      : "#1d3767";
-
+  const totalColor = dataset.code === "im" ? "#a84b41" : "#1d3767";
   const totalId = "__TOTAL__";
 
   nodes.push({
     name: totalId,
-
     displayName: labels.total,
     plainName: labels.total,
-
     kind: "total",
-
-    itemStyle: {
-      color: totalColor,
-    },
-
-    label: {
-      color: getContrastTextColor(totalColor),
-    },
-
+    itemStyle: { color: totalColor },
+    label: { color: "#FFFFFF" },
     rawValue: aggregated.grandTotal,
-
     depth: isRtl ? 2 : 0,
   });
 
   for (const [country, countryValue] of aggregated.topCountries) {
     const persianCountry = toPersianText(country);
-
     const color = getCountryColor(country);
-
     const countryId = `country::${country}`;
+    const shareOfFile = (countryValue / aggregated.grandTotal) * 100;
+    const shareText = formatPercent1(shareOfFile);
 
-    const shareOfFile =
-      (countryValue / aggregated.grandTotal) * 100;
+    const countryDisplayName = formatNodeDisplayName(
+      isRtl ? persianCountry : shareText,
+      isRtl ? shareText : persianCountry,
+    );
 
     nodes.push({
       name: countryId,
-
-      displayName:
-        `${persianCountry}  ${formatPercent1(shareOfFile)}`,
-
+      displayName: countryDisplayName,
       plainName: persianCountry,
-
       kind: "country",
-
-      itemStyle: {
-        color,
-      },
-
-      label: {
-        color: getContrastTextColor(color),
-      },
-
+      itemStyle: { color },
+      label: { color: "#636466" },
       rawValue: countryValue,
       shareOfFile,
-
       depth: 1,
     });
 
     links.push({
-      source: isRtl
-        ? countryId
-        : totalId,
-
-      target: isRtl
-        ? totalId
-        : countryId,
-
+      source: isRtl ? countryId : totalId,
+      target: isRtl ? totalId : countryId,
       value: countryValue,
-
-      lineStyle: {
-        color: totalColor,
-        opacity: 1,
-      },
-
+      lineStyle: { color: totalColor, opacity: 1 },
       shareOfFile,
     });
 
-    const countryChapters =
-      aggregated.chaptersByCountry.get(country);
-
-    if (!countryChapters) {
-      continue;
-    }
+    const countryChapters = aggregated.chaptersByCountry.get(country);
+    if (!countryChapters) continue;
 
     const chapters = [...countryChapters.entries()].sort(
       (a, b) => b[1] - a[1],
     );
 
-    const topChapters = chapters.slice(
-      0,
-      topChaptersPerCountry,
-    );
-
+    const topChapters = chapters.slice(0, topChaptersPerCountry);
     const topChapterNames = new Set(
       topChapters.map(([chapter]) => chapter),
     );
 
-    for (const [
-      chapter,
-      chapterValue,
-    ] of topChapters) {
-      const chapterId =
-        `chapter::${country}::${chapter}`;
-
+    for (const [chapter, chapterValue] of topChapters) {
+      const chapterId = `chapter::${country}::${chapter}`;
       const persianChapter = toPersianText(chapter);
+      const shareOfCountry = (chapterValue / countryValue) * 100;
+      const chapterShareOfFile = (chapterValue / aggregated.grandTotal) * 100;
+      const shareText = formatPercent1(shareOfCountry);
 
-      const shareOfCountry =
-        (chapterValue / countryValue) * 100;
-
-      const chapterShareOfFile =
-        (chapterValue / aggregated.grandTotal) * 100;
+      const chapterDisplayName = formatNodeDisplayName(
+        isRtl ? persianChapter : shareText,
+        isRtl ? shareText : persianChapter,
+        " - ",
+      );
 
       nodes.push({
         name: chapterId,
-
-        displayName:
-          `${persianChapter}  ${formatPercent1(shareOfCountry)}`,
-
+        displayName: chapterDisplayName,
         plainName: persianChapter,
-
         parentCountry: persianCountry,
-
         kind: "chapter",
-
-        itemStyle: {
-          color,
-        },
-
-        label: {
-          color: getContrastTextColor(color),
-        },
-
+        itemStyle: { color },
+        label: { color: "#636466" },
         rawValue: chapterValue,
-
         shareOfCountry,
-
         shareOfFile: chapterShareOfFile,
-
         depth: isRtl ? 0 : 2,
       });
 
       links.push({
-        source: isRtl
-          ? chapterId
-          : countryId,
-
-        target: isRtl
-          ? countryId
-          : chapterId,
-
+        source: isRtl ? chapterId : countryId,
+        target: isRtl ? countryId : chapterId,
         value: chapterValue,
-
-        lineStyle: {
-          opacity: 0.5,
-        },
-
+        lineStyle: { opacity: 0.5 },
         shareOfCountry,
-
         shareOfFile: chapterShareOfFile,
       });
     }
 
     const otherValue = chapters
-      .filter(
-        ([chapter]) =>
-          !topChapterNames.has(chapter),
-      )
-      .reduce(
-        (sum, [, value]) => sum + value,
-        0,
-      );
+      .filter(([chapter]) => !topChapterNames.has(chapter))
+      .reduce((sum, [, value]) => sum + value, 0);
 
     if (otherValue > 0) {
-      const otherId =
-        `chapter::${country}::__OTHER__`;
+      const otherId = `chapter::${country}::__OTHER__`;
+      const shareOfCountry = (otherValue / countryValue) * 100;
+      const otherShareOfFile = (otherValue / aggregated.grandTotal) * 100;
+      const shareText = formatPercent1(shareOfCountry);
 
-      const shareOfCountry =
-        (otherValue / countryValue) * 100;
-
-      const otherShareOfFile =
-        (otherValue / aggregated.grandTotal) * 100;
+      const otherDisplayName = formatNodeDisplayName(
+        isRtl ? labels.otherChapters : shareText,
+        isRtl ? shareText : labels.otherChapters,
+        " - ",
+      );
 
       nodes.push({
         name: otherId,
-
-        displayName:
-          `${labels.otherChapters}  ${formatPercent1(shareOfCountry)}`,
-
+        displayName: otherDisplayName,
         plainName: labels.otherChapters,
-
         parentCountry: persianCountry,
-
         kind: "otherChapter",
-
-        itemStyle: {
-          color: "#b8b9b9",
-        },
-
-        label: {
-          color: getContrastTextColor("#b8b9b9"),
-        },
-
+        itemStyle: { color: "#b8b9b9" },
+        label: { color: "#636466" },
         rawValue: otherValue,
-
         shareOfCountry,
-
         shareOfFile: otherShareOfFile,
-
         depth: isRtl ? 0 : 2,
+        // Set "other" slightly back toward its parent while keeping it
+        // vertically beside the regular nodes in this country group.
+        localX: isRtl ? 0.025 : 0.93,
       });
 
       links.push({
-        source: isRtl
-          ? otherId
-          : countryId,
-
-        target: isRtl
-          ? countryId
-          : otherId,
-
+        source: isRtl ? otherId : countryId,
+        target: isRtl ? countryId : otherId,
         value: otherValue,
-
-        lineStyle: {
-          opacity: 0.5,
-        },
-
+        lineStyle: { opacity: 0.5 },
         shareOfCountry,
-
         shareOfFile: otherShareOfFile,
       });
     }
@@ -511,65 +384,41 @@ function buildSankeyData(
 
   if (aggregated.otherCountriesValue > 0) {
     const otherId = "__OTHER_COUNTRIES__";
-
     const shareOfFile =
-      (aggregated.otherCountriesValue /
-        aggregated.grandTotal) *
-      100;
+      (aggregated.otherCountriesValue / aggregated.grandTotal) * 100;
+    const shareText = formatPercent1(shareOfFile);
+
+    const otherDisplayName = formatNodeDisplayName(
+      isRtl ? labels.otherCountries : shareText,
+      isRtl ? shareText : labels.otherCountries,
+    );
 
     nodes.push({
       name: otherId,
-
-      displayName:
-        `${labels.otherCountries}  ${formatPercent1(shareOfFile)}`,
-
+      displayName: otherDisplayName,
       plainName: labels.otherCountries,
-
       kind: "otherCountries",
-
-      itemStyle: {
-        color: "#b8b9b9",
-      },
-
-      label: {
-        color: getContrastTextColor("#b8b9b9"),
-      },
-
+      itemStyle: { color: "#b8b9b9" },
+      label: { color: "#636466" },
       rawValue: aggregated.otherCountriesValue,
-
       shareOfFile,
-
       depth: 1,
+      localX: isRtl ? 0.5 : 0.455,
     });
 
     links.push({
-      source: isRtl
-        ? otherId
-        : totalId,
-
-      target: isRtl
-        ? totalId
-        : otherId,
-
+      source: isRtl ? otherId : totalId,
+      target: isRtl ? totalId : otherId,
       value: aggregated.otherCountriesValue,
-
-      lineStyle: {
-        color: totalColor,
-        opacity: 1,
-      },
-
+      lineStyle: { color: totalColor, opacity: 1 },
       shareOfFile,
     });
   }
 
-  return {
-    nodes,
-    links,
-  };
+  return { nodes, links };
 }
-
 /* -------------------------------------------------------------------------- */
-/* Tooltip                                                                    */
+/* Tooltip Formatter                                                          */
 /* -------------------------------------------------------------------------- */
 
 function tooltipFormatter(
@@ -579,80 +428,45 @@ function tooltipFormatter(
 ) {
   if (params.dataType === "edge") {
     const data = params.data;
-
-    const extra = Number.isFinite(
-      data.shareOfCountry,
-    )
-      ? `<br/>سهم از کشور: <b>${formatPercent2(
-          data.shareOfCountry,
-        )}</b>`
+    const extra = Number.isFinite(data.shareOfCountry)
+      ? `<br/>سهم از کشور: <b>${formatPercent2(data.shareOfCountry)}</b>`
       : "";
 
     return `
-      <div class="tooltip-title">
-        جریان ${dataset.labels.trade}
-      </div>
-
-      <div class="tooltip-flow">
-        ${nodeLabels.get(data.source)}
-        ←
-        ${nodeLabels.get(data.target)}
-      </div>
-
-      سهم از کل داده:
-      <b>
-        ${formatPercent2(data.shareOfFile ?? 0)}
-      </b>
-
+      <div class="tooltip-title">جریان ${dataset.labels.trade}</div>
+      <div class="tooltip-flow">${nodeLabels.get(data.source)} ← ${nodeLabels.get(data.target)}</div>
+      سهم از کل داده: <b>${formatPercent2(data.shareOfFile ?? 0)}</b>
       ${extra}
     `;
   }
 
   const data = params.data;
-
-  if (!data) {
-    return "";
-  }
+  if (!data) return "";
 
   if (data.kind === "total") {
     return `
-      <div class="tooltip-title">
-        ${dataset.labels.total}
-      </div>
-
-      مجموع درصدهای ثبت‌شده:
-      <b>
-        ${formatPercent2(data.rawValue)}
-      </b>
+      <div class="tooltip-title">${dataset.labels.total}</div>
+      مجموع درصدهای ثبت‌شده: <b>${formatPercent2(data.rawValue)}</b>
     `;
   }
 
   const parts = [
-    `<div class="tooltip-title">${
-      data.plainName ?? data.displayName
-    }</div>`,
+    `<div class="tooltip-title">${data.plainName ?? data.displayName}</div>`,
   ];
 
   if (data.parentCountry) {
-    parts.push(
-      `کشور: <b>${data.parentCountry}</b><br/>`,
-    );
+    parts.push(`کشور: <b>${data.parentCountry}</b><br/>`);
   }
 
   if (Number.isFinite(data.shareOfFile)) {
     parts.push(
-      `سهم از کل داده: <b>${formatPercent2(
-        data.shareOfFile,
-      )}</b><br/>`,
+      `سهم از کل داده: <b>${formatPercent2(data.shareOfFile)}</b><br/>`,
     );
   }
 
   if (Number.isFinite(data.shareOfCountry)) {
     parts.push(
-      `سهم از ${dataset.labels.trade} این کشور: ` +
-        `<b>${formatPercent2(
-          data.shareOfCountry,
-        )}</b>`,
+      `سهم از ${dataset.labels.trade} این کشور: <b>${formatPercent2(data.shareOfCountry)}</b>`,
     );
   }
 
@@ -660,22 +474,18 @@ function tooltipFormatter(
 }
 
 /* -------------------------------------------------------------------------- */
-/* Component                                                                  */
+/* Main Component                                                             */
 /* -------------------------------------------------------------------------- */
 
 export default function SankeyChart({
   chartId,
   dataset,
-
   countryColumn = "Wrong country",
   chapterColumn = "فصل",
-
   topCountries = 3,
   topChaptersPerCountry = 3,
-
   height = 620,
-
-  showSummary = true,
+  showSummary = false,
   showStatus = false,
 }: SankeyChartProps) {
   const [option, setOption] = useState<any>(null);
@@ -690,34 +500,17 @@ export default function SankeyChart({
     let cancelled = false;
 
     async function loadData() {
-      if (!dataset.csvUrl) {
-        return;
-      }
+      if (!dataset.csvUrl) return;
 
       setError(null);
 
       try {
-        const response = await fetch(
-          dataset.csvUrl,
-          {
-            cache: "no-store",
-          },
-        );
+        const response = await fetch(dataset.csvUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        if (!response.ok) {
-          throw new Error(
-            `HTTP ${response.status}`,
-          );
-        }
-
-        const rows = parseCsv(
-          await response.text(),
-        );
-
+        const rows = parseCsv(await response.text());
         if (!rows.length) {
-          throw new Error(
-            "فایل CSV خالی است یا قابل خواندن نیست.",
-          );
+          throw new Error("فایل CSV خالی است یا قابل خواندن نیست.");
         }
 
         const required = [
@@ -726,202 +519,145 @@ export default function SankeyChart({
           dataset.shareColumn,
         ];
 
-        const missing =
-          required.filter(
-            (column) =>
-              !(column in rows[0]),
-          );
-
+        const missing = required.filter((column) => !(column in rows[0]));
         if (missing.length) {
           throw new Error(
-            `ستون‌های زیر پیدا نشدند: ${missing.join(
-              "، ",
-            )}`,
+            `ستون‌های زیر پیدا نشدند: ${missing.join("، ")}`,
           );
         }
 
-        const nextAggregated =
-          aggregateData(
-            rows,
-            dataset.shareColumn,
-            countryColumn,
-            chapterColumn,
-            topCountries,
-          );
+        const nextAggregated = aggregateData(
+          rows,
+          dataset.shareColumn,
+          countryColumn,
+          chapterColumn,
+          topCountries,
+        );
 
-        if (
-          !nextAggregated.topCountries
-            .length ||
-          nextAggregated.grandTotal <= 0
-        ) {
-          throw new Error(
-            "داده معتبر برای ترسیم پیدا نشد.",
-          );
+        if (!nextAggregated.topCountries.length || nextAggregated.grandTotal <= 0) {
+          throw new Error("داده معتبر برای ترسیم پیدا نشد.");
         }
 
-        if (cancelled) {
-          return;
-        }
+        if (cancelled) return;
 
         setRowCount(rows.length);
         setAggregated(nextAggregated);
 
-        const sankey =
-          buildSankeyData(
-            nextAggregated,
-            dataset,
-            topChaptersPerCountry,
-          );
+        const sankey = buildSankeyData(
+          nextAggregated,
+          dataset,
+          topChaptersPerCountry,
+        );
 
-        const labels =
-          new Map(
-            sankey.nodes.map(
-              (node) => [
-                node.name,
-                node.plainName ??
-                  node.displayName,
-              ],
-            ),
-          );
+        const labels = new Map(
+          sankey.nodes.map((node) => [
+            node.name,
+            node.plainName ?? node.displayName,
+          ]),
+        );
 
         setNodeLabels(labels);
 
         const isRtl = dataset.direction === "rtl";
 
-       setOption({
+      setOption({
   animationDuration: 850,
   animationEasing: "cubicOut",
-
-  // Grid configuration to remove side padding
-  grid: {
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    containLabel: true,
-  },
 
   tooltip: {
     trigger: "item",
     triggerOn: "mousemove|click",
     confine: true,
     extraCssText:
-      "direction:rtl;" +
-      "text-align:right;" +
-      "line-height:1.8;" +
-      "border-radius:10px;" +
-      "font-size:26px;",
+      "direction:rtl; text-align:right; line-height:1.8; border-radius:10px; font-size:26px;",
     formatter: (params: any) =>
-      tooltipFormatter(
-        params,
-        dataset,
-        labels,
-      ),
+      tooltipFormatter(params, dataset, labels),
   },
 
   series: [
     {
       type: "sankey",
-
       name: dataset.labels.trade,
-      
-      // Adjust these for better fit
-      nodeWidth: 14,      // Reduced
-      nodeGap: 16,        // Reduced
+      nodeWidth: 30,
+      nodeGap: 50,
       nodeAlign: "justify",
-
       layout: "none",
       layoutIterations: 0,
-
       draggable: false,
 
-      // Remove padding from sides
-      left: 5,
-      right: 5,
-      top: 5,
-      bottom: 5,
+      // Adjust margins based on direction
+      // For RTL: more space on left (for labels), less on right
+      left: isRtl ? "25%" : "1%",   // More space on left for RTL
+      right: isRtl ? "1%" : "27%",  // More space on right for LTR
+      top: 10,
+      bottom: 10,
 
       emphasis: {
         focus: "adjacency",
       },
-
       data: sankey.nodes,
       links: sankey.links,
-
       label: {
         show: true,
         position: isRtl ? "left" : "right",
-        distance: 10, // Reduced from 10
-        color: "#172033",
-        fontFamily: "w_Epsilon, Tahoma, Arial, sans-serif",
-        fontSize: 35,
+        distance: 18,
+        color: "#636466",
+        fontFamily: "w_Epsilon",
+        fontSize: 59,
         lineHeight: 40,
-        formatter: (params: any) =>
-          toPersianText(
-            params.data.displayName ?? params.name,
-          ),
+        overflow: "truncate",
+        fontWeight: "normal",
+        formatter: (params: any) => {
+          let label = toPersianText(params.data.displayName ?? params.name);
+          if (label.length > 30) {
+            label = label.substring(0, 30) + '...';
+          }
+          // Use the label side as the base direction so the name stays
+          // attached to the node and the percentage extends away from it.
+          return `${isRtl ? "\u2067" : "\u2066"}${label}\u2069`;
+        },
       },
-
-      itemStyle: {
-        borderWidth: 0,
-        borderRadius: 4,
-      },
-
+itemStyle: {
+  borderColor: "#F7F9F8", // Match background
+  borderWidth: 3, // Creates visual gap
+  borderRadius: 4,
+  shadowBlur: 6,
+  shadowColor: "rgba(0,0,0,0.06)",
+  shadowOffsetY: 1,
+},
       lineStyle: {
         color: "gradient",
         curveness: 0.5,
         opacity: 1,
       },
-
       levels: [
         {
           depth: 0,
-          itemStyle: {
-            color: "#1d3767",
-          },
-          lineStyle: {
-            opacity: 1,
-          },
+          itemStyle: { color: "#1d3767" },
+          lineStyle: { opacity: 1 },
         },
         {
           depth: 1,
-          itemStyle: {
-            color: "#4d6f91",
-          },
-          lineStyle: {
-            opacity: 1,
-          },
+          itemStyle: { color: "#4d6f91" },
+          lineStyle: { opacity: 1 },
         },
         {
           depth: 2,
-          itemStyle: {
-            color: "#9aa9b8",
-          },
-          lineStyle: {
-            opacity: 1,
-          },
+          itemStyle: { color: "#9aa9b8" },
+          lineStyle: { opacity: 1 },
         },
       ],
     },
   ],
 });
       } catch (err) {
-        if (cancelled) {
-          return;
-        }
-
+        if (cancelled) return;
         console.error(err);
-
-        setError(
-          err instanceof Error
-            ? err.message
-            : "خطای ناشناخته",
-        );
+        setError(err instanceof Error ? err.message : "خطای ناشناخته");
       }
     }
 
     loadData();
-
     return () => {
       cancelled = true;
     };
@@ -935,108 +671,48 @@ export default function SankeyChart({
 
   if (error) {
     return (
-      <section id={chartId} dir="rtl" className="w-full">
-        <div
-          className="mt-2 text-sm"
-          role="alert"
-        >
-          خطا: {error}
-        </div>
-      </section>
+      <div className="flex items-center justify-center h-[820px] bg-[#F7F9F8] rounded-lg">
+        <p className="text-sm text-[#6B7A73]">خطا: {error}</p>
+      </div>
     );
   }
 
   if (!option) {
     return (
-      <section id={chartId} dir="rtl" className="w-full">
-        <div
-          style={{
-            width: "100%",
-            height,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p>Loading...</p>
-        </div>
-      </section>
+      <div className="flex items-center justify-center h-[820px] bg-[#F7F9F8] rounded-lg">
+        <p className="text-sm text-[#6B7A73]">Loading...</p>
+      </div>
     );
   }
 
   return (
-    <section
-      id={chartId}
-      dir="rtl"
-      className="w-full"
+    <div
+      data-tight-svg-export="true"
+      data-chart-type="sankey"
+      style={{
+        aspectRatio: "540 / 530",
+        width: "100%",
+        overflow: "visible", // Allow labels to be visible outside container
+      }}
     >
-      {showSummary &&
-        aggregated && (
-          <div
-            className="
-              mb-3
-              flex
-              items-start
-              gap-3
-              text-right
-            "
-          >
-            <span>
-              ۳ کشور اصلی
-            </span>
-
-            <strong>
-              {aggregated.topCountries
-                .map(
-                  ([name, value]) =>
-                    `${toPersianText(name)}: ${formatPercent2(value)}`,
-                )
-                .join(" · ")}
-            </strong>
-          </div>
-        )}
-
-      <div
+      <ReactECharts
+        option={option}
+        notMerge
+        lazyUpdate
         style={{
           width: "100%",
-          aspectRatio: "270 / 265",
+          height: "100%",
         }}
-      >
-        <ReactECharts
-          option={option}
-          notMerge
-          lazyUpdate
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
-          opts={{
-            renderer: "svg",
-          }}
-          onChartReady={(instance) => {
-            const dom = instance.getDom();
-
-            dom.setAttribute("data-echarts-instance", "true");
-            dom.setAttribute("data-echarts-root", "true");
-            dom.setAttribute("data-tight-svg-export", "true");
-          }}
-        />
-      </div>
-
-      {showStatus &&
-        !error &&
-        aggregated && (
-          <div className="mt-2 text-sm">
-            {faNumber.format(
-              rowCount,
-            )}{" "}
-            ردیف خوانده شد · مجموع درصد
-            ثبت‌شده:{" "}
-            {formatPercent2(
-              aggregated.grandTotal,
-            )}
-          </div>
-        )}
-    </section>
+        opts={{
+          renderer: "svg",
+        }}
+        onChartReady={(instance) => {
+          const dom = instance.getDom();
+          dom.setAttribute("data-echarts-instance", "true");
+          // Allow labels to overflow the chart container
+          dom.style.overflow = "visible";
+        }}
+      />
+    </div>
   );
 }
