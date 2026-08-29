@@ -14,6 +14,12 @@ import turkeyTopCustomsDollar from "./charts/pie/countries/turkey/turkey-top-cus
 import pakistanTop5ExportDollar from "./charts/pie/countries/pakistan/pakistan-top5-export-dollar.json";
 import pakistanTop5ImportDollar from "./charts/pie/countries/pakistan/pakistan-top5-import-dollar.json";
 import pakistanTopCustomsDollar from "./charts/pie/countries/pakistan/pakistan-top-customs-dollar.json";
+import uaeTop5ExportDollar from "./charts/pie/countries/uae/uae-top5-export-dollar.json";
+import uaeTop5ImportDollar from "./charts/pie/countries/uae/uae-top5-import-dollar.json";
+import uaeTopCustomsDollar from "./charts/pie/countries/uae/uae-top-customs-dollar.json";
+import iraqTop5ExportDollar from "./charts/pie/countries/iraq/iraq-top5-export-dollar.json";
+import iraqTop5ImportDollar from "./charts/pie/countries/iraq/iraq-top5-import-dollar.json";
+import iraqTopCustomsDollar from "./charts/pie/countries/iraq/iraq-top-customs-dollar.json";
 import topcustoms from "./charts/top-customs.json";
 
 //new charts
@@ -133,6 +139,12 @@ export const chartRegistry = [
   pakistanTop5ExportDollar,
   pakistanTop5ImportDollar,
   pakistanTopCustomsDollar,
+  uaeTop5ExportDollar,
+  uaeTop5ImportDollar,
+  uaeTopCustomsDollar,
+  iraqTop5ExportDollar,
+  iraqTop5ImportDollar,
+  iraqTopCustomsDollar,
   topcustomsbyyearribbon,
   topcustomsbyyearribbon2,
   tophsweightbyyear,
