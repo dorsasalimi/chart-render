@@ -2,6 +2,12 @@ import tradeValueByYear from "./charts/line/trade-value-by-year.json";
 import tradeWeightByYear from "./charts/line/trade-weight-by-year.json";
 import topcustoms from "./charts/top-customs.json";
 
+//new charts
+import annualfoodsecuritytrade from "./charts/line/annual-food-security-trade.json";
+import monthlyfoodsecuritytrade1404 from "./charts/line/monthly-food-security-trade-1404.json";
+
+
+
 import topexportcustomsweight from "./charts/mahsa/top-export-customs-weight.json";
 import topExportCustomsDollar from "./charts/mahsa/farvardin/top-export-customs-dollar.json";
 import topImportCustomsDollar from "./charts/mahsa/farvardin/top-import-customs-dollar.json";
@@ -58,6 +64,10 @@ import topcustomsbyyearribbon2 from "./charts/ribbon/top-customs-by-year-ribbon2
 import tophsweightbyyear from "./charts/ribbon/top-hs-weight-by-year.json";
 import tophsexportbyyear from "./charts/ribbon/top-hs-export-by-year.json";
 import tophsimportbyyear from "./charts/ribbon/top-hs-import-by-year.json";
+import topimportcountries from "./charts/ribbon/top-import-countries.json";
+import topexportcountries from "./charts/ribbon/top-export-countries.json";
+
+
 import topchaptersexport from "./charts/pie/toptenproductsbydollarexport/top-chapters-export.json";
 import tophsexport from "./charts/pie/toptenproductsbydollarexport/top-hs-export.json";
 import topchaptersimport from "./charts/pie/toptenproductsbydollarimport/top-chapters-import.json";
@@ -110,6 +120,8 @@ export const chartRegistry = [
   topcustomsweightimport,
   topcustomsdollarexport,
   customsexportimportshare,
+  topimportcountries,
+  topexportcountries,
 
   topexportcustomsweight,
   topImportCustomsWeight,
@@ -159,5 +171,14 @@ deytopexportcustomsweight,
 deytopexportcustomsdollar,
 deytopimportcustomsdollar,
 deytopimportcustomsweight,
+
+
+
+annualfoodsecuritytrade,
+monthlyfoodsecuritytrade1404,
+
+
+
+
 ...sankeyCharts,
 ];

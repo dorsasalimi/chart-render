@@ -140,7 +140,7 @@ export default function StackedPercentBarChart({
       textStyle: {
         fontFamily: "Epsilon",
         color: "#374151",
-        fontSize: "14px",
+        fontSize: "40px",
       },
 
       formatter: (params: any[]) => {
@@ -173,7 +173,7 @@ export default function StackedPercentBarChart({
                 <span>${p.seriesName}</span>
               </div>
               <span style="font-weight:700;">
-                ${formatPercent(Number(p.value))}٪${
+                ٪${formatPercent(Number(p.value))}${
             rawValue !== undefined
               ? ` (${formatTooltipValue(rawValue)} ${rawUnit})`
               : ""
@@ -206,11 +206,13 @@ export default function StackedPercentBarChart({
       axisTick: { show: false },
       axisLabel: {
         fontFamily: "Epsilon",
-        color: "#9CA3AF",
-        formatter: (value: number) => `${toPersianDigits(value)}٪`,
+        color: "#4B5563",
+        fontSize: 40,
+
+        formatter: (value: number) => `٪${toPersianDigits(value)}`,
       },
       splitLine: {
-        lineStyle: { color: "#F0F1F3" },
+        show: false,
       },
     },
 
@@ -218,12 +220,15 @@ export default function StackedPercentBarChart({
       type: "category",
       inverse: true,
       data: categories.map(toPersianDigits),
-      axisLine: { lineStyle: { color: "#E5E7EB" } },
+      axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
         fontFamily: "Epsilon",
-        color: "#374151",
-        fontSize: 13,
+        color: "#4B5563",
+        fontSize: 40,
+      },
+      splitLine: {
+        show: false,
       },
     },
 
@@ -246,17 +251,36 @@ export default function StackedPercentBarChart({
             : false;
 
           const numericValue = Number(value);
-          const position = isExport
-            ? [exportLabelPercent(numericValue), "50%"]
-            : isImport
-            ? [importLabelPercent(dataIndex, numericValue), "50%"]
-            : undefined;
+          
+          // Set position, alignment, and padding based on series type
+          let position;
+          let align;
+          let padding: [number, number, number, number] | undefined;
+          
+          if (isExport) {
+            // صادرات - left aligned with spacing from left edge
+            position = "left";
+            align = "left";
+            padding = [0, 0, 0, 12]; // [top, right, bottom, left] - 12px spacing from left
+          } else if (isImport) {
+            // واردات - right aligned with spacing from right edge
+            position = "right";
+            align = "right";
+            padding = [0, 12, 0, 0]; // [top, right, bottom, left] - 12px spacing from right
+          } else {
+            // Default for any other series
+            position = "inside";
+            align = "center";
+            padding = undefined;
+          }
 
           return {
             value,
             label: {
               show,
-              ...(position ? { position } : {}),
+              position: position,
+              align: align,
+              padding: padding,
             },
           };
         }),
@@ -265,12 +289,12 @@ export default function StackedPercentBarChart({
         },
         label: {
           show: false,
-          position: "inside",
+          position: "inside", // Default position
           color: "#FFFFFF",
           fontFamily: "Epsilon",
-          fontSize: 14,
-          fontWeight: 700,
-          formatter: (params: any) => `${formatPercent(Number(params.value))}٪`,
+          fontSize: 40,
+          fontWeight: 400,
+          formatter: (params: any) => `٪${formatPercent(Number(params.value))}`,
         },
       };
     }),
@@ -301,7 +325,7 @@ export default function StackedPercentBarChart({
       {showLegend && (
         <div
           data-chart-custom-legend="true"
-          className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2"
+          className="mt-10 flex flex-wrap justify-center gap-x-5 gap-y-2"
           dir="rtl"
         >
           {chart.series.map((series, seriesIndex) => (
@@ -310,15 +334,15 @@ export default function StackedPercentBarChart({
               className="inline-flex items-center gap-2 text-xs"
             >
               <span
-                className="h-2.5 w-4 shrink-0 rounded-[3px]"
+                className="h-3.5 w-6 shrink-0 rounded-[3px]"
                 style={{ backgroundColor: colors[seriesIndex] }}
               />
               <span
                 className="text-[#5F6368]"
                 style={{
-                  fontSize: "13px",
+                  fontSize: "40px",
                   fontFamily: "Epsilon",
-                  fontWeight: 500,
+                  fontWeight: 400,
                 }}
               >
                 {toPersianDigits(series.name)}

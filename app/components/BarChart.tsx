@@ -10,6 +10,7 @@ interface Props {
   height?: number;
   showLegend?: boolean;
 }
+
 const getNiceYAxisScale = (
   maxValue: number,
   targetSplitCount = 7,
@@ -65,6 +66,7 @@ const getNiceYAxisScale = (
     interval,
   };
 };
+
 const getContrastTextColor = (hexColor: string) => {
   const hex = hexColor.replace("#", "");
 
@@ -78,9 +80,29 @@ const getContrastTextColor = (hexColor: string) => {
   return luminance < 0.55 ? "#FFFFFF" : "#2F3640";
 };
 
-const toPersianDigits = (value: string | number) => {
-  return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+// ============================================================
+// FIXED: Proper Persian decimal handling
+// ============================================================
+const toPersianDigits = (value: string | number): string => {
+  // Convert number to string with proper decimal handling
+  const str = typeof value === 'number' ? value.toString() : value;
+  
+  // Split into integer and decimal parts
+  const parts = str.split('.');
+  
+  // Convert integer part
+  const integerPart = parts[0].replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+  
+  // Convert decimal part if it exists
+  let decimalPart = '';
+  if (parts.length > 1) {
+    decimalPart = parts[1].replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+  }
+  
+  // Return with Persian decimal separator (٫) if there's a decimal
+  return decimalPart ? `${integerPart}٫${decimalPart}` : integerPart;
 };
+
 const fixMirroredChars = (text: string) => {
   return text
     .replace(/\(/g, "___OPEN_PAREN___")
@@ -96,74 +118,74 @@ const toPersianLabel = (value: string | number) => {
 
   return fixMirroredChars(withDigits);
 };
+
+// ============================================================
+// FIXED: Format functions with proper decimal handling
+// ============================================================
 const formatValue = (value: number) => {
   // For display inside the chart bars, just show the number without unit
+  let formattedValue: string | number;
+  
   if (value >= 1e12) {
-    return toPersianDigits((value / 1e12).toFixed(1));
+    formattedValue = (value / 1e12).toFixed(1);
+  } else if (value >= 1e9) {
+    formattedValue = (value / 1e9).toFixed(1);
+  } else if (value >= 1e6) {
+    formattedValue = (value / 1e6).toFixed(1);
+  } else if (value >= 1e3) {
+    formattedValue = (value / 1e3).toFixed(1);
+  } else {
+    formattedValue = value;
   }
-
-  if (value >= 1e9) {
-    return toPersianDigits((value / 1e9).toFixed(1));
-  }
-
-  if (value >= 1e6) {
-    return toPersianDigits((value / 1e6).toFixed(1));
-  }
-
-  if (value >= 1e3) {
-    return toPersianDigits((value / 1e3).toFixed(1));
-  }
-
-  return toPersianDigits(value);
+  
+  return toPersianDigits(formattedValue);
 };
 
 // For tooltip - shows full value with unit
 const formatTooltipValue = (value: number) => {
+  let formattedValue: string | number;
+  let unit = '';
+  
   if (value >= 1e12) {
-    return `${toPersianDigits((value / 1e12).toFixed(1))} تریلیون`;
+    formattedValue = (value / 1e12).toFixed(1);
+    unit = ' تریلیون';
+  } else if (value >= 1e9) {
+    formattedValue = (value / 1e9).toFixed(1);
+    unit = ' میلیارد';
+  } else if (value >= 1e6) {
+    formattedValue = (value / 1e6).toFixed(1);
+    unit = ' میلیون';
+  } else if (value >= 1e3) {
+    formattedValue = (value / 1e3).toFixed(1);
+    unit = ' هزار';
+  } else {
+    formattedValue = value;
   }
-
-  if (value >= 1e9) {
-    return `${toPersianDigits((value / 1e9).toFixed(1))} میلیارد`;
-  }
-
-  if (value >= 1e6) {
-    return `${toPersianDigits((value / 1e6).toFixed(1))} میلیون`;
-  }
-
-  if (value >= 1e3) {
-    return `${toPersianDigits((value / 1e3).toFixed(1))} هزار`;
-  }
-
-  return toPersianDigits(value);
+  
+  return `${toPersianDigits(formattedValue)}${unit}`;
 };
 
 const getAxisLabel = (value: number) => {
+  let formattedValue: string | number;
+  let unit = '';
+  
   if (value >= 1e9) {
-    const formatted = value / 1e9;
-
-    return `${toPersianDigits(
-      Number.isInteger(formatted) ? formatted : formatted.toFixed(1),
-    )} میلیارد`;
+    const val = value / 1e9;
+    formattedValue = Number.isInteger(val) ? val : val.toFixed(1);
+    unit = ' میلیارد';
+  } else if (value >= 1e6) {
+    const val = value / 1e6;
+    formattedValue = Number.isInteger(val) ? val : val.toFixed(1);
+    unit = ' میلیون';
+  } else if (value >= 1e3) {
+    const val = value / 1e3;
+    formattedValue = Number.isInteger(val) ? val : val.toFixed(1);
+    unit = ' هزار';
+  } else {
+    formattedValue = value;
   }
-
-  if (value >= 1e6) {
-    const formatted = value / 1e6;
-
-    return `${toPersianDigits(
-      Number.isInteger(formatted) ? formatted : formatted.toFixed(1),
-    )} میلیون`;
-  }
-
-  if (value >= 1e3) {
-    const formatted = value / 1e3;
-
-    return `${toPersianDigits(
-      Number.isInteger(formatted) ? formatted : formatted.toFixed(1),
-    )} هزار`;
-  }
-
-  return toPersianDigits(value);
+  
+  return `${toPersianDigits(formattedValue)}${unit}`;
 };
 
 const needsPercentageConversion = (chart: CategoryChart): boolean => {
@@ -238,14 +260,23 @@ export default function BarChart({
       </div>
     );
   }
+
+  // ============================================================
+  // FIXED: formatNumberWithoutUnit with proper decimal handling
+  // ============================================================
   const formatNumberWithoutUnit = (value: number) => {
     const formatted = new Intl.NumberFormat("en-US", {
       notation: "compact",
       maximumFractionDigits: 1,
     }).format(value);
-
-    return formatted.replace(/[^0-9.\-\u0660-\u0669]/g, "").trim();
+    
+    // Remove non-numeric characters but keep decimal point
+    const cleaned = formatted.replace(/[^0-9.\-]/g, "").trim();
+    
+    // Convert to Persian digits with decimal handling
+    return toPersianDigits(cleaned);
   };
+
   const [hiddenSeries, setHiddenSeries] = useState<Set<number>>(
     () => new Set(),
   );
@@ -354,28 +385,28 @@ export default function BarChart({
     [categories, processedData, hiddenSeries],
   );
 
-const maxTotal =
-  Math.max(
-    ...categoryTotals,
-    1,
-  );
+  const maxTotal =
+    Math.max(
+      ...categoryTotals,
+      1,
+    );
 
-const yAxisScale =
-  isPercentage
-    ? {
-        max: 100,
-        interval: 20,
-      }
-    : getNiceYAxisScale(
-        maxTotal,
-        7,
-      );
+  const yAxisScale =
+    isPercentage
+      ? {
+          max: 100,
+          interval: 20,
+        }
+      : getNiceYAxisScale(
+          maxTotal,
+          7,
+        );
 
-const yMax =
-  yAxisScale.max;
+  const yMax =
+    yAxisScale.max;
 
-const yInterval =
-  yAxisScale.interval;
+  const yInterval =
+    yAxisScale.interval;
 
   const barData = useMemo(() => {
     const data: [number, number][] = [];
@@ -827,8 +858,12 @@ const x = centerX - categoryWidth / 2;
 
           const color = colors[seriesIndex % colors.length];
           const labelColor = getContrastTextColor(color);
+          
+          // ============================================================
+          // FIXED: Show decimal in percentage values
+          // ============================================================
           const valueText = isPercentage
-            ? `${toPersianDigits(bounds.value.toFixed(0))}٪`
+            ? `${toPersianDigits(bounds.value.toFixed(1))}٪`
             : formatValue(bounds.value);
 
           const children: any[] = [
@@ -916,160 +951,160 @@ const x = centerX - categoryWidth / 2;
         z: 0,
       })),
     ],
-  };return (
-  <div
-    style={{
-      width: "100%",
-      aspectRatio: "600 / 230",
-      display: "flex",
-      alignItems: "stretch",
-    }}
-  >
-    {/* =====================================================
-        CHART
-    ===================================================== */}
+  };
+
+  return (
     <div
       style={{
-        width: "63.333333%",
-        height: "100%",
-        minWidth: 0,
-        flexShrink: 0,
+        width: "100%",
+        aspectRatio: "600 / 230",
+        display: "flex",
+        alignItems: "stretch",
       }}
     >
-      <ReactECharts
-        option={option}
-        notMerge={true}
-        lazyUpdate={true}
+      {/* =====================================================
+          CHART
+      ===================================================== */}
+      <div
         style={{
-          width: "100%",
+          width: "63.333333%",
           height: "100%",
+          minWidth: 0,
+          flexShrink: 0,
         }}
-        opts={{
-          renderer: "svg",
-        }}
-        onChartReady={(instance) => {
-          const dom = instance.getDom();
-
-          dom.setAttribute(
-            "data-echarts-instance",
-            "true",
-          );
-        }}
-      />
-    </div>
-
-    {/* =====================================================
-        LEGEND
-    ===================================================== */}
- {showLegend && (
-  <div
-    data-chart-custom-legend="true"
-    dir="rtl"
-    style={{
-      width: "36.666667%",
-      height: "100%",
-      boxSizing: "border-box",
-
-      display: "flex",
-      flexDirection: "column",
-      flexWrap: "wrap",
-
-      // bottom
-      justifyContent: "flex-end",
-
-      // right
-      alignItems: "flex-start",
-      alignContent: "flex-start",
-
-      columnGap: "18px",
-      rowGap: "6px",
-
-    
-
-      overflow: "hidden",
-    }}
-  >
-    {chart.series.map((series, seriesIndex) => {
-      const isHidden =
-        hiddenSeries.has(seriesIndex);
-
-      const color =
-        colors[
-          seriesIndex % colors.length
-        ];
-
-      return (
-        <button
-          key={`${series.name}-${seriesIndex}`}
-          type="button"
-          onClick={() =>
-            toggleSeries(seriesIndex)
-          }
-          aria-pressed={!isHidden}
-          title={
-            isHidden
-              ? `نمایش ${series.name}`
-              : `مخفی کردن ${series.name}`
-          }
+      >
+        <ReactECharts
+          option={option}
+          notMerge={true}
+          lazyUpdate={true}
           style={{
+            width: "100%",
+            height: "100%",
+          }}
+          opts={{
+            renderer: "svg",
+          }}
+          onChartReady={(instance) => {
+            const dom = instance.getDom();
+
+            dom.setAttribute(
+              "data-echarts-instance",
+              "true",
+            );
+          }}
+        />
+      </div>
+
+      {/* =====================================================
+          LEGEND
+      ===================================================== */}
+      {showLegend && (
+        <div
+          data-chart-custom-legend="true"
+          dir="rtl"
+          style={{
+            width: "36.666667%",
+            height: "100%",
+            boxSizing: "border-box",
+
             display: "flex",
-            flexDirection: "row",
+            flexDirection: "column",
+            flexWrap: "wrap",
 
-            alignItems: "center",
-            justifyContent: "flex-start",
+            // bottom
+            justifyContent: "flex-end",
 
-            gap: "8px",
+            // right
+            alignItems: "flex-start",
+            alignContent: "flex-start",
 
-            flexShrink: 0,
-            maxWidth: "100%",
+            columnGap: "18px",
+            rowGap: "6px",
 
-            margin: 0,
-            padding: 0,
-
-            border: "none",
-            background: "none",
-
-            opacity: isHidden
-              ? 0.4
-              : 1,
-
-            cursor: "pointer",
-
-            transition:
-              "opacity 0.2s",
-
-            textAlign: "right",
+            overflow: "hidden",
           }}
         >
-          <span
-            style={{
-              width: "16px",
-              height: "10px",
-              flexShrink: 0,
-              borderRadius: "3px",
-              backgroundColor: color,
-            }}
-          />
+          {chart.series.map((series, seriesIndex) => {
+            const isHidden =
+              hiddenSeries.has(seriesIndex);
 
-          <span
-            style={{
-              fontSize: "35px",
-              fontFamily: "Epsilon",
-              fontWeight: 500,
-              lineHeight: 1.15,
-              color: "#5F6368",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {toPersianLabel(
-              series.name,
-            )}
-          </span>
-        </button>
-      );
-    })}
-  </div>
-)}
-  </div>
-);
+            const color =
+              colors[
+                seriesIndex % colors.length
+              ];
+
+            return (
+              <button
+                key={`${series.name}-${seriesIndex}`}
+                type="button"
+                onClick={() =>
+                  toggleSeries(seriesIndex)
+                }
+                aria-pressed={!isHidden}
+                title={
+                  isHidden
+                    ? `نمایش ${series.name}`
+                    : `مخفی کردن ${series.name}`
+                }
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+
+                  gap: "8px",
+
+                  flexShrink: 0,
+                  maxWidth: "100%",
+
+                  margin: 0,
+                  padding: 0,
+
+                  border: "none",
+                  background: "none",
+
+                  opacity: isHidden
+                    ? 0.4
+                    : 1,
+
+                  cursor: "pointer",
+
+                  transition:
+                    "opacity 0.2s",
+
+                  textAlign: "right",
+                }}
+              >
+                <span
+                  style={{
+                    width: "16px",
+                    height: "10px",
+                    flexShrink: 0,
+                    borderRadius: "3px",
+                    backgroundColor: color,
+                  }}
+                />
+
+                <span
+                  style={{
+                    fontSize: "35px",
+                    fontFamily: "Epsilon",
+                    fontWeight: 500,
+                    lineHeight: 1.15,
+                    color: "#5F6368",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {toPersianLabel(
+                    series.name,
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }

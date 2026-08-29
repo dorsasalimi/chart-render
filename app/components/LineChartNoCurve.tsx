@@ -36,16 +36,16 @@ interface Props {
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 
 const toPersianDigits = (value: string | number) => {
-  return String(value).replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)]);
+  return String(value)
+    .replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)])
+    .replace(/\./g, '٫');
 };
 
 const formatNumber = (value: number) => {
   // If the absolute value is less than 1 and not zero,
   // format without an unnecessary leading zero.
   if (Math.abs(value) < 1 && value !== 0) {
-    const formatted = toPersianDigits(value.toString());
-
-    return formatted.replace(/^۰\./, "۰٫");
+    return toPersianDigits(value.toString());
   }
 
   return new Intl.NumberFormat("fa-IR", {
@@ -55,11 +55,16 @@ const formatNumber = (value: number) => {
 };
 
 const formatFullNumber = (value: number) => {
-  return new Intl.NumberFormat("fa-IR").format(value);
+  return toPersianDigits(new Intl.NumberFormat("fa-IR").format(value));
 };
 
 // Format number without unit text
 const formatNumberWithoutUnit = (value: number) => {
+  // Handle decimal numbers properly
+  if (value % 1 !== 0 && Math.abs(value) < 10) {
+    return toPersianDigits(String(value));
+  }
+  
   const formatted = new Intl.NumberFormat("en-US", {
     notation: "compact",
     maximumFractionDigits: 1,
