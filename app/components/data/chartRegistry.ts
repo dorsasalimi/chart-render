@@ -116,7 +116,7 @@ import customsexportimportshare from "./charts/stacked-percent-bar/customs-expor
 import { sankeyDatasets } from "../../lib/sankeyConfig";
 
 const sankeyCharts = sankeyDatasets.map((dataset) => ({
-  id: `sankey-${dataset.code}-${String(dataset.monthNumber).padStart(2, "0")}`,
+  id: `sankey-${dataset.code}-${dataset.year ?? String(dataset.monthNumber).padStart(2, "0")}`,
   title: dataset.title,
   type: "sankey" as const,
   dataset,

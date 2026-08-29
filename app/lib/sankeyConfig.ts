@@ -43,8 +43,7 @@ const reportTypes = [
   },
 ];
 
-export const sankeyDatasets: SankeyDataset[] =
-  reportTypes.flatMap((type) =>
+const monthlyDatasets: SankeyDataset[] = reportTypes.flatMap((type) =>
     months.map((month, index) => ({
       ...type,
 
@@ -63,3 +62,18 @@ export const sankeyDatasets: SankeyDataset[] =
       ).padStart(2, "0")}.csv`,
     })),
   );
+
+const annualDatasets: SankeyDataset[] = reportTypes.map((type) => ({
+  ...type,
+  labels: { ...type.labels },
+  year: "۱۴۰۴",
+  topCountries: 5,
+  topChaptersPerCountry: 3,
+  title: `گزارش کل ${type.title} سال ۱۴۰۴`,
+  csvUrl: `${basePath}/${type.code}-1404.csv`,
+}));
+
+export const sankeyDatasets: SankeyDataset[] = [
+  ...monthlyDatasets,
+  ...annualDatasets,
+];

@@ -86,6 +86,10 @@ export default function ChartRenderer({
           <SankeyChart
             chartId={`sankey-chart-${chart.id}`}
             dataset={sankeyChart.dataset}
+            topCountries={sankeyChart.dataset.topCountries}
+            topChaptersPerCountry={sankeyChart.dataset.topChaptersPerCountry}
+            showSummary={Boolean(sankeyChart.dataset.year)}
+            showStatus={Boolean(sankeyChart.dataset.year)}
             height={265}
           />
         );

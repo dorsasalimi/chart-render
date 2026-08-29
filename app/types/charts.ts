@@ -23,6 +23,9 @@ export interface SankeyDataset {
   labels: SankeyLabels;
   month?: string;
   monthNumber?: number;
+  year?: string;
+  topCountries?: number;
+  topChaptersPerCountry?: number;
   csvUrl: string;
 }
 
