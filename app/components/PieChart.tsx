@@ -58,7 +58,10 @@ const formatFullNumber = (value: number) => {
 
 // Always show percentage with exactly ONE decimal place
 const formatPercent = (value: number) => {
-  return toPersianDigits(Number(value).toFixed(1));
+  return value
+    .toFixed(1)
+    .replace(".", "٫")
+    .replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)]);
 };
 
 const normalizeChartData = (chart: PieChartType): PieChartDataItem[] => {
@@ -306,15 +309,14 @@ itemStyle: {
     const formattedName = lines.join("\n");
 
     // Add a space between name and percent
-    return `{name|${formattedName}} {percent|${percentDisplay}}`;
-  },
+return `{name|${formattedName}} {percent|${percentDisplay}}`;  },
           fontFamily: "Epsilon",
           color: "#636466",
 
           position: "outside",
           distanceToLabelLine: 5,
           lineHeight: 35,
-          width: 1000,
+          width: 400,
 
           rich: {
             percent: {
@@ -326,6 +328,8 @@ itemStyle: {
               fontSize: 39,
               fontWeight: 400,
               color: "#636466",
+                  padding: [0, 5, 0, 0], // Add right padding
+
               lineHeight: 50,
             },
           },
@@ -349,9 +353,7 @@ itemStyle: {
             formatter: (params: any) => {
               const value = toPersianDigits(formatFullNumber(params.value));
 
-              const percentDisplay = `٪${formatPercent(
-                Number(params.percent),
-              )}`;
+             const percentDisplay = `${formatPercent(Number(params.percent))}٪`;
 
               const valueWithUnit = chart.unit
                 ? `${value} ${toPersianLabel(chart.unit)}`
