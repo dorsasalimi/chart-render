@@ -1,5 +1,10 @@
 import tradeValueByYear from "./charts/line/trade-value-by-year.json";
 import tradeWeightByYear from "./charts/line/trade-weight-by-year.json";
+import chinaTradeValueByYear from "./charts/line/china-trade-value-by-year.json";
+import uaeTradeValueByYear from "./charts/line/uae-trade-value-by-year.json";
+import iraqTradeValueByYear from "./charts/line/iraq-trade-value-by-year.json";
+import pakistanTradeValueByYear from "./charts/line/pakistan-trade-value-by-year.json";
+import turkeyTradeValueByYear from "./charts/line/turkey-trade-value-by-year.json";
 import topcustoms from "./charts/top-customs.json";
 
 import topexportcustomsweight from "./charts/mahsa/top-export-customs-weight.json";
@@ -85,6 +90,11 @@ const sankeyCharts = sankeyDatasets.map((dataset) => ({
 export const chartRegistry = [
   tradeWeightByYear,
   tradeValueByYear,
+  chinaTradeValueByYear,
+  uaeTradeValueByYear,
+  iraqTradeValueByYear,
+  pakistanTradeValueByYear,
+  turkeyTradeValueByYear,
   topcustomsbyyearribbon,
   topcustomsbyyearribbon2,
   tophsweightbyyear,
