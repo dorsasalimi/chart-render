@@ -11,6 +11,9 @@ import chinaTopCustomsDollar from "./charts/pie/countries/china/china-top-custom
 import turkeyTop5ExportDollar from "./charts/pie/countries/turkey/turkey-top5-export-dollar.json";
 import turkeyTop5ImportDollar from "./charts/pie/countries/turkey/turkey-top5-import-dollar.json";
 import turkeyTopCustomsDollar from "./charts/pie/countries/turkey/turkey-top-customs-dollar.json";
+import pakistanTop5ExportDollar from "./charts/pie/countries/pakistan/pakistan-top5-export-dollar.json";
+import pakistanTop5ImportDollar from "./charts/pie/countries/pakistan/pakistan-top5-import-dollar.json";
+import pakistanTopCustomsDollar from "./charts/pie/countries/pakistan/pakistan-top-customs-dollar.json";
 import topcustoms from "./charts/top-customs.json";
 
 //new charts
@@ -127,6 +130,9 @@ export const chartRegistry = [
   turkeyTop5ExportDollar,
   turkeyTop5ImportDollar,
   turkeyTopCustomsDollar,
+  pakistanTop5ExportDollar,
+  pakistanTop5ImportDollar,
+  pakistanTopCustomsDollar,
   topcustomsbyyearribbon,
   topcustomsbyyearribbon2,
   tophsweightbyyear,
