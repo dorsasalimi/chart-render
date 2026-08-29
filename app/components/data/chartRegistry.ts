@@ -10,6 +10,14 @@ import topcustoms from "./charts/top-customs.json";
 //new charts
 import annualfoodsecuritytrade from "./charts/line/annual-food-security-trade.json";
 import monthlyfoodsecuritytrade1404 from "./charts/line/monthly-food-security-trade-1404.json";
+import fiveyearautomotivetrade from "./charts/line/five-year-automotive-trade.json";
+import topcarimportcountries from "./charts/line/top-car-import-countries.json";
+import topcarimportcountriestotal from "./charts/line/top-car-import-countries-total.json";
+import monthlycartrade1404 from "./charts/line/monthly-car-trade-1404.json";
+import annualmobiletrade from "./charts/line/annual-mobile-trade.json";
+import topcustomsmobile from "./charts/line/top-customs-mobile.json";
+import topmobilehsdollar from "./charts/line/top-mobile-hs-dollar.json";
+import monthlymobiletrade1404 from "./charts/line/monthly-mobile-trade-1404.json";
 
 
 
@@ -186,9 +194,13 @@ deytopimportcustomsweight,
 
 annualfoodsecuritytrade,
 monthlyfoodsecuritytrade1404,
-
-
-
+fiveyearautomotivetrade,
+topcarimportcountries,
+topcarimportcountriestotal,
+monthlycartrade1404,
+annualmobiletrade,
+topcustomsmobile,
+topmobilehsdollar,
 
 ...sankeyCharts,
 ];

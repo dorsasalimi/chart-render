@@ -1,0 +1,23 @@
+{
+  "id": "top-car-import-countries-total",
+  "title": "برترین کشورهای واردات خودرو",
+  "type": "pie",
+  "unit": "دلار",
+  "data": [
+    {
+      "name": "امارات متحده عربی",
+      "value": 53239287,
+      "rank": 1
+    },
+    {
+      "name": "ژاپن",
+      "value": 7601500,
+      "rank": 2
+    },
+    {
+      "name": "سایر",
+      "value": 419387,
+      "rank": 3
+    }
+  ]
+}
