@@ -64,6 +64,7 @@ import topchaptersimport from "./charts/pie/toptenproductsbydollarimport/top-cha
 import toptradecountriesimport from "./charts/pie/top-trade-countries-import.json";
 import toptradecountriesexport from "./charts/pie/top-trade-countries-export.json";
 import topcustomsweightimport from "./charts/pie/top-customs-weight-import.json";
+import topcustomsdollarexport from "./charts/pie/top-customs-dollar-export.json";
 import tophsimport from "./charts/pie/toptenproductsbywieghtimport/top-hs-import.json";
 import tophsdollorimport from "./charts/pie/toptenproductsbydollarimport/top-hs-import.json";
 import tophsweightbyyearimport from "./charts/ribbon/top-hs-weight-by-year2.json";
@@ -107,6 +108,7 @@ export const chartRegistry = [
   toptradecountriesexport,
   topcustomsdollar,
   topcustomsweightimport,
+  topcustomsdollarexport,
   customsexportimportshare,
 
   topexportcustomsweight,
