@@ -572,10 +572,10 @@ ${toPersianLabel(categoryName)}          </div>
     // GRID — same visual settings as LineChartNoCurve
     // =========================================================
     grid: {
-      left: 10,
-      right: 40,
-      top: 70,
-      bottom: 40,
+      left: 5,
+      right: 5,
+      top: 10,
+      bottom: 0,
       containLabel: true,
     },
 
@@ -601,10 +601,10 @@ ${toPersianLabel(categoryName)}          </div>
         inside: true,
         length: 10,
 
-        lineStyle: {
-          color: "#b8b9b9",
-          width: 3,
-        },
+          lineStyle: {
+            color: "#D1D5DB",
+            type: [5, 5],
+          },
       },
 
       axisLabel: {
@@ -648,9 +648,9 @@ ${toPersianLabel(categoryName)}          </div>
         splitLine: {
           show: true,
 
-          lineStyle: {
-            color: "#b8b9b9",
-            type: [8, 8],
+           lineStyle: {
+            color: "#D1D5DB",
+            type: [5, 5],
           },
         },
 
@@ -690,8 +690,8 @@ ${toPersianLabel(categoryName)}          </div>
           show: true,
 
           lineStyle: {
-            color: "#b8b9b9",
-            type: [8, 8],
+            color: "#D1D5DB",
+            type: [5, 5],
           },
         },
 
@@ -984,10 +984,7 @@ const x = centerX - categoryWidth / 2;
       columnGap: "18px",
       rowGap: "6px",
 
-      paddingTop: "10px",
-      paddingRight: "12px",
-      paddingBottom: "10px",
-      paddingLeft: "4px",
+    
 
       overflow: "hidden",
     }}

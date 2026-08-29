@@ -176,7 +176,7 @@ export default function LineChartNoCurve({
         return formattedNumber;
       },
 
-      fontSize: "45px",
+      fontSize: "40px",
       fontFamily: "Epsilon",
       fontWeight: 500,
       color: seriesColor,
@@ -376,7 +376,7 @@ export default function LineChartNoCurve({
 
       axisLabel: {
         show: true,
-        fontSize: "45px",
+        fontSize: "40px",
         fontFamily: "Epsilon",
         color: "#808285",
         margin: 30,
@@ -411,7 +411,7 @@ export default function LineChartNoCurve({
         },
 
         axisLabel: {
-          fontSize: "45px",
+          fontSize: "40px",
           fontFamily: "Epsilon",
           color: "#808285",
           margin: 50,

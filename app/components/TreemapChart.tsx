@@ -189,7 +189,7 @@ export default function TreemapChart({
       textStyle: {
         fontFamily: "Epsilon",
         color: "#111827",
-          fontSize: "20px",
+          fontSize: "40px",
       },
 
       extraCssText: `
@@ -238,10 +238,10 @@ export default function TreemapChart({
         width: "100%",
         height: "100%",
 
-        top: 4,
-        right: 4,
-        bottom: 4,
-        left: 4,
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
 
         nodeClick: false,
         roam: false,
@@ -284,7 +284,7 @@ export default function TreemapChart({
 
           rich: {
             name: {
-          fontSize: "20px",
+          fontSize: "40px",
               fontFamily: "Epsilon",
               fontWeight: 400,
               color: "#FFFFFF",
@@ -312,7 +312,7 @@ export default function TreemapChart({
           {
             itemStyle: {
               borderColor: "#FFFFFF",
-              borderWidth: 0,
+              borderWidth: 2,
               gapWidth: 0,
             },
           },
@@ -321,7 +321,7 @@ export default function TreemapChart({
           {
             itemStyle: {
               borderColor: "#FFFFFF",
-              borderWidth: 1,
+              borderWidth: 0,
               gapWidth: 0,
             },
 
@@ -338,7 +338,7 @@ export default function TreemapChart({
           {
             itemStyle: {
               borderColor: "rgba(255,255,255,0.9)",
-              borderWidth: 1,
+              borderWidth: 2,
               gapWidth: 0,
             },
 
@@ -362,7 +362,7 @@ export default function TreemapChart({
 
               rich: {
                 name: {
-                  fontSize: 16,
+                  fontSize: 40,
                   fontWeight: 400,
                   color: "#FFFFFF",
                   lineHeight: 16,
