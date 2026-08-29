@@ -317,8 +317,8 @@ function buildSankeyData(
     const shareText = formatPercent1(shareOfFile);
 
     const countryDisplayName = formatNodeDisplayName(
-      isRtl ? persianCountry : shareText,
-      isRtl ? shareText : persianCountry,
+      persianCountry,
+      shareText,
     );
 
     nodes.push({
@@ -361,8 +361,8 @@ function buildSankeyData(
       const shareText = formatPercent1(shareOfCountry);
 
       const chapterDisplayName = formatNodeDisplayName(
-        isRtl ? persianChapter : shareText,
-        isRtl ? shareText : persianChapter,
+        persianChapter,
+        shareText,
         " - ",
       );
 
@@ -401,8 +401,8 @@ function buildSankeyData(
       const shareText = formatPercent1(shareOfCountry);
 
       const otherDisplayName = formatNodeDisplayName(
-        isRtl ? labels.otherChapters : shareText,
-        isRtl ? shareText : labels.otherChapters,
+        labels.otherChapters,
+        shareText,
         " - ",
       );
 
@@ -439,8 +439,8 @@ function buildSankeyData(
     const shareText = formatPercent1(shareOfFile);
 
     const otherDisplayName = formatNodeDisplayName(
-      isRtl ? labels.otherCountries : shareText,
-      isRtl ? shareText : labels.otherCountries,
+      labels.otherCountries,
+      shareText,
     );
 
     nodes.push({
@@ -547,6 +547,9 @@ export default function SankeyChart({
       if (!dataset.csvUrl) return;
 
       setError(null);
+      setOption(null);
+      setAggregated(null);
+      setRowCount(0);
 
       try {
         const response = await fetch(dataset.csvUrl, { cache: "no-store" });
@@ -712,6 +715,12 @@ export default function SankeyChart({
     topChaptersPerCountry,
   ]);
 
+  useEffect(() => {
+    const resizeChart = () => chartInstanceRef.current?.resize();
+    window.addEventListener("resize", resizeChart);
+    return () => window.removeEventListener("resize", resizeChart);
+  }, []);
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-[820px] bg-[#F7F9F8] rounded-lg">
@@ -723,21 +732,27 @@ export default function SankeyChart({
   if (!option) {
     return (
       <div className="flex items-center justify-center h-[820px] bg-[#F7F9F8] rounded-lg">
-        <p className="text-sm text-[#6B7A73]">Loading...</p>
+        <p className="text-sm text-[#6B7A73]">در حال بارگذاری داده‌ها…</p>
       </div>
     );
   }
 
   return (
-    <div
-      data-tight-svg-export="true"
-      data-chart-type="sankey"
-      style={{
-        aspectRatio: "600 / 530",
-        width: "100%",
-        overflow: "visible",
-      }}
-    >
+    <div>
+      {showStatus && (
+        <div className="mb-2 text-right text-sm text-[#2B7A53]" dir="rtl">
+          داده‌ها با موفقیت بارگذاری شدند.
+        </div>
+      )}
+      <div
+        data-tight-svg-export="true"
+        data-chart-type="sankey"
+        style={{
+          aspectRatio: "600 / 530",
+          width: "100%",
+          overflow: "visible",
+        }}
+      >
       <ReactECharts
         option={option}
         notMerge
@@ -767,6 +782,13 @@ export default function SankeyChart({
           },
         }}
       />
+      </div>
+      {showSummary && aggregated && (
+        <div className="mt-2 flex flex-wrap justify-end gap-x-5 gap-y-1 text-sm text-[#6B7A73]" dir="rtl">
+          <span>تعداد ردیف‌های خوانده‌شده: {toPersianText(rowCount)}</span>
+          <span>مجموع مقادیر معتبر: {formatPercent2(aggregated.grandTotal)}</span>
+        </div>
+      )}
     </div>
   );
 }
