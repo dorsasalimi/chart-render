@@ -32,9 +32,7 @@ const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 function toPersianText(value: unknown) {
   return String(value ?? "")
     .replace(/[0-9]/g, (digit) => PERSIAN_DIGITS[Number(digit)])
-    .replace(/[٠-٩]/g, (digit) =>
-      PERSIAN_DIGITS[digit.charCodeAt(0) - 0x0660],
-    )
+    .replace(/[٠-٩]/g, (digit) => PERSIAN_DIGITS[digit.charCodeAt(0) - 0x0660])
     .replace(/ي|ى/g, "ی")
     .replace(/ك/g, "ک");
 }
@@ -108,9 +106,15 @@ function addRibbonNodeGaps(instance: any) {
     } else if (Array.isArray(shape.points)) {
       shape.points = shape.points.map((pt: [number, number], i: number) => {
         if (leftToRight) {
-          return [i < 2 ? pt[0] + RIBBON_NODE_GAP : pt[0] - RIBBON_NODE_GAP, pt[1]];
+          return [
+            i < 2 ? pt[0] + RIBBON_NODE_GAP : pt[0] - RIBBON_NODE_GAP,
+            pt[1],
+          ];
         }
-        return [i < 2 ? pt[0] - RIBBON_NODE_GAP : pt[0] + RIBBON_NODE_GAP, pt[1]];
+        return [
+          i < 2 ? pt[0] - RIBBON_NODE_GAP : pt[0] + RIBBON_NODE_GAP,
+          pt[1],
+        ];
       });
 
       edge.dirtyShape();
@@ -207,14 +211,13 @@ function parseCsv(text: string) {
     index === 0 ? header.replace(/^\uFEFF/, "").trim() : header.trim(),
   );
 
-  return rows.slice(1).map((values) =>
-    Object.fromEntries(
-      headers.map((header, index) => [
-        header,
-        (values[index] ?? "").trim(),
-      ]),
-    ),
-  );
+  return rows
+    .slice(1)
+    .map((values) =>
+      Object.fromEntries(
+        headers.map((header, index) => [header, (values[index] ?? "").trim()]),
+      ),
+    );
 }
 
 function parseShare(value: unknown) {
@@ -225,11 +228,7 @@ function parseShare(value: unknown) {
   );
 }
 
-function addToMap(
-  map: Map<string, number>,
-  key: string,
-  value: number,
-) {
+function addToMap(map: Map<string, number>, key: string, value: number) {
   map.set(key, (map.get(key) ?? 0) + value);
 }
 
@@ -249,12 +248,7 @@ function aggregateData(
     const chapter = row[chapterColumn]?.trim();
     const share = parseShare(row[shareColumn]);
 
-    if (
-      !country ||
-      !chapter ||
-      !Number.isFinite(share) ||
-      share <= 0
-    ) {
+    if (!country || !chapter || !Number.isFinite(share) || share <= 0) {
       continue;
     }
 
@@ -317,10 +311,7 @@ function buildSankeyData(
     const shareOfFile = (countryValue / aggregated.grandTotal) * 100;
     const shareText = formatPercent1(shareOfFile);
 
-    const countryDisplayName = formatNodeDisplayName(
-      persianCountry,
-      shareText,
-    );
+    const countryDisplayName = formatNodeDisplayName(persianCountry, shareText);
 
     nodes.push({
       name: countryId,
@@ -345,14 +336,10 @@ function buildSankeyData(
     const countryChapters = aggregated.chaptersByCountry.get(country);
     if (!countryChapters) continue;
 
-    const chapters = [...countryChapters.entries()].sort(
-      (a, b) => b[1] - a[1],
-    );
+    const chapters = [...countryChapters.entries()].sort((a, b) => b[1] - a[1]);
 
     const topChapters = chapters.slice(0, topChaptersPerCountry);
-    const topChapterNames = new Set(
-      topChapters.map(([chapter]) => chapter),
-    );
+    const topChapterNames = new Set(topChapters.map(([chapter]) => chapter));
 
     for (const [chapter, chapterValue] of topChapters) {
       const chapterId = `chapter::${country}::${chapter}`;
@@ -521,15 +508,15 @@ function tooltipFormatter(
   return parts.join("");
 }
 
-export default function SankeyChart({
+export default function AnnualSankeyChart({
   chartId,
   dataset,
   countryColumn = "Wrong country",
   chapterColumn = "فصل",
   topCountries = 3,
   topChaptersPerCountry = 3,
-  width = 600,
-  height = 530,
+  width = 1240,
+  height = 1754,
   showSummary = false,
   showStatus = false,
 }: SankeyChartProps) {
@@ -562,17 +549,11 @@ export default function SankeyChart({
           throw new Error("فایل CSV خالی است یا قابل خواندن نیست.");
         }
 
-        const required = [
-          countryColumn,
-          chapterColumn,
-          dataset.shareColumn,
-        ];
+        const required = [countryColumn, chapterColumn, dataset.shareColumn];
 
         const missing = required.filter((column) => !(column in rows[0]));
         if (missing.length) {
-          throw new Error(
-            `ستون‌های زیر پیدا نشدند: ${missing.join("، ")}`,
-          );
+          throw new Error(`ستون‌های زیر پیدا نشدند: ${missing.join("، ")}`);
         }
 
         const nextAggregated = aggregateData(
@@ -583,7 +564,10 @@ export default function SankeyChart({
           topCountries,
         );
 
-        if (!nextAggregated.topCountries.length || nextAggregated.grandTotal <= 0) {
+        if (
+          !nextAggregated.topCountries.length ||
+          nextAggregated.grandTotal <= 0
+        ) {
           throw new Error("داده معتبر برای ترسیم پیدا نشد.");
         }
 
@@ -676,25 +660,25 @@ export default function SankeyChart({
                 curveness: 0.5,
                 opacity: 1,
               },
-     levels: [
-  {
-    depth: 0,
-    itemStyle: { color: "#1d3767" },
-    lineStyle: { opacity: 1 },
-    label: { show: !isRtl ? false : true }, // Hide if LTR, show if RTL
-  },
-  {
-    depth: 1,
-    itemStyle: { color: "#4d6f91" },
-    lineStyle: { opacity: 1 },
-  },
-  {
-    depth: 2,
-    itemStyle: { color: "#9aa9b8" },
-    lineStyle: { opacity: 1 },
-    label: { show: !isRtl }
-  },
-],
+              levels: [
+                {
+                  depth: 0,
+                  itemStyle: { color: "#1d3767" },
+                  lineStyle: { opacity: 1 },
+                  label: { show: !isRtl ? false : true }, // Hide if LTR, show if RTL
+                },
+                {
+                  depth: 1,
+                  itemStyle: { color: "#4d6f91" },
+                  lineStyle: { opacity: 1 },
+                },
+                {
+                  depth: 2,
+                  itemStyle: { color: "#9aa9b8" },
+                  lineStyle: { opacity: 1 },
+                  label: { show: !isRtl },
+                },
+              ],
             },
           ],
         });
@@ -749,46 +733,53 @@ export default function SankeyChart({
       <div
         data-tight-svg-export="true"
         data-chart-type="sankey"
+        data-sankey-export-width={String(width)}
+        data-sankey-export-height={String(height)}
         style={{
-          aspectRatio: `${width} / ${height}`,
           width: "100%",
+          aspectRatio: `${width} / ${height}`,
           overflow: "visible",
         }}
       >
-      <ReactECharts
-        option={option}
-        notMerge
-        lazyUpdate
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-        opts={{
-          renderer: "svg",
-        }}
-        onChartReady={(instance) => {
-          chartInstanceRef.current = instance;
-          const dom = instance.getDom();
-          dom.setAttribute("data-echarts-instance", "true");
-          dom.style.overflow = "visible";
+        <ReactECharts
+          option={option}
+          notMerge
+          lazyUpdate
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          opts={{
+            renderer: "svg",
+          }}
+          onChartReady={(instance) => {
+            chartInstanceRef.current = instance;
+            const dom = instance.getDom();
+            dom.setAttribute("data-echarts-instance", "true");
+            dom.style.overflow = "visible";
 
-          instance.on("finished", () => {
-            addRibbonNodeGaps(instance);
-          });
-        }}
-        onEvents={{
-          rendered: () => {
-            if (chartInstanceRef.current) {
-              addRibbonNodeGaps(chartInstanceRef.current);
-            }
-          },
-        }}
-      />
+            instance.on("finished", () => {
+              addRibbonNodeGaps(instance);
+            });
+          }}
+          onEvents={{
+            rendered: () => {
+              if (chartInstanceRef.current) {
+                addRibbonNodeGaps(chartInstanceRef.current);
+              }
+            },
+          }}
+        />
       </div>
       {showSummary && aggregated && (
-        <div className="mt-2 flex flex-wrap justify-end gap-x-5 gap-y-1 text-sm text-[#6B7A73]" dir="rtl">
+        <div
+          className="mt-2 flex flex-wrap justify-end gap-x-5 gap-y-1 text-sm text-[#6B7A73]"
+          dir="rtl"
+        >
           <span>تعداد ردیف‌های خوانده‌شده: {toPersianText(rowCount)}</span>
-          <span>مجموع مقادیر معتبر: {formatPercent2(aggregated.grandTotal)}</span>
+          <span>
+            مجموع مقادیر معتبر: {formatPercent2(aggregated.grandTotal)}
+          </span>
         </div>
       )}
     </div>

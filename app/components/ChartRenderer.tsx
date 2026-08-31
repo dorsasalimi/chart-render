@@ -12,6 +12,7 @@ import PieChart from "./PieChart";
 import PieChartMahsa from "./PieChartMahsa";
 import LineChartNoCurve from "./LineChartNoCurve";
 import SankeyChart from "./SankeyChart";
+import AnnualSankeyChart from "./AnnualSankeyChart";
 
 interface Props {
   chart: ChartDefinition;
@@ -82,15 +83,23 @@ export default function ChartRenderer({
       case "sankey":
         const sankeyChart = chart as SankeyChartDefinition;
 
+        if (sankeyChart.dataset.year) {
+          return (
+            <AnnualSankeyChart
+              chartId={`annual-sankey-chart-${chart.id}`}
+              dataset={sankeyChart.dataset}
+              topCountries={sankeyChart.dataset.topCountries}
+              topChaptersPerCountry={sankeyChart.dataset.topChaptersPerCountry}
+            />
+          );
+        }
+
         return (
           <SankeyChart
             chartId={`sankey-chart-${chart.id}`}
             dataset={sankeyChart.dataset}
             topCountries={sankeyChart.dataset.topCountries}
             topChaptersPerCountry={sankeyChart.dataset.topChaptersPerCountry}
-            showSummary={Boolean(sankeyChart.dataset.year)}
-            showStatus={Boolean(sankeyChart.dataset.year)}
-            height={265}
           />
         );
 
