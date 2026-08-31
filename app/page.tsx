@@ -72,6 +72,19 @@ const chartTypeInfo = {
   },
 };
 
+const normalizeSearchText = (value: unknown) =>
+  String(value ?? "")
+    .normalize("NFKC")
+    .toLocaleLowerCase("fa")
+    .replace(/[يى]/g, "ی")
+    .replace(/ك/g, "ک")
+    .replace(/[ۀة]/g, "ه")
+    .replace(/[أإٱ]/g, "ا")
+    .replace(/[\u064B-\u065F\u0670]/g, "")
+    .replace(/[\u200C\u200D\u2060]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 export default function ChartsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChartType, setSelectedChartType] = useState<string>("all");
@@ -91,16 +104,24 @@ export default function ChartsPage() {
 
   // Filter charts based on search and type
   const filteredCharts = useMemo(() => {
+    const searchTerms = normalizeSearchText(searchQuery).split(" ").filter(Boolean);
+
     return chartRegistry.filter((chart: any) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        chart.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (chart.subtitle &&
-          chart.subtitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (chart.series &&
-          chart.series.some((s: any) =>
-            s.name.toLowerCase().includes(searchQuery.toLowerCase())
-          ));
+      const searchableName = normalizeSearchText(
+        [
+          chart.title,
+          chart.subtitle,
+          ...(Array.isArray(chart.series)
+            ? chart.series.map((series: any) => series.name)
+            : []),
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
+
+      const matchesSearch = searchTerms.every((term) =>
+        searchableName.includes(term),
+      );
 
       const matchesType =
         selectedChartType === "all" || chart.type === selectedChartType;

@@ -12,11 +12,27 @@ interface Props {
 
 const SERIES_COLORS = ["#2f4b9e", "#8ea0d8", "#a4cdb6", "#fba919"];
 
+const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+
 const toPersianDigits = (value: string | number) => {
-  return String(value).replace(
+  return String(value).replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)]);
+};
+
+// Fixes character mirroring for ECharts vectorizer by swapping mirrored glyphs
+const fixMirroredChars = (text: string) => {
+  return text
+    .replace(/\(/g, "___OPEN_PAREN___")
+    .replace(/\)/g, "(")
+    .replace(/___OPEN_PAREN___/g, ")");
+};
+
+const toPersianLabel = (text: string) => {
+  if (!text) return "";
+  const withDigits = String(text).replace(
     /\d/g,
-    (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]
+    (digit) => PERSIAN_DIGITS[Number(digit)]
   );
+  return fixMirroredChars(withDigits);
 };
 
 // Matches formatPrice() in persian.js: Persian digits with the Arabic
@@ -120,6 +136,9 @@ export default function StackedPercentBarChart({
     return `${(100 * (targetImportX - rowExportValue)) / value}%`;
   };
 
+  // Convert categories to Persian with proper parentheses handling
+  const persianCategories = categories.map(toPersianLabel);
+
   const option = {
     animation: true,
     animationDuration: 800,
@@ -150,9 +169,11 @@ export default function StackedPercentBarChart({
           return "";
         }
 
+        const categoryName = toPersianLabel(categories[categoryIndex] ?? "");
+
         let html = `
           <div style="font-weight:700;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid #F0F0F0;">
-            ${toPersianDigits(categories[categoryIndex] ?? "")}
+            ${categoryName}
           </div>
         `;
 
@@ -168,12 +189,12 @@ export default function StackedPercentBarChart({
             <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:4px 0;">
               <div style="display:flex;align-items:center;gap:7px;">
                 ${p.marker}
-                <span>${p.seriesName}</span>
+                <span>${toPersianLabel(p.seriesName)}</span>
               </div>
               <span style="font-weight:700;">
                 ٪${formatPercent(Number(p.value))}${
             rawValue !== undefined
-              ? ` (${formatTooltipValue(rawValue)} ${rawUnit})`
+              ? ` (${formatTooltipValue(rawValue)} ${toPersianLabel(rawUnit)})`
               : ""
           }
               </span>
@@ -217,7 +238,7 @@ export default function StackedPercentBarChart({
     yAxis: {
       type: "category",
       inverse: true,
-      data: categories.map(toPersianDigits),
+      data: persianCategories,
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
@@ -238,7 +259,7 @@ export default function StackedPercentBarChart({
       const categoryCount = categories.length;
 
       return {
-        name: series.name,
+        name: toPersianLabel(series.name),
         type: "bar",
         stack: "total",
         data: series.data.map((value, dataIndex) => {
@@ -343,7 +364,7 @@ export default function StackedPercentBarChart({
                   fontWeight: 400,
                 }}
               >
-                {toPersianDigits(series.name)}
+                {toPersianLabel(series.name)}
               </span>
             </div>
           ))}
