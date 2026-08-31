@@ -1,0 +1,48 @@
+{
+  "id": "monthly-trade-balance",
+  "title": "تراز تجاری ماهانه",
+  "type": "line",
+  "unit": "B$",
+  "data": [
+    {
+      "name": "۱",
+      "value": 0.1
+    },
+    {
+      "name": "۲",
+      "value": -0.3
+    },
+    {
+      "name": "۳",
+      "value": -1.1
+    },
+    {
+      "name": "۴",
+      "value": 0.3
+    },
+    {
+      "name": "۵",
+      "value": -1.0
+    },
+    {
+      "name": "۶",
+      "value": -0.3
+    },
+    {
+      "name": "۷",
+      "value": 0.2
+    },
+    {
+      "name": "۸",
+      "value": -0.3
+    },
+    {
+      "name": "۹",
+      "value": -0.4
+    },
+    {
+      "name": "۱۰",
+      "value": -1.2
+    }
+  ]
+}
