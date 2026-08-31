@@ -1,0 +1,9 @@
+{
+  "id": "china-import-share",
+  "title": "سهم کشور چین از کل واردات",
+  "type": "waffle",
+  "unit": "درصد",
+  "value": 27.39024641,
+  "precision": 1,
+  "activeColor": "#a84b41"
+}

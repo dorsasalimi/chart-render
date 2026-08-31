@@ -114,6 +114,7 @@ export default function MonthlyTradeChart({
    * axis max = 7
    */
 
+  const TRADE_AXIS_INTERVAL = 1;
   const tradeAxisMax = Math.ceil(maxTradeValue + 0.5);
 
   /*
@@ -146,7 +147,7 @@ export default function MonthlyTradeChart({
         min: -tradeAxisMax,
         max: tradeAxisMax,
 
-        interval: 2,
+        interval: TRADE_AXIS_INTERVAL,
 
        axisLine: {
           show: true,
@@ -337,7 +338,12 @@ export default function MonthlyTradeChart({
 
           type: "line",
 
-          data: balanceValues,
+          data: balanceValues.map((value) => ({
+            value,
+            label: {
+              position: value < 0 ? "left" : "right",
+            },
+          })),
 
           smooth: false,
 

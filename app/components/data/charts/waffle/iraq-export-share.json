@@ -1,0 +1,9 @@
+{
+  "id": "iraq-export-share",
+  "title": "سهم کشور عراق از کل صادرات",
+  "type": "waffle",
+  "unit": "درصد",
+  "value": 17.58809968,
+  "precision": 1,
+  "activeColor": "#1d3767"
+}

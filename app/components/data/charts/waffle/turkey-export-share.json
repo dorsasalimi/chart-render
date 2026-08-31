@@ -1,0 +1,9 @@
+{
+  "id": "turkey-export-share",
+  "title": "سهم کشور ترکیه از کل صادرات",
+  "type": "waffle",
+  "unit": "درصد",
+  "value": 12.57548657,
+  "precision": 1,
+  "activeColor": "#1d3767"
+}

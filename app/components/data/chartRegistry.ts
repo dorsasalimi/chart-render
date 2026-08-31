@@ -125,6 +125,16 @@ import tophsweightexport from "./charts/pie/toptenproductsbywieghtexport/top-hs-
 import industrydollarimportdetailedtreemap from "./charts/treemap/import-detailed.json";
 import industrydollarexportdetailedtreemap from "./charts/treemap/export-detailed.json";
 import customsexportimportshare from "./charts/stacked-percent-bar/customs-export-import-share.json";
+import pakistanImportShare from "./charts/waffle/pakistan-import-share.json";
+import pakistanExportShare from "./charts/waffle/pakistan-export-share.json";
+import chinaImportShare from "./charts/waffle/china-import-share.json";
+import chinaExportShare from "./charts/waffle/china-export-share.json";
+import uaeImportShare from "./charts/waffle/uae-import-share.json";
+import uaeExportShare from "./charts/waffle/uae-export-share.json";
+import turkeyImportShare from "./charts/waffle/turkey-import-share.json";
+import turkeyExportShare from "./charts/waffle/turkey-export-share.json";
+import iraqImportShare from "./charts/waffle/iraq-import-share.json";
+import iraqExportShare from "./charts/waffle/iraq-export-share.json";
 import { sankeyDatasets } from "../../lib/sankeyConfig";
 
 const sankeyCharts = sankeyDatasets.map((dataset) => ({
@@ -180,6 +190,16 @@ export const chartRegistry = [
   topcustomsweightimport,
   topcustomsdollarexport,
   customsexportimportshare,
+  pakistanImportShare,
+  pakistanExportShare,
+  chinaImportShare,
+  chinaExportShare,
+  uaeImportShare,
+  uaeExportShare,
+  turkeyImportShare,
+  turkeyExportShare,
+  iraqImportShare,
+  iraqExportShare,
   topimportcountries,
   topexportcountries,
 

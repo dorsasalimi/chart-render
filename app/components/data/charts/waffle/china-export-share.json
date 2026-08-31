@@ -1,0 +1,9 @@
+{
+  "id": "china-export-share",
+  "title": "سهم کشور چین از کل صادرات",
+  "type": "waffle",
+  "unit": "درصد",
+  "value": 24.25760178,
+  "precision": 1,
+  "activeColor": "#1d3767"
+}

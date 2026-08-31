@@ -3,6 +3,7 @@
 import type {
   ChartDefinition,
   SankeyChartDefinition,
+  WaffleChartDefinition,
 } from "../types/charts";
 
 import BarChart from "./BarChart";
@@ -15,6 +16,7 @@ import SankeyChart from "./SankeyChart";
 import AnnualSankeyChart from "./AnnualSankeyChart";
 import MonthlyTradeChart from "./MonthlyTradeChart";
 import AgriculturalTradeChart from "./AgriculturalTradeChart";
+import PercentageWaffleChart from "./PercentageWaffleChart";
 
 interface Props {
   chart: ChartDefinition;
@@ -47,6 +49,18 @@ export default function ChartRenderer({
     const type = (chart as any).type as string;
 
     switch (type) {
+      case "waffle": {
+        const waffleChart = chart as WaffleChartDefinition;
+        return (
+          <PercentageWaffleChart
+            value={waffleChart.value}
+            precision={waffleChart.precision}
+            activeColor={waffleChart.activeColor}
+            inactiveColor={waffleChart.inactiveColor}
+          />
+        );
+      }
+
       /*
        * ==========================================
        * AGRICULTURAL TRADE

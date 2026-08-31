@@ -1,0 +1,9 @@
+{
+  "id": "turkey-import-share",
+  "title": "سهم کشور ترکیه از کل واردات",
+  "type": "waffle",
+  "unit": "درصد",
+  "value": 16.14585931,
+  "precision": 1,
+  "activeColor": "#a84b41"
+}

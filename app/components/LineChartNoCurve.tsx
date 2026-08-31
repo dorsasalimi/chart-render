@@ -91,6 +91,16 @@ const formatNumberWithoutUnit = (value: number) => {
   return formatted.replace(/[^0-9.\-\u0660-\u0669]/g, "").trim();
 };
 
+const formatLineValue = (value: number) => {
+  const formatted = new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value);
+
+  return formatted.replace(/[^0-9.\-\u0660-\u0669]/g, "").trim();
+};
+
 export default function LineChartNoCurve({
   chart,
   height,
@@ -210,7 +220,7 @@ export default function LineChartNoCurve({
         }
 
         const formattedNumber = toPersianDigits(
-          formatNumberWithoutUnit(params.value),
+          formatLineValue(params.value),
         );
 
         return formattedNumber;
@@ -258,7 +268,7 @@ export default function LineChartNoCurve({
                 return "";
               }
 
-              return toPersianDigits(formatNumberWithoutUnit(params.value));
+              return toPersianDigits(formatLineValue(params.value));
             },
           }
         : { show: false },

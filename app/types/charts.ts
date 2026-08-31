@@ -6,7 +6,8 @@ export type ChartType =
   | "area"
   | "treemap"
   | "pie"
-  | "sankey";
+  | "sankey"
+  | "waffle";
 
 export interface SankeyLabels {
   trade: string;
@@ -80,11 +81,23 @@ export interface PieChartData {
   data: PieItem[];
 }
 
+export interface WaffleChartDefinition {
+  id: string;
+  title: string;
+  type: "waffle";
+  unit?: string;
+  value: number;
+  precision?: number;
+  activeColor?: string;
+  inactiveColor?: string;
+}
+
 export type ChartDefinition =
   | CategoryChart
   | TreemapChart
   | PieChartData
-  | SankeyChartDefinition;
+  | SankeyChartDefinition
+  | WaffleChartDefinition;
 
 export interface ChartSeries {
   name: string;
