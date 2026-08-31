@@ -1,149 +1,152 @@
 {
-"id": "monthly-trade",
-"title": "تجارت ماهانه",
-"type": "monthlyTrade",
-"imports": {
-"id": "monthly-imports",
-"title": "واردات ماهانه",
-"type": "bar",
-"unit": "B$",
-"data": [
-{
-"name": "۱",
-"value": 2.8
-},
-{
-"name": "۲",
-"value": 5.6
-},
-{
-"name": "۳",
-"value": 4.6
-},
-{
-"name": "۴",
-"value": 4.6
-},
-{
-"name": "۵",
-"value": 5.4
-},
-{
-"name": "۶",
-"value": 5.3
-},
-{
-"name": "۷",
-"value": 5.9
-},
-{
-"name": "۸",
-"value": 5.3
-},
-{
-"name": "۹",
-"value": 4.6
-},
-{
-"name": "۱۰",
-"value": 5.0
-}
-]
-},
-"exports": {
-"id": "monthly-exports",
-"title": "صادرات ماهانه",
-"type": "bar",
-"unit": "B$",
-"data": [
-{
-"name": "۱",
-"value": 2.9
-},
-{
-"name": "۲",
-"value": 5.3
-},
-{
-"name": "۳",
-"value": 3.4
-},
-{
-"name": "۴",
-"value": 4.9
-},
-{
-"name": "۵",
-"value": 4.4
-},
-{
-"name": "۶",
-"value": 5.0
-},
-{
-"name": "۷",
-"value": 6.1
-},
-{
-"name": "۸",
-"value": 5.0
-},
-{
-"name": "۹",
-"value": 4.2
-},
-{
-"name": "۱۰",
-"value": 3.8
-}
-]
-},
-"balance": {
-"id": "monthly-balance",
-"title": "تراز تجاری ماهانه",
-"type": "line",
-"unit": "B$",
-"data": [
-{
-"name": "۱",
-"value": 0.1
-},
-{
-"name": "۲",
-"value": -0.3
-},
-{
-"name": "۳",
-"value": -1.1
-},
-{
-"name": "۴",
-"value": 0.3
-},
-{
-"name": "۵",
-"value": -1.0
-},
-{
-"name": "۶",
-"value": -0.3
-},
-{
-"name": "۷",
-"value": 0.2
-},
-{
-"name": "۸",
-"value": -0.3
-},
-{
-"name": "۹",
-"value": -0.4
-},
-{
-"name": "۱۰",
-"value": -1.2
-}
-]
-}
+  "id": "monthly-trade",
+  "title": "تجارت ماهانه",
+  "type": "monthlyTrade",
+
+  "imports": {
+    "id": "monthly-imports",
+    "title": "واردات ماهانه",
+    "type": "bar",
+    "unit": "B$",
+    "data": [
+      {
+        "name": "دی",
+        "value": 5.0
+      },
+      {
+        "name": "آذر",
+        "value": 4.6
+      },
+      {
+        "name": "آبان",
+        "value": 5.3
+      },
+      {
+        "name": "مهر",
+        "value": 5.9
+      },
+      {
+        "name": "شهریور",
+        "value": 5.3
+      },
+      {
+        "name": "مرداد",
+        "value": 5.4
+      },
+      {
+        "name": "تیر",
+        "value": 4.6
+      },
+      {
+        "name": "خرداد",
+        "value": 4.6
+      },
+      {
+        "name": "اردیبهشت",
+        "value": 5.6
+      },
+      {
+        "name": "فروردین",
+        "value": 2.8
+      }
+    ]
+  },
+
+  "exports": {
+    "id": "monthly-exports",
+    "title": "صادرات ماهانه",
+    "type": "bar",
+    "unit": "B$",
+    "data": [
+      {
+        "name": "دی",
+        "value": 3.8
+      },
+      {
+        "name": "آذر",
+        "value": 4.2
+      },
+      {
+        "name": "آبان",
+        "value": 5.0
+      },
+      {
+        "name": "مهر",
+        "value": 6.1
+      },
+      {
+        "name": "شهریور",
+        "value": 5.0
+      },
+      {
+        "name": "مرداد",
+        "value": 4.4
+      },
+      {
+        "name": "تیر",
+        "value": 4.9
+      },
+      {
+        "name": "خرداد",
+        "value": 3.4
+      },
+      {
+        "name": "اردیبهشت",
+        "value": 5.3
+      },
+      {
+        "name": "فروردین",
+        "value": 2.9
+      }
+    ]
+  },
+
+  "balance": {
+    "id": "monthly-balance",
+    "title": "تراز تجاری ماهانه",
+    "type": "line",
+    "unit": "B$",
+    "data": [
+      {
+        "name": "دی",
+        "value": -1.2
+      },
+      {
+        "name": "آذر",
+        "value": -0.4
+      },
+      {
+        "name": "آبان",
+        "value": -0.3
+      },
+      {
+        "name": "مهر",
+        "value": 0.2
+      },
+      {
+        "name": "شهریور",
+        "value": -0.3
+      },
+      {
+        "name": "مرداد",
+        "value": -1.0
+      },
+      {
+        "name": "تیر",
+        "value": 0.3
+      },
+      {
+        "name": "خرداد",
+        "value": -1.1
+      },
+      {
+        "name": "اردیبهشت",
+        "value": -0.3
+      },
+      {
+        "name": "فروردین",
+        "value": 0.1
+      }
+    ]
+  }
 }

@@ -49,7 +49,6 @@ const renderChart = () => {
           imports={(chart as any).imports}
           exports={(chart as any).exports}
           balance={(chart as any).balance}
-          height={height}
         />
       );
 
