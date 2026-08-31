@@ -12,6 +12,17 @@ interface ChartSeries {
   lineStyle?: "solid" | "dashed";
 }
 
+interface LineDataParams {
+  dataIndex: number;
+  value: number;
+}
+
+interface TooltipSeriesParams extends LineDataParams {
+  axisValue?: string | number;
+  color?: string;
+  seriesName: string;
+}
+
 const normalizeDigits = (value: string | number) =>
   String(value)
     .replace(/[\u06F0-\u06F9]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0))
@@ -191,7 +202,7 @@ export default function LineChartNoCurve({
 
       distance: s.name === "ارزش صادرات" ? 36 : 10,
 
-      formatter: (params: any) => {
+      formatter: (params: LineDataParams) => {
         const index = params.dataIndex;
 
         if (!labelIndexes.has(index)) {
@@ -242,7 +253,7 @@ export default function LineChartNoCurve({
       label: showLabels
         ? {
             ...baseSeries.label,
-            formatter: (params: any) => {
+            formatter: (params: LineDataParams) => {
               if (params.dataIndex !== partialYearStartIndex + 1) {
                 return "";
               }
@@ -293,7 +304,7 @@ export default function LineChartNoCurve({
         },
       },
 
-      formatter: (params: any[]) => {
+      formatter: (params: TooltipSeriesParams[]) => {
         if (!params?.length) {
           return "";
         }
