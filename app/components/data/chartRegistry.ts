@@ -5,6 +5,21 @@ import uaeTradeValueByYear from "./charts/line/uae-trade-value-by-year.json";
 import iraqTradeValueByYear from "./charts/line/iraq-trade-value-by-year.json";
 import pakistanTradeValueByYear from "./charts/line/pakistan-trade-value-by-year.json";
 import turkeyTradeValueByYear from "./charts/line/turkey-trade-value-by-year.json";
+import chinaTop5ExportDollar from "./charts/pie/countries/china/china-top5-export-dollar.json";
+import chinaTop5ImportDollar from "./charts/pie/countries/china/china-top5-import-dollar.json";
+import chinaTopCustomsDollar from "./charts/pie/countries/china/china-top-customs-dollar.json";
+import turkeyTop5ExportDollar from "./charts/pie/countries/turkey/turkey-top5-export-dollar.json";
+import turkeyTop5ImportDollar from "./charts/pie/countries/turkey/turkey-top5-import-dollar.json";
+import turkeyTopCustomsDollar from "./charts/pie/countries/turkey/turkey-top-customs-dollar.json";
+import pakistanTop5ExportDollar from "./charts/pie/countries/pakistan/pakistan-top5-export-dollar.json";
+import pakistanTop5ImportDollar from "./charts/pie/countries/pakistan/pakistan-top5-import-dollar.json";
+import pakistanTopCustomsDollar from "./charts/pie/countries/pakistan/pakistan-top-customs-dollar.json";
+import uaeTop5ExportDollar from "./charts/pie/countries/uae/uae-top5-export-dollar.json";
+import uaeTop5ImportDollar from "./charts/pie/countries/uae/uae-top5-import-dollar.json";
+import uaeTopCustomsDollar from "./charts/pie/countries/uae/uae-top-customs-dollar.json";
+import iraqTop5ExportDollar from "./charts/pie/countries/iraq/iraq-top5-export-dollar.json";
+import iraqTop5ImportDollar from "./charts/pie/countries/iraq/iraq-top5-import-dollar.json";
+import iraqTopCustomsDollar from "./charts/pie/countries/iraq/iraq-top-customs-dollar.json";
 import topcustoms from "./charts/top-customs.json";
 
 //new charts
@@ -116,6 +131,21 @@ export const chartRegistry = [
   iraqTradeValueByYear,
   pakistanTradeValueByYear,
   turkeyTradeValueByYear,
+  chinaTop5ExportDollar,
+  chinaTop5ImportDollar,
+  chinaTopCustomsDollar,
+  turkeyTop5ExportDollar,
+  turkeyTop5ImportDollar,
+  turkeyTopCustomsDollar,
+  pakistanTop5ExportDollar,
+  pakistanTop5ImportDollar,
+  pakistanTopCustomsDollar,
+  uaeTop5ExportDollar,
+  uaeTop5ImportDollar,
+  uaeTopCustomsDollar,
+  iraqTop5ExportDollar,
+  iraqTop5ImportDollar,
+  iraqTopCustomsDollar,
   topcustomsbyyearribbon,
   topcustomsbyyearribbon2,
   tophsweightbyyear,
