@@ -37,6 +37,12 @@ import tradesharecomparison from "./charts/line/trade-share-comparison-rajae.jso
 import taminenerjimonthlyimportvalue1404 from "./charts/line/tamin-enerji-monthly-import-value-1404.json";
 
 
+//monthly exports
+import monthlyexports from "./charts/monthly/monthly-exports.json";
+
+
+
+
 
 import topexportcustomsweight from "./charts/mahsa/top-export-customs-weight.json";
 import topExportCustomsDollar from "./charts/mahsa/farvardin/top-export-customs-dollar.json";
@@ -235,5 +241,9 @@ topcustomsmobile,
 topmobilehsdollar,monthlymobiletrade1404,
 tradesharecomparison,
 taminenerjimonthlyimportvalue1404,
+
+
+
+monthlyexports,
 ...sankeyCharts,
 ];

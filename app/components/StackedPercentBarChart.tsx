@@ -224,6 +224,8 @@ export default function StackedPercentBarChart({
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
+            margin: 20, // Adjust this value to control the gap
+
         fontFamily: "Epsilon",
         color: "#4B5563",
         fontSize: 40,
@@ -235,21 +237,31 @@ export default function StackedPercentBarChart({
       },
     },
 
-    yAxis: {
-      type: "category",
-      inverse: true,
-      data: persianCategories,
-      axisLine: { show: false },
-      axisTick: { show: false },
-      axisLabel: {
-        fontFamily: "Epsilon",
-        color: "#4B5563",
-        fontSize: 40,
-      },
-      splitLine: {
-        show: false,
-      },
-    },
+yAxis: {
+  type: "category",
+  inverse: true,
+  data: persianCategories,
+  axisLine: { show: false },
+  axisTick: { show: false },
+  axisLabel: {
+    fontFamily: "Epsilon",
+    color: "#4B5563",
+    fontSize: 40,
+    // Add margin to control gap between label and bars
+    margin: 30, // Adjust this value to control the gap
+    // Or use rich text for more precise positioning
+    rich: {
+      label: {
+        align: 'right',
+        verticalAlign: 'middle',
+        padding: [0, 8, 0, 0] // [top, right, bottom, left]
+      }
+    }
+  },
+  splitLine: {
+    show: false,
+  },
+},
 
     barCategoryGap: "22%",
 
