@@ -101,9 +101,7 @@ export default function StackedPercentBarChart({
   const importSeriesData =
     sortedSeries.find((s) => s.name === "واردات")?.data ?? [];
 
-  const bandarIndex = categories.indexOf(
-    "منطقه ویژه اقتصادی بندر امام خمینی (ره)"
-  );
+  const bandarIndex = categories.indexOf("م.و.ا. بندر امام خمینی (ره)");
   const meshhadIndex = categories.indexOf("مشهد");
 
   const bandarExportValue = Number(exportSeriesData[bandarIndex] ?? 0);
