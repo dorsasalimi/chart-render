@@ -35,6 +35,10 @@ import topmobilehsdollar from "./charts/line/top-mobile-hs-dollar.json";
 import monthlymobiletrade1404 from "./charts/line/monthly-mobile-trade-1404.json";
 import tradesharecomparison from "./charts/line/trade-share-comparison-rajae.json";
 import taminenerjimonthlyimportvalue1404 from "./charts/line/tamin-enerji-monthly-import-value-1404.json";
+import annualenergysupplytrade from "./charts/line/annual-energy-supply-trade.json";
+import customsenergysupplytrade from "./charts/line/customs-energy-supply-trade.json";
+import energysupplytradecountries from "./charts/line/energy-supply-trade-countries.json";
+import agriculturaltrade from "./charts/line/agricultural-trade.json";
 
 
 //monthly exports
@@ -241,8 +245,10 @@ topcustomsmobile,
 topmobilehsdollar,monthlymobiletrade1404,
 tradesharecomparison,
 taminenerjimonthlyimportvalue1404,
-
-
+annualenergysupplytrade,
+customsenergysupplytrade,
+energysupplytradecountries,
+agriculturaltrade,
 
 monthlyexports,
 ...sankeyCharts,

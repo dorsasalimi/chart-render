@@ -12,6 +12,11 @@ interface ChartSeries {
   lineStyle?: "solid" | "dashed";
 }
 
+const normalizeDigits = (value: string | number) =>
+  String(value)
+    .replace(/[\u06F0-\u06F9]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0))
+    .replace(/[\u0660-\u0669]/g, (digit) => String(digit.charCodeAt(0) - 0x0660));
+
 interface CategoryChart {
   id: string;
   title: string;
@@ -103,8 +108,15 @@ export default function LineChartNoCurve({
   // Use only our 3 specific colors
   const colors = CUSTOM_LINE_COLORS;
 
-  // Build ECharts series
-  const series = chart.series.map((s, index) => {
+  const partialYearStartIndex = categories.findIndex(
+    (category, index) =>
+      normalizeDigits(category) === "1403" &&
+      normalizeDigits(categories[index + 1] ?? "") === "1404",
+  );
+
+  // Build ECharts series. For annual charts, split only the 1403 -> 1404
+  // interval into a second series so the rest of the path remains solid.
+  const series = chart.series.flatMap((s, index) => {
     const seriesColor = s.color ?? colors[index % colors.length];
     const data = s.data || [];
 
@@ -123,11 +135,20 @@ export default function LineChartNoCurve({
       data.forEach((_, i) => labelIndexes.add(i));
     }
 
-    return {
+    const hasPartialYearSegment =
+      !isDashed &&
+      partialYearStartIndex >= 0 &&
+      data.length > partialYearStartIndex + 1;
+
+    const baseSeries = {
       name: s.name,
       type: "line",
 
-      data,
+      data: hasPartialYearSegment
+        ? data.map((value, dataIndex) =>
+            dataIndex > partialYearStartIndex ? null : value,
+          )
+        : data,
 
       smooth: false,
 
@@ -199,6 +220,42 @@ export default function LineChartNoCurve({
         hideOverlap: false,
       },
     };
+
+    if (!hasPartialYearSegment) {
+      return [baseSeries];
+    }
+
+    const partialSegmentSeries = {
+      ...baseSeries,
+      data: data.map((value, dataIndex) =>
+        dataIndex === partialYearStartIndex ||
+        dataIndex === partialYearStartIndex + 1
+          ? value
+          : null,
+      ),
+      lineStyle: {
+        width: 5.5,
+        type: [8, 8],
+      },
+      symbol: (_value: unknown, params: { dataIndex: number }) =>
+        params.dataIndex === partialYearStartIndex ? "none" : "circle",
+      label: showLabels
+        ? {
+            ...baseSeries.label,
+            formatter: (params: any) => {
+              if (params.dataIndex !== partialYearStartIndex + 1) {
+                return "";
+              }
+
+              return toPersianDigits(formatNumberWithoutUnit(params.value));
+            },
+          }
+        : { show: false },
+      tooltip: { show: false },
+      silent: true,
+    };
+
+    return [baseSeries, partialSegmentSeries];
   });
 
   const option = {

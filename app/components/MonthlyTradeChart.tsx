@@ -44,7 +44,7 @@ function toPersianDecimalSeparator(value: string): string {
 
 function formatValue(value: number): string {
   const formatted = toPersianDigits(value.toFixed(1));
-  return `${toPersianDecimalSeparator(formatted)}B$`;
+  return toPersianDecimalSeparator(formatted);
 }
 
 function formatAxisValue(value: number): string {
@@ -56,11 +56,6 @@ function formatAxisValue(value: number): string {
 
   const formatted = toPersianDigits(absoluteValue.toFixed(0));
   return `${formatted}B$`;
-}
-
-function formatTotal(value: number): string {
-  const formatted = toPersianDigits(value.toFixed(1));
-  return `${toPersianDecimalSeparator(formatted)}B$`;
 }
 
 export default function MonthlyTradeChart({
@@ -96,24 +91,6 @@ export default function MonthlyTradeChart({
 
     return categories.map((month) => map.get(month) ?? 0);
   }, [balance.data, categories]);
-
-  /*
-   * ---------------------------------------------------------
-   * TOTALS
-   * ---------------------------------------------------------
-   */
-
-  const importTotal = useMemo(
-    () => imports.data.reduce((sum, item) => sum + item.value, 0),
-    [imports.data],
-  );
-
-  const exportTotal = useMemo(
-    () => exports.data.reduce((sum, item) => sum + item.value, 0),
-    [exports.data],
-  );
-
-  const balanceTotal = exportTotal - importTotal;
 
   /*
    * ---------------------------------------------------------
@@ -376,6 +353,31 @@ export default function MonthlyTradeChart({
           itemStyle: {
             color: BALANCE_COLOR,
             borderColor: BALANCE_COLOR,
+          },
+
+          label: {
+            show: true,
+            position: "right",
+            distance: 10,
+            color: BALANCE_COLOR,
+            fontFamily: FONT_FAMILY,
+            fontSize: 40,
+            formatter: ({ value }: { value: number }) =>
+              formatValue(Number(value)),
+          },
+
+          markLine: {
+            silent: true,
+            symbol: ["none", "none"],
+            label: {
+              show: false,
+            },
+            lineStyle: {
+              color: "#808285",
+              width: 2,
+              type: "solid",
+            },
+            data: [{ xAxis: 0 }],
           },
 
           emphasis: {

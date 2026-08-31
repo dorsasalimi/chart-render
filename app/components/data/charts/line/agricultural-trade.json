@@ -1,0 +1,92 @@
+{
+  "id": "agricultural-trade",
+  "title": "تجارت محصولات کشاورزی",
+  "subtitle": "سهم محصولات کشاورزی و غذایی از کل بازرگانی ایران",
+  "type": "agriculturalTrade",
+  "unit": "B$",
+  "source": "گمرک ایران",
+  "years": [
+    "۱۳۹۵",
+    "۱۳۹۶",
+    "۱۳۹۷",
+    "۱۳۹۸",
+    "۱۳۹۹",
+    "۱۴۰۰",
+    "۱۴۰۱",
+    "۱۴۰۲",
+    "۱۴۰۳",
+    "۱۴۰۴"
+  ],
+  "data": [
+    {
+      "year": "۱۳۹۵",
+      "imports": 42.7,
+      "importShare": 26.9,
+      "exports": 44.0,
+      "exportShare": 34.4
+    },
+    {
+      "year": "۱۳۹۶",
+      "imports": 51.8,
+      "importShare": 26.4,
+      "exports": 47.8,
+      "exportShare": 32.8
+    },
+    {
+      "year": "۱۳۹۷",
+      "imports": 41.7,
+      "importShare": 25.9,
+      "exports": 44.7,
+      "exportShare": 34.2
+    },
+    {
+      "year": "۱۳۹۸",
+      "imports": 44.0,
+      "importShare": 28.5,
+      "exports": 25.8,
+      "exportShare": 33.5
+    },
+    {
+      "year": "۱۳۹۹",
+      "imports": 38.8,
+      "importShare": 27.7,
+      "exports": 24.4,
+      "exportShare": 25.3
+    },
+    {
+      "year": "۱۴۰۰",
+      "imports": 52.9,
+      "importShare": 32.1,
+      "exports": 48.2,
+      "exportShare": 16.9
+    },
+    {
+      "year": "۱۴۰۱",
+      "imports": 60.2,
+      "importShare": 30.1,
+      "exports": 54.0,
+      "exportShare": 9.7
+    },
+    {
+      "year": "۱۴۰۲",
+      "imports": 66.1,
+      "importShare": 25.0,
+      "exports": 49.5,
+      "exportShare": 17.8
+    },
+    {
+      "year": "۱۴۰۳",
+      "imports": 72.2,
+      "importShare": 27.5,
+      "exports": 57.8,
+      "exportShare": 14.4
+    },
+    {
+      "year": "۱۴۰۴",
+      "imports": 49.0,
+      "importShare": 27.2,
+      "exports": 45.0,
+      "exportShare": 16.0
+    }
+  ]
+}
