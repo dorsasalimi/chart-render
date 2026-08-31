@@ -34,6 +34,7 @@ import topcustomsmobile from "./charts/line/top-customs-mobile.json";
 import topmobilehsdollar from "./charts/line/top-mobile-hs-dollar.json";
 import monthlymobiletrade1404 from "./charts/line/monthly-mobile-trade-1404.json";
 import tradesharecomparison from "./charts/line/trade-share-comparison-rajae.json";
+import taminenerjimonthlyimportvalue1404 from "./charts/line/tamin-enerji-monthly-import-value-1404.json";
 
 
 
@@ -233,5 +234,6 @@ annualmobiletrade,
 topcustomsmobile,
 topmobilehsdollar,monthlymobiletrade1404,
 tradesharecomparison,
+taminenerjimonthlyimportvalue1404,
 ...sankeyCharts,
 ];

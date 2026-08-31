@@ -8,6 +8,8 @@ const CUSTOM_LINE_COLORS = ["#1d3767", "#a84b41", "#595959"];
 interface ChartSeries {
   name: string;
   data: number[];
+  color?: string;
+  lineStyle?: "solid" | "dashed";
 }
 
 interface CategoryChart {
@@ -103,10 +105,11 @@ export default function LineChartNoCurve({
 
   // Build ECharts series
   const series = chart.series.map((s, index) => {
-    const seriesColor = colors[index % colors.length];
+    const seriesColor = s.color ?? colors[index % colors.length];
     const data = s.data || [];
 
-    const isDashed = dashedSeries.includes(s.name);
+    const isDashed =
+      s.lineStyle === "dashed" || dashedSeries.includes(s.name);
 
     // Determine which points should display labels
     const labelIndexes = new Set<number>();
@@ -327,7 +330,8 @@ export default function LineChartNoCurve({
 
           data: [...chart.series].reverse().map((s) => ({
             name: s.name,
-            icon: dashedSeries.includes(s.name)
+            icon:
+              s.lineStyle === "dashed" || dashedSeries.includes(s.name)
               ? createDashedLegendIcon()
               : createSolidLegendIcon(),
           })),
@@ -335,7 +339,7 @@ export default function LineChartNoCurve({
 
           textStyle: {
             fontFamily: "Epsilon",
-            fontSize: "40px",
+            fontSize: "41px",
             fontWeight: 500,
             color: "#4B5563",
             padding: [0, 15],
@@ -348,8 +352,8 @@ export default function LineChartNoCurve({
     // GRID
     // =========================================================
     grid: {
-      left: 10,
-      right: 40,
+      left: 20,
+      right: 48,
       top: showLegend ? 70 : 28,
       bottom: showLegend ? 120 : 40,
       containLabel: true,
