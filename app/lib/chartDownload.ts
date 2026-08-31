@@ -616,12 +616,12 @@ const buildExportSVG = async (
   const font = await loadFont();
 
   const exportWidth = isSankey
-    ? SANKEY_DOWNLOAD_WIDTH
+    ? width
     : hasCustomLegend
     ? width + BAR_LEGEND_WIDTH
     : width;
 
-  const exportHeight = isSankey ? SANKEY_DOWNLOAD_HEIGHT : height;
+  const exportHeight = height;
 
   const legendViewBoxWidth = hasCustomLegend
     ? BAR_LEGEND_WIDTH * (vbWidth / width)
@@ -799,19 +799,38 @@ export const downloadChart = async (
       chartElement.getAttribute("data-tight-svg-export") === "true",
     );
 
+    const sankeyExportElement = chartElement.matches(
+      "[data-sankey-export-width], [data-sankey-export-height]",
+    )
+      ? chartElement
+      : chartElement.querySelector(
+          "[data-sankey-export-width], [data-sankey-export-height]",
+        );
+
+    const annualSankeyWidth = Number(
+      sankeyExportElement?.getAttribute("data-sankey-export-width"),
+    );
+    const annualSankeyHeight = Number(
+      sankeyExportElement?.getAttribute("data-sankey-export-height"),
+    );
+
     const targetWidth =
-      width !== undefined
-        ? width
+      isSankey && annualSankeyWidth > 0
+        ? annualSankeyWidth
         : isSankey
-        ? SANKEY_DOWNLOAD_WIDTH
-        : DOWNLOAD_WIDTH;
+          ? SANKEY_DOWNLOAD_WIDTH
+          : width !== undefined
+            ? width
+            : DOWNLOAD_WIDTH;
 
     const targetHeight =
-      height !== undefined
-        ? height
+      isSankey && annualSankeyHeight > 0
+        ? annualSankeyHeight
         : isSankey
-        ? SANKEY_DOWNLOAD_HEIGHT
-        : DOWNLOAD_HEIGHT;
+          ? SANKEY_DOWNLOAD_HEIGHT
+          : height !== undefined
+            ? height
+            : DOWNLOAD_HEIGHT;
 
     const fileName = sanitizeFileName(chartTitle) || "chart";
 

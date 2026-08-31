@@ -18,6 +18,7 @@ import annualmobiletrade from "./charts/line/annual-mobile-trade.json";
 import topcustomsmobile from "./charts/line/top-customs-mobile.json";
 import topmobilehsdollar from "./charts/line/top-mobile-hs-dollar.json";
 import monthlymobiletrade1404 from "./charts/line/monthly-mobile-trade-1404.json";
+import tradesharecomparison from "./charts/line/trade-share-comparison-rajae.json";
 
 
 
@@ -200,7 +201,7 @@ topcarimportcountriestotal,
 monthlycartrade1404,
 annualmobiletrade,
 topcustomsmobile,
-topmobilehsdollar,
-
+topmobilehsdollar,monthlymobiletrade1404,
+tradesharecomparison,
 ...sankeyCharts,
 ];
