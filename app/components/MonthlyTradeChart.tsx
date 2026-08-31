@@ -29,7 +29,7 @@ const FONT_FAMILY =
 
 const IMPORT_COLOR = "#1d3767";
 const EXPORT_COLOR = "#a84b41";
-const BALANCE_COLOR = "#c99a32";
+const BALANCE_COLOR = "#fba919";
 
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 const PERSIAN_DECIMAL = "٫"; // Persian decimal separator

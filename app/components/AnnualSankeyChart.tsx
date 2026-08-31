@@ -53,8 +53,9 @@ function formatNodeDisplayName(
   return `${name}${separator}${shareText}`;
 }
 
-const NODE_GAP = 70;
-const RIBBON_NODE_GAP = 8;
+// Further reduced gaps for better fit
+const NODE_GAP = 30; // Reduced from 30
+const RIBBON_NODE_GAP = 5; // Reduced from 4
 
 function addRibbonNodeGaps(instance: any) {
   const series = instance.getModel()?.getSeriesByIndex(0);
@@ -515,8 +516,8 @@ export default function AnnualSankeyChart({
   chapterColumn = "فصل",
   topCountries = 3,
   topChaptersPerCountry = 3,
-  width = 1240,
-  height = 1754,
+  width = 580,
+  height = 395,
   showSummary = false,
   showStatus = false,
 }: SankeyChartProps) {
@@ -592,6 +593,10 @@ export default function AnnualSankeyChart({
         setNodeLabels(labels);
 
         const isRtl = dataset.direction === "rtl";
+        
+        // Dynamic sizing based on height
+        const nodeWidth = height < 450 ? 16 : height < 550 ? 20 : 24;
+        const labelDistance = height < 450 ? 6 : height < 550 ? 8 : 10;
 
         setOption({
           animationDuration: 850,
@@ -602,7 +607,7 @@ export default function AnnualSankeyChart({
             triggerOn: "mousemove|click",
             confine: true,
             extraCssText:
-              "direction:rtl; text-align:right; line-height:1.8; border-radius:10px; font-size:26px;",
+              "direction:rtl; text-align:right; line-height:1.8; border-radius:10px; font-size:16px;",
             formatter: (params: any) =>
               tooltipFormatter(params, dataset, labels),
           },
@@ -611,15 +616,16 @@ export default function AnnualSankeyChart({
             {
               type: "sankey",
               name: dataset.labels.trade,
-              nodeWidth: 30,
+              nodeWidth: nodeWidth,
               nodeGap: NODE_GAP,
               nodeAlign: "justify",
               layout: "none",
               layoutIterations: 0,
               draggable: false,
 
-              left: isRtl ? "22%" : "1%",
-              right: isRtl ? "1%" : "22%",
+              // Much tighter margins
+              left: isRtl ? "12%" : "1%",
+              right: isRtl ? "1%" : "12%",
               top: 10,
               bottom: 20,
 
@@ -628,26 +634,28 @@ export default function AnnualSankeyChart({
               },
               data: sankey.nodes,
               links: sankey.links,
-              label: {
-                show: true,
-                position: isRtl ? "left" : "right",
-                distance: 18,
-                color: "#636466",
-                fontFamily: "w_Epsilon",
-                fontSize: 50,
-                lineHeight: 40,
-                overflow: "truncate",
-                fontWeight: "normal",
-                formatter: (params: any) => {
-                  let label = toPersianText(
-                    params.data.displayName ?? params.name,
-                  );
-                  if (label.length > 30) {
-                    label = label.substring(0, 30) + "...";
-                  }
-                  return `${isRtl ? "\u2067" : "\u2066"}${label}\u2069`;
-                },
-              },
+label: {
+  show: true,
+  position: isRtl ? "left" : "right",
+  distance: labelDistance,
+  color: "#636466",
+  fontFamily: "w_Epsilon",
+  fontSize: 27,
+  lineHeight: 60,
+  overflow: "truncate",
+  fontWeight: "normal",
+  formatter: (params: any) => {
+    let label = toPersianText(
+      params.data.displayName ?? params.name,
+    );
+
+    if (label.length > 30) {
+      label = label.substring(0, 30) + "...";
+    }
+
+    return `${isRtl ? "\u2067" : "\u2066"}${label}\u2069`;
+  },
+},
               itemStyle: {
                 borderWidth: 0,
                 borderRadius: 4,
@@ -665,7 +673,7 @@ export default function AnnualSankeyChart({
                   depth: 0,
                   itemStyle: { color: "#1d3767" },
                   lineStyle: { opacity: 1 },
-                  label: { show: !isRtl ? false : true }, // Hide if LTR, show if RTL
+                  label: { show: !isRtl ? false : true },
                 },
                 {
                   depth: 1,
@@ -699,6 +707,7 @@ export default function AnnualSankeyChart({
     chapterColumn,
     topCountries,
     topChaptersPerCountry,
+    height,
   ]);
 
   useEffect(() => {

@@ -32,33 +32,33 @@ export const COLOR_THEMES: Record<ThemeKey, { name: string; colors: string[] }> 
   dark: {
     name: "Dark",
     colors: [
-      "#4fc3f7",
-      "#81d4fa",
-      "#b3e5fc",
-      "#ff8a65",
-      "#ffab91",
-      "#ffccbc",
-      "#81c784",
-      "#a5d6a7",
-      "#c8e6c9",
-      "#ffd54f",
-      "#ffe082",
+      "#4fc3f7", // 1st - Primary cyan (largest value)
+      "#81d4fa", // 2nd - Light cyan (second largest)
+      "#b3e5fc", // 3rd - Pale cyan (third largest)
+      "#ff8a65", // 4th - Coral (fourth largest)
+      "#ffab91", // 5th - Light coral (fifth largest)
+      "#ffccbc", // 6th - Peach (sixth largest)
+      "#81c784", // 7th - Mint green (seventh largest)
+      "#a5d6a7", // 8th - Light mint (eighth largest)
+      "#c8e6c9", // 9th - Pale mint (ninth largest)
+      "#ffd54f", // 10th - Gold (smallest value)
+      "#ffe082", // 11th - Light gold (fallback/extra)
     ],
   },
   light: {
     name: "Light",
     colors: [
-      "#90caf9",
-      "#bbdefb",
-      "#e3f2fd",
-      "#ef9a9a",
-      "#ef9a9a",
-      "#ffcdd2",
-      "#a5d6a7",
-      "#c8e6c9",
-      "#e8f5e9",
-      "#fff59d",
-      "#fff9c4",
+      "#90caf9", // 1st - Blue (largest value)
+      "#bbdefb", // 2nd - Light blue (second largest)
+      "#e3f2fd", // 3rd - Pale blue (third largest)
+      "#ef9a9a", // 4th - Pink (fourth largest)
+      "#ef9a9a", // 5th - Pink (fifth largest - duplicate)
+      "#ffcdd2", // 6th - Light pink (sixth largest)
+      "#a5d6a7", // 7th - Mint green (seventh largest)
+      "#c8e6c9", // 8th - Light mint (eighth largest)
+      "#e8f5e9", // 9th - Pale mint (ninth largest)
+      "#fff59d", // 10th - Light yellow (smallest value)
+      "#fff9c4", // 11th - Pale yellow (fallback/extra)
     ],
   },
 };
