@@ -4,6 +4,9 @@ import { useState, useMemo, useCallback } from "react";
 import { chartRegistry } from "./components/data/chartRegistry";
 import ChartRenderer from "./components/ChartRenderer";
 import DownloadButton from "./components/DownloadButton";
+import IranProvinceMap from "./components/IranProvinceMap";
+import MapDownloadButton from "./components/MapDownloadButton";
+import iranProvinceExports from "./components/data/charts/map/iran-province-exports.json";
 
 import type {
   ChartDefinition,
@@ -408,6 +411,24 @@ export default function ChartsPage() {
             })}
           </div>
         </div>
+
+        {/* Standalone province map (independent from the chart registry) */}
+        <section className="overflow-hidden rounded-xl border border-[#E6EBE8] bg-white shadow-[0_2px_10px_rgba(20,40,30,0.025)]">
+          <div className="flex justify-end px-4 pt-4 sm:px-6 sm:pt-6">
+            <MapDownloadButton
+              mapId="chart-iran-province-map"
+              mapTitle="نقشه-ارزش-صادرات-استان‌ها"
+            />
+          </div>
+          <div id="chart-iran-province-map" className="px-2 pb-4 sm:px-3 sm:pb-6">
+            <IranProvinceMap
+              data={iranProvinceExports}
+              title="ارزش صادرات گمرک‌های استان‌ها"
+              unit="میلیون دلار"
+              height={900}
+            />
+          </div>
+        </section>
 
         {/* Charts Grid - Grouped by Type */}
         {Object.keys(groupedCharts).length === 0 ? (

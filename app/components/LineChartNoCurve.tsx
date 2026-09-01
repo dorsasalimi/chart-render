@@ -128,6 +128,8 @@ export default function LineChartNoCurve({
   };
   // Use only our 3 specific colors
   const colors = CUSTOM_LINE_COLORS;
+  const isRajaeiTradeShareComparison =
+    chart.id === "trade-share-comparison";
 
   const partialYearStartIndex = categories.findIndex(
     (category, index) =>
@@ -143,6 +145,16 @@ export default function LineChartNoCurve({
 
     const isDashed =
       s.lineStyle === "dashed" || dashedSeries.includes(s.name);
+    const placeLabelBelow =
+      s.name === "ارزش صادرات" ||
+      (isRajaeiTradeShareComparison && s.name === "سهم ارزشی صادرات");
+    const alternatingLabelOffset = isRajaeiTradeShareComparison
+      ? s.name === "سهم وزنی صادرات"
+        ? 0
+        : s.name === "سهم وزنی واردات"
+          ? 1
+          : null
+      : null;
 
     const hasPartialYearSegment =
       !isDashed &&
@@ -196,11 +208,18 @@ export default function LineChartNoCurve({
   ? {
       show: true,
 
-     position: s.name === "ارزش صادرات" ? "bottom" : "top",
+     position: placeLabelBelow ? "bottom" : "top",
 
       distance: s.name === "ارزش صادرات" ? 36 : 10,
 
       formatter: (params: LineDataParams) => {
+        if (
+          alternatingLabelOffset !== null &&
+          params.dataIndex % 2 !== alternatingLabelOffset
+        ) {
+          return "";
+        }
+
         const formattedNumber = toPersianDigits(
           formatLineValue(params.value),
         );
