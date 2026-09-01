@@ -226,7 +226,7 @@ export default function LineChartNoCurve({
         return formattedNumber;
       },
 
-      fontSize: "40px",
+      fontSize: "45px",
       fontFamily: "Epsilon",
       fontWeight: 500,
       color: seriesColor,
@@ -297,7 +297,7 @@ export default function LineChartNoCurve({
       textStyle: {
         fontFamily: "Epsilon",
         color: "#111827",
-        fontSize: "40px",
+        fontSize: "45px",
       },
 
       extraCssText: `
@@ -417,7 +417,7 @@ export default function LineChartNoCurve({
 
           textStyle: {
             fontFamily: "Epsilon",
-            fontSize: "41px",
+            fontSize: "40px",
             fontWeight: 500,
             color: "#4B5563",
             padding: [0, 15],
