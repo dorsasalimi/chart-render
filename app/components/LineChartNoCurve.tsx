@@ -144,18 +144,6 @@ export default function LineChartNoCurve({
     const isDashed =
       s.lineStyle === "dashed" || dashedSeries.includes(s.name);
 
-    // Determine which points should display labels
-    const labelIndexes = new Set<number>();
-
-    if (data.length > 0) {
-      labelIndexes.add(0);
-      labelIndexes.add(data.length - 1);
-    }
-
-    if (data.length <= 6) {
-      data.forEach((_, i) => labelIndexes.add(i));
-    }
-
     const hasPartialYearSegment =
       !isDashed &&
       partialYearStartIndex >= 0 &&
@@ -213,12 +201,6 @@ export default function LineChartNoCurve({
       distance: s.name === "ارزش صادرات" ? 36 : 10,
 
       formatter: (params: LineDataParams) => {
-        const index = params.dataIndex;
-
-        if (!labelIndexes.has(index)) {
-          return "";
-        }
-
         const formattedNumber = toPersianDigits(
           formatLineValue(params.value),
         );

@@ -157,7 +157,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
       textStyle: {
         fontFamily: "Epsilon",
         color: "#111827",
-        fontSize: "32px",
+        fontSize: "52px",
       },
 
       extraCssText: `
@@ -246,7 +246,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
 
           rich: {
             name: {
-              fontSize: "32px",
+              fontSize: "52px",
               fontFamily: "Epsilon",
               fontWeight: 400,
               color: "#FFFFFF",
@@ -310,7 +310,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
               position: "insideTopLeft",
               align: "left",
               verticalAlign: "top",
-              padding: 12,
+      padding: [20, 12],
 
               formatter: (params: any) => {
                 const name = toPersianDigits(params?.data?.name || "");
@@ -322,7 +322,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
 
               rich: {
                 name: {
-                  fontSize: 32,
+                  fontSize: 52,
                   fontWeight: 400,
                   color: "#FFFFFF",
                   lineHeight: 16,
