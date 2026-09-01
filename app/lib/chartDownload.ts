@@ -564,6 +564,7 @@ interface BuiltExportSVG {
   svgString: string;
   width: number;
   height: number;
+  transparentBackground: boolean;
 }
 
 const buildExportSVG = async (
@@ -722,6 +723,10 @@ const buildExportSVG = async (
     svgString,
     width: exportWidth,
     height: exportHeight,
+    transparentBackground: Boolean(
+      chartElement.matches('[data-chart-export-transparent="true"]') ||
+        chartElement.querySelector('[data-chart-export-transparent="true"]'),
+    ),
   };
 };
 
@@ -733,7 +738,7 @@ const renderSVGToCanvas = (
   svgString: string,
   width: number,
   height: number,
-  backgroundColor = "#ffffff",
+  backgroundColor: string | null = "#ffffff",
 ): Promise<HTMLCanvasElement> => {
   return new Promise((resolve, reject) => {
     const blob = new Blob([svgString], {
@@ -753,8 +758,10 @@ const renderSVGToCanvas = (
           throw new Error("Could not create canvas context");
         }
 
-        ctx.fillStyle = backgroundColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (backgroundColor) {
+          ctx.fillStyle = backgroundColor;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -814,8 +821,25 @@ export const downloadChart = async (
       sankeyExportElement?.getAttribute("data-sankey-export-height"),
     );
 
+    const sizedExportElement = chartElement.matches(
+      "[data-chart-export-width], [data-chart-export-height]",
+    )
+      ? chartElement
+      : chartElement.querySelector(
+          "[data-chart-export-width], [data-chart-export-height]",
+        );
+
+    const chartExportWidth = Number(
+      sizedExportElement?.getAttribute("data-chart-export-width"),
+    );
+    const chartExportHeight = Number(
+      sizedExportElement?.getAttribute("data-chart-export-height"),
+    );
+
     const targetWidth =
-      isSankey && annualSankeyWidth > 0
+      chartExportWidth > 0
+        ? chartExportWidth
+        : isSankey && annualSankeyWidth > 0
         ? annualSankeyWidth
         : isSankey
           ? SANKEY_DOWNLOAD_WIDTH
@@ -824,7 +848,9 @@ export const downloadChart = async (
             : DOWNLOAD_WIDTH;
 
     const targetHeight =
-      isSankey && annualSankeyHeight > 0
+      chartExportHeight > 0
+        ? chartExportHeight
+        : isSankey && annualSankeyHeight > 0
         ? annualSankeyHeight
         : isSankey
           ? SANKEY_DOWNLOAD_HEIGHT
@@ -883,7 +909,7 @@ const downloadAsPNG = async (exportSVG: BuiltExportSVG, title: string) => {
     exportSVG.svgString,
     exportSVG.width,
     exportSVG.height,
-    "#ffffff",
+    exportSVG.transparentBackground ? null : "#ffffff",
   );
 
   await new Promise<void>((resolve, reject) => {

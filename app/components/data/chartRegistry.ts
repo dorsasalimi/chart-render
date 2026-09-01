@@ -108,9 +108,7 @@ import topimportcountries from "./charts/ribbon/top-import-countries.json";
 import topexportcountries from "./charts/ribbon/top-export-countries.json";
 
 
-import topchaptersexport from "./charts/pie/toptenproductsbydollarexport/top-chapters-export.json";
 import tophsexport from "./charts/pie/toptenproductsbydollarexport/top-hs-export.json";
-import topchaptersimport from "./charts/pie/toptenproductsbydollarimport/top-chapters-import.json";
 import toptradecountriesimport from "./charts/pie/top-trade-countries-import.json";
 import toptradecountriesexport from "./charts/pie/top-trade-countries-export.json";
 import topcustomsweightimport from "./charts/pie/top-customs-weight-import.json";
@@ -119,8 +117,6 @@ import tophsimport from "./charts/pie/toptenproductsbywieghtimport/top-hs-import
 import tophsdollorimport from "./charts/pie/toptenproductsbydollarimport/top-hs-import.json";
 import tophsweightbyyearimport from "./charts/ribbon/top-hs-weight-by-year2.json";
 import topcustomsdollar from "./charts/ribbon/top-customs-dollar.json";
-import topchaptersweightimport from "./charts/pie/toptenproductsbydollarimport/top-chapters-import.json";
-import topchaptersweight from "./charts/pie/toptenproductsbywieghtexport/top-chapters-weight.json";
 import tophsweightexport from "./charts/pie/toptenproductsbywieghtexport/top-hs-weight.json";
 import industrydollarimportdetailedtreemap from "./charts/treemap/import-detailed.json";
 import industrydollarexportdetailedtreemap from "./charts/treemap/export-detailed.json";
@@ -172,11 +168,7 @@ export const chartRegistry = [
   tophsweightbyyear,
   tophsexportbyyear,
   tophsimportbyyear,
-  topchaptersexport,
-  topchaptersimport,
   tophsdollorimport,
-  topchaptersweightimport,
-  topchaptersweight,
   tophsweightexport,
   industrydollarimportdetailedtreemap,
   industrydollarexportdetailedtreemap,

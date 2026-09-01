@@ -4,6 +4,9 @@ import ReactECharts from "echarts-for-react";
 import type { TreemapChart as TreemapChartType } from "../types/charts";
 import { CHART_COLORS_RANKED } from "../lib/colorThemes";
 
+const TREEMAP_WIDTH = 470;
+const TREEMAP_HEIGHT = 630;
+
 interface Props {
   chart: TreemapChartType;
   height?: number;
@@ -12,10 +15,7 @@ interface Props {
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 
 const toPersianDigits = (value: string | number) => {
-  return String(value).replace(
-    /\d/g,
-    (digit) => PERSIAN_DIGITS[Number(digit)]
-  );
+  return String(value).replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)]);
 };
 
 const formatNumber = (value: number) => {
@@ -30,17 +30,12 @@ const formatNumber = (value: number) => {
 // GET COLOR BY RANK
 // --------------------------------------------------
 
-const getColorByRank = (
-  value: number,
-  allValues: number[]
-): string => {
+const getColorByRank = (value: number, allValues: number[]): string => {
   if (!allValues || allValues.length === 0) {
     return CHART_COLORS_RANKED[0];
   }
 
-  const uniqueValues = [...new Set(allValues)].sort(
-    (a, b) => b - a
-  );
+  const uniqueValues = [...new Set(allValues)].sort((a, b) => b - a);
 
   const rank = uniqueValues.indexOf(value);
 
@@ -48,18 +43,12 @@ const getColorByRank = (
     return CHART_COLORS_RANKED[0];
   }
 
-  const colorIndex = Math.min(
-    rank,
-    CHART_COLORS_RANKED.length - 1
-  );
+  const colorIndex = Math.min(rank, CHART_COLORS_RANKED.length - 1);
 
   return CHART_COLORS_RANKED[colorIndex];
 };
 
-export default function TreemapChart({
-  chart,
-  height = 310,
-}: Props) {
+export default function TreemapChart({ chart, height = 310 }: Props) {
   // --------------------------------------------------
   // EMPTY STATE
   // --------------------------------------------------
@@ -74,9 +63,7 @@ export default function TreemapChart({
           minHeight: `${height}px`,
         }}
       >
-        <p className="text-sm text-[#6B7A73]">
-          No data available
-        </p>
+        <p className="text-sm text-[#6B7A73]">No data available</p>
       </div>
     );
   }
@@ -86,10 +73,7 @@ export default function TreemapChart({
   // --------------------------------------------------
 
   const hasNestedData = chart.data.some((item: any) => {
-    return (
-      Array.isArray(item.children) &&
-      item.children.length > 0
-    );
+    return Array.isArray(item.children) && item.children.length > 0;
   });
 
   // --------------------------------------------------
@@ -97,79 +81,63 @@ export default function TreemapChart({
   // --------------------------------------------------
 
   const getParentValue = (item: any): number => {
-    if (
-      Array.isArray(item.children) &&
-      item.children.length > 0
-    ) {
+    if (Array.isArray(item.children) && item.children.length > 0) {
       return item.children.reduce(
-        (sum: number, child: any) =>
-          sum + (Number(child.value) || 0),
-        0
+        (sum: number, child: any) => sum + (Number(child.value) || 0),
+        0,
       );
     }
 
     return Number(item.value) || 0;
   };
 
-  const parentValues = chart.data.map(
-    (item: any) => getParentValue(item)
-  );
+  const parentValues = chart.data.map((item: any) => getParentValue(item));
 
   // --------------------------------------------------
   // PROCESS DATA
   // --------------------------------------------------
 
-  const processedData = chart.data.map(
-    (item: any, index: number) => {
-      const parentValue = parentValues[index];
+  const processedData = chart.data.map((item: any, index: number) => {
+    const parentValue = parentValues[index];
 
-      const parentColor = getColorByRank(
-        parentValue,
-        parentValues
-      );
+    const parentColor = getColorByRank(parentValue, parentValues);
 
-      // -------------------------------
-      // NESTED TREEMAP
-      // -------------------------------
+    // -------------------------------
+    // NESTED TREEMAP
+    // -------------------------------
 
-      if (
-        Array.isArray(item.children) &&
-        item.children.length > 0
-      ) {
-        return {
-          name: item.name,
-
-          itemStyle: {
-            color: parentColor,
-          },
-
-          children: item.children.map(
-            (child: any) => ({
-              name: child.name,
-              value: Number(child.value) || 0,
-
-              itemStyle: {
-                color: parentColor,
-              },
-            })
-          ),
-        };
-      }
-
-      // -------------------------------
-      // SIMPLE TREEMAP
-      // -------------------------------
-
+    if (Array.isArray(item.children) && item.children.length > 0) {
       return {
         name: item.name,
-        value: Number(item.value) || 0,
 
         itemStyle: {
           color: parentColor,
         },
+
+        children: item.children.map((child: any) => ({
+          name: child.name,
+          value: Number(child.value) || 0,
+
+          itemStyle: {
+            color: parentColor,
+          },
+        })),
       };
     }
-  );
+
+    // -------------------------------
+    // SIMPLE TREEMAP
+    // -------------------------------
+
+    return {
+      name: item.name,
+      value: Number(item.value) || 0,
+
+      itemStyle: {
+        color: parentColor,
+      },
+    };
+  });
 
   // --------------------------------------------------
   // ECHARTS OPTION
@@ -189,7 +157,7 @@ export default function TreemapChart({
       textStyle: {
         fontFamily: "Epsilon",
         color: "#111827",
-          fontSize: "40px",
+        fontSize: "32px",
       },
 
       extraCssText: `
@@ -203,14 +171,10 @@ export default function TreemapChart({
         const value = Number(params.data.value) || 0;
 
         // Convert ANY digits inside the name to Persian digits
-        const name = toPersianDigits(
-          params.data.name || ""
-        );
+        const name = toPersianDigits(params.data.name || "");
 
         // Convert unit too, in case it contains numbers
-        const unit = toPersianDigits(
-          chart.unit || ""
-        );
+        const unit = toPersianDigits(chart.unit || "");
 
         return `
           <div
@@ -255,9 +219,9 @@ export default function TreemapChart({
         visibleMin: 1,
 
         itemStyle: {
-          borderColor: "#FFFFFF",
-          borderWidth: 2,
-          gapWidth: 2,
+          borderColor: "transparent",
+          borderWidth: 0,
+          gapWidth: 4,
         },
 
         // --------------------------------------------------
@@ -267,24 +231,22 @@ export default function TreemapChart({
         label: {
           show: !hasNestedData,
 
-          position: "inside",
+          position: "insideTopLeft",
+          align: "left",
+          verticalAlign: "top",
+          padding: 12,
 
           formatter: (params: any) => {
-            const name = toPersianDigits(
-              params?.data?.name || ""
-            );
+            const name = toPersianDigits(params?.data?.name || "");
 
-            const value =
-              Number(params?.data?.value) || 0;
+            const value = Number(params?.data?.value) || 0;
 
-            return `{name|${name}}\n{value|${formatNumber(
-              value
-            )}}`;
+            return `{name|${name}}\n{value|${formatNumber(value)}}`;
           },
 
           rich: {
             name: {
-          fontSize: "40px",
+              fontSize: "32px",
               fontFamily: "Epsilon",
               fontWeight: 400,
               color: "#FFFFFF",
@@ -311,18 +273,18 @@ export default function TreemapChart({
           // LEVEL 0
           {
             itemStyle: {
-              borderColor: "#FFFFFF",
-              borderWidth: 2,
-              gapWidth: 0,
+              borderColor: "transparent",
+              borderWidth: 0,
+              gapWidth: 4,
             },
           },
 
           // LEVEL 1
           {
             itemStyle: {
-              borderColor: "#FFFFFF",
+              borderColor: "transparent",
               borderWidth: 0,
-              gapWidth: 0,
+              gapWidth: 4,
             },
 
             upperLabel: {
@@ -337,32 +299,30 @@ export default function TreemapChart({
           // LEVEL 2
           {
             itemStyle: {
-              borderColor: "rgba(255,255,255,0.9)",
-              borderWidth: 2,
-              gapWidth: 0,
+              borderColor: "transparent",
+              borderWidth: 0,
+              gapWidth: 4,
             },
 
             label: {
               show: true,
 
-              position: "inside",
+              position: "insideTopLeft",
+              align: "left",
+              verticalAlign: "top",
+              padding: 12,
 
               formatter: (params: any) => {
-                const name = toPersianDigits(
-                  params?.data?.name || ""
-                );
+                const name = toPersianDigits(params?.data?.name || "");
 
-                const value =
-                  Number(params?.data?.value) || 0;
+                const value = Number(params?.data?.value) || 0;
 
-                return `{name|${name}}\n{value|${formatNumber(
-                  value
-                )}}`;
+                return `{name|${name}}\n{value|${formatNumber(value)}}`;
               },
 
               rich: {
                 name: {
-                  fontSize: 40,
+                  fontSize: 32,
                   fontWeight: 400,
                   color: "#FFFFFF",
                   lineHeight: 16,
@@ -393,9 +353,12 @@ export default function TreemapChart({
   return (
     <div
       data-echarts-container
+      data-chart-export-width={TREEMAP_WIDTH}
+      data-chart-export-height={TREEMAP_HEIGHT}
+      data-chart-export-transparent="true"
       style={{
         width: "100%",
-        aspectRatio: "510 / 310",
+        aspectRatio: `${TREEMAP_WIDTH} / ${TREEMAP_HEIGHT}`,
         minHeight: `${height}px`,
         position: "relative",
       }}
@@ -414,10 +377,7 @@ export default function TreemapChart({
         onChartReady={(instance) => {
           const dom = instance.getDom();
 
-          dom.setAttribute(
-            "data-echarts-instance",
-            "true"
-          );
+          dom.setAttribute("data-echarts-instance", "true");
         }}
       />
     </div>
