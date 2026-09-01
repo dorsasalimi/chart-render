@@ -269,56 +269,23 @@ itemStyle: {
     const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
     const name = params.name;
 
-    // Wrap text to max 8 characters per line
-    const maxCharsPerLine = 25;
-    const words = name.split(" ");
-    let lines: string[] = [];
-    let currentLine = "";
-
-    for (const word of words) {
-      if (
-        (currentLine + word).length > maxCharsPerLine &&
-        currentLine.length > 0
-      ) {
-        lines.push(currentLine.trim());
-        currentLine = word + " ";
-      } else {
-        currentLine += word + " ";
-      }
-    }
-    if (currentLine.trim().length > 0) {
-      lines.push(currentLine.trim());
-    }
-
-    // If a single word is too long, break it at the middle
-    if (lines.length === 1 && lines[0].length > maxCharsPerLine) {
-      const word = lines[0];
-      const midPoint = Math.floor(word.length / 2);
-      // Try to break at a space first
-      const spaceIndex = word.indexOf(" ", Math.floor(word.length / 3));
-      if (spaceIndex > 0) {
-        lines = [
-          word.substring(0, spaceIndex),
-          word.substring(spaceIndex + 1),
-        ];
-      } else {
-        lines = [word.substring(0, midPoint), word.substring(midPoint)];
-      }
-    }
-
-    const formattedName = lines.join("\n");
-
-    // Add a space between name and percent
-return `{name|${formattedName}} {percent|${percentDisplay}}`;  },
+    // ECharts positions rich-text blocks left-to-right. Putting the percentage
+    // first here makes the Persian label read visually as: name - percentage.
+    return `{percent|${percentDisplay}} {separator|-} {name|${name}}`;
+  },
           fontFamily: "Epsilon",
           color: "#636466",
-
           position: "outside",
           distanceToLabelLine: 5,
           lineHeight: 35,
-          width: 400,
-
+          overflow: "none",
+          bleedMargin: 0,
           rich: {
+            separator: {
+              fontSize: 39,
+              fontWeight: 400,
+              color: "#636466",
+            },
             percent: {
               fontSize: 45,
               fontWeight: 500,
@@ -328,6 +295,7 @@ return `{name|${formattedName}} {percent|${percentDisplay}}`;  },
               fontSize: 39,
               fontWeight: 400,
               color: "#636466",
+              overflow: "none",
                   padding: [0, 5, 0, 0], // Add right padding
 
               lineHeight: 50,
