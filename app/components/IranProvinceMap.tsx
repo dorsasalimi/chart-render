@@ -5,7 +5,7 @@ import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 
 const MAP_NAME = "iran-provinces";
-const MAP_URL = "/maps/iran-provinces.geojson";
+const MAP_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/maps/iran-provinces.geojson`;
 
 const MAP_COLORS = [
   "#f0f2f6",
