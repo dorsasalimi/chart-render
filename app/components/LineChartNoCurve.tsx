@@ -9,7 +9,7 @@ interface ChartSeries {
   name: string;
   data: number[];
   color?: string;
-  lineStyle?: "solid" | "dashed";
+  lineStyle?: "solid" | "dashed" | "dotted";
 }
 
 interface LineDataParams {
@@ -126,10 +126,17 @@ export default function LineChartNoCurve({
   const createDashedLegendIcon = () => {
     return "path://M0 10 H12 V14 H0 Z M16 10 H28 V14 H16 Z M36 10 H48 V14 H36 Z M52 10 H64 V14 H52 Z M32 3 A9 9 0 1 1 32 21 A9 9 0 1 1 32 3 Z";
   };
+
+  const createDottedLegendIcon = () => {
+    return "path://M2 10 A2 2 0 1 1 2 14 A2 2 0 1 1 2 10 M12 10 A2 2 0 1 1 12 14 A2 2 0 1 1 12 10 M22 10 A2 2 0 1 1 22 14 A2 2 0 1 1 22 10 M32 10 A2 2 0 1 1 32 14 A2 2 0 1 1 32 10 M42 10 A2 2 0 1 1 42 14 A2 2 0 1 1 42 10 M52 10 A2 2 0 1 1 52 14 A2 2 0 1 1 52 10 M62 10 A2 2 0 1 1 62 14 A2 2 0 1 1 62 10 M32 3 A9 9 0 1 1 32 21 A9 9 0 1 1 32 3 Z";
+  };
   // Use only our 3 specific colors
   const colors = CUSTOM_LINE_COLORS;
   const isRajaeiTradeShareComparison =
     chart.id === "trade-share-comparison";
+  const usesOnlySolidLines =
+    chart.id === "trade-value-by-year" ||
+    chart.id === "trade-weight-by-year";
 
   const partialYearStartIndex = categories.findIndex(
     (category, index) =>
@@ -145,6 +152,7 @@ export default function LineChartNoCurve({
 
     const isDashed =
       s.lineStyle === "dashed" || dashedSeries.includes(s.name);
+    const isDotted = s.lineStyle === "dotted";
     const placeLabelBelow =
       s.name === "ارزش صادرات" ||
       (isRajaeiTradeShareComparison && s.name === "سهم ارزشی صادرات");
@@ -157,7 +165,9 @@ export default function LineChartNoCurve({
       : null;
 
     const hasPartialYearSegment =
+      !usesOnlySolidLines &&
       !isDashed &&
+      !isDotted &&
       partialYearStartIndex >= 0 &&
       data.length > partialYearStartIndex + 1;
 
@@ -179,8 +189,10 @@ export default function LineChartNoCurve({
       lineStyle: {
         width: 5.5,
 
-        ...(isDashed && {
-          type: [8, 8],
+        ...(isDashed && { type: [8, 8] }),
+        ...(isDotted && {
+          type: [0, 15],
+          cap: "round",
         }),
       },
 
@@ -409,10 +421,11 @@ export default function LineChartNoCurve({
 
           data: [...chart.series].reverse().map((s) => ({
             name: s.name,
-            icon:
-              s.lineStyle === "dashed" || dashedSeries.includes(s.name)
-              ? createDashedLegendIcon()
-              : createSolidLegendIcon(),
+            icon: s.lineStyle === "dotted"
+              ? createDottedLegendIcon()
+              : s.lineStyle === "dashed" || dashedSeries.includes(s.name)
+                ? createDashedLegendIcon()
+                : createSolidLegendIcon(),
           })),
           selectedMode: true,
 

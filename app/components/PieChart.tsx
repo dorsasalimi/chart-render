@@ -64,6 +64,51 @@ const formatPercent = (value: number) => {
     .replace(/\d/g, (digit) => PERSIAN_DIGITS[Number(digit)]);
 };
 
+const PIE_LABEL_MAX_CHARACTERS = 20;
+
+const wrapLabelLines = (
+  text: string,
+  maxCharacters = PIE_LABEL_MAX_CHARACTERS,
+) => {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let currentLine = "";
+
+  words.forEach((word) => {
+    let remainingWord = word;
+
+    if (remainingWord.length > maxCharacters) {
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = "";
+      }
+
+      while (remainingWord.length > maxCharacters) {
+        lines.push(remainingWord.slice(0, maxCharacters));
+        remainingWord = remainingWord.slice(maxCharacters);
+      }
+    }
+
+    if (!remainingWord) return;
+
+    const nextLine = currentLine
+      ? `${currentLine} ${remainingWord}`
+      : remainingWord;
+
+    if (nextLine.length <= maxCharacters) {
+      currentLine = nextLine;
+      return;
+    }
+
+    if (currentLine) lines.push(currentLine);
+    currentLine = remainingWord;
+  });
+
+  if (currentLine) lines.push(currentLine);
+
+  return lines.length > 0 ? lines : [text];
+};
+
 const normalizeChartData = (chart: PieChartType): PieChartDataItem[] => {
   if (chart.data && chart.data.length > 0) {
     return chart.data;
@@ -267,11 +312,19 @@ itemStyle: {
   show: true,
   formatter: (params: any) => {
     const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
-    const name = params.name;
+    const nameLines = wrapLabelLines(params.name);
+    const finalNameLine = nameLines[nameLines.length - 1];
+    const precedingNameLines = nameLines.slice(0, -1);
 
     // ECharts positions rich-text blocks left-to-right. Putting the percentage
-    // first here makes the Persian label read visually as: name - percentage.
-    return `{percent|${percentDisplay}} {separator|-} {name|${name}}`;
+    // first on the final row makes the complete Persian label read visually
+    // as: wrapped name - percentage, without truncating any part of the name.
+    const finalLine = `{percent|${percentDisplay}} {separator|-} {name|${finalNameLine}}`;
+
+    return [
+      ...precedingNameLines.map((line) => `{name|${line}}`),
+      finalLine,
+    ].join("\n");
   },
           fontFamily: "Epsilon",
           color: "#636466",

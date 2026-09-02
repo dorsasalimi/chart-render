@@ -360,8 +360,22 @@ export default function IranProvinceMap({
           // Shifting map labels can make labels appear visually
           // disconnected from their actual province, especially
           // around Hormozgan / Bushehr / Sistan and Baluchestan.
-          labelLayout: {
-            hideOverlap: true,
+          labelLayout: (params: { dataIndex?: number }) => {
+            const province =
+              params.dataIndex === undefined
+                ? undefined
+                : mapData[params.dataIndex];
+
+            return {
+              hideOverlap: true,
+              dx: province?.name === "Markazi" ? -8 : province?.name === "Tehran" ? -11 : 0,
+              dy:
+                province?.name === "Markazi"
+                  ? 8
+                  : province?.name === "Tehran"
+                    ? -2
+                    : 0,
+            };
           },
 
           emphasis: {

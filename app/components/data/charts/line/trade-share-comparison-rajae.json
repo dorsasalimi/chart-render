@@ -17,7 +17,7 @@
     {
       "name": "سهم وزنی صادرات",
       "color": "#1d3767",
-      "lineStyle": "dashed",
+      "lineStyle": "dotted",
       "data": [
         25.4,
         29.1,
@@ -32,7 +32,7 @@
     {
       "name": "سهم وزنی واردات",
       "color": "#a84b41",
-      "lineStyle": "dashed",
+      "lineStyle": "dotted",
       "data": [
         20.3,
         22.3,
