@@ -297,7 +297,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
           chart.id === "top-customs-mobile" ||
           chart.id === "top-mobile-hs-dollar"
             ? 130
-            : 120,
+            : 90,
         radius: pieRadius,
         center: pieCenter,
         avoidLabelOverlap: true,
