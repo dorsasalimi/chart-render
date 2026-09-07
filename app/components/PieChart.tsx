@@ -148,17 +148,11 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
 
   const legendItemGap = dataLength <= 4 ? 60 : dataLength <= 6 ? 40 : 25;
 
-  const containerMinHeight =
-    dataLength <= 4 ? 380 : 380 + Math.min((dataLength - 4) * 20, 80);
-
-  const pieRadius =
-    dataLength <= 4
-      ? ["40%", "72%"]
-      : dataLength <= 6
-        ? ["38%", "68%"]
-        : ["45%", "82%"];
-
-  const pieCenter = dataLength <= 4 ? ["50%", "50%"] : ["50%", "50%"];
+  // Keep the canvas and ring dimensions consistent across every pie chart.
+  // These match the previous large-chart dimensions (7+ slices).
+  const containerMinHeight = 460;
+  const pieRadius = ["45%", "82%"];
+  const pieCenter = ["50%", "50%"];
 
   const dataWithColors = normalizedData.map((item, index) => ({
     ...item,
