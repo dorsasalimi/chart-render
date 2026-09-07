@@ -7,6 +7,14 @@ import { CHART_COLORS_RANKED } from "../lib/colorThemes";
 const TREEMAP_WIDTH = 470;
 const TREEMAP_HEIGHT = 630;
 
+// Treemap datasets currently contain 12 parent categories. Keep the shared
+// ranked palette intact and add treemap-only colors for categories beyond it.
+const TREEMAP_COLORS = [
+  ...CHART_COLORS_RANKED,
+  "#694101",
+  "#4e7f80",
+];
+
 interface Props {
   chart: TreemapChartType;
   height?: number;
@@ -30,22 +38,31 @@ const formatNumber = (value: number) => {
 // GET COLOR BY RANK
 // --------------------------------------------------
 
-const getColorByRank = (value: number, allValues: number[]): string => {
+const getColorByRank = (
+  value: number,
+  itemIndex: number,
+  allValues: number[],
+): string => {
   if (!allValues || allValues.length === 0) {
-    return CHART_COLORS_RANKED[0];
+    return TREEMAP_COLORS[0];
   }
 
-  const uniqueValues = [...new Set(allValues)].sort((a, b) => b - a);
-
-  const rank = uniqueValues.indexOf(value);
+  const rank = allValues
+    .map((rankValue, index) => ({ rankValue, index }))
+    .sort((a, b) => b.rankValue - a.rankValue || a.index - b.index)
+    .findIndex((item) => item.index === itemIndex && item.rankValue === value);
 
   if (rank === -1) {
-    return CHART_COLORS_RANKED[0];
+    return TREEMAP_COLORS[0];
   }
 
-  const colorIndex = Math.min(rank, CHART_COLORS_RANKED.length - 1);
+  if (rank < TREEMAP_COLORS.length) {
+    return TREEMAP_COLORS[rank];
+  }
 
-  return CHART_COLORS_RANKED[colorIndex];
+  // Golden-angle spacing keeps any future extra categories visually distinct.
+  const hue = Math.round((rank * 137.508) % 360);
+  return `hsl(${hue} 52% 44%)`;
 };
 
 export default function TreemapChart({ chart, height = 310 }: Props) {
@@ -100,7 +117,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
   const processedData = chart.data.map((item: any, index: number) => {
     const parentValue = parentValues[index];
 
-    const parentColor = getColorByRank(parentValue, parentValues);
+    const parentColor = getColorByRank(parentValue, index, parentValues);
 
     // -------------------------------
     // NESTED TREEMAP
@@ -138,6 +155,16 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
       },
     };
   });
+
+  const legendData = processedData
+    .map((item, index) => ({
+      item,
+      value: parentValues[index],
+      originalIndex: index,
+    }))
+    .sort(
+      (a, b) => b.value - a.value || a.originalIndex - b.originalIndex,
+    );
 
   // --------------------------------------------------
   // ECHARTS OPTION
@@ -351,35 +378,78 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
   // --------------------------------------------------
 
   return (
-    <div
-      data-echarts-container
-      data-chart-export-width={TREEMAP_WIDTH}
-      data-chart-export-height={TREEMAP_HEIGHT}
-      data-chart-export-transparent="true"
-      style={{
-        width: "100%",
-        aspectRatio: `${TREEMAP_WIDTH} / ${TREEMAP_HEIGHT}`,
-        minHeight: `${height}px`,
-        position: "relative",
-      }}
-    >
-      <ReactECharts
-        option={option}
-        notMerge
-        lazyUpdate={false}
+    <div style={{ width: "100%" }}>
+      <div
+        data-echarts-container
+        data-chart-export-width={TREEMAP_WIDTH}
+        data-chart-export-height={TREEMAP_HEIGHT}
+        data-chart-export-transparent="true"
         style={{
           width: "100%",
-          height: "100%",
+          aspectRatio: `${TREEMAP_WIDTH} / ${TREEMAP_HEIGHT}`,
+          minHeight: `${height}px`,
+          position: "relative",
         }}
-        opts={{
-          renderer: "svg",
-        }}
-        onChartReady={(instance) => {
-          const dom = instance.getDom();
+      >
+        <ReactECharts
+          option={option}
+          notMerge
+          lazyUpdate={false}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          opts={{
+            renderer: "svg",
+          }}
+          onChartReady={(instance) => {
+            const dom = instance.getDom();
 
-          dom.setAttribute("data-echarts-instance", "true");
+            dom.setAttribute("data-echarts-instance", "true");
+          }}
+        />
+      </div>
+
+      <div
+        data-chart-screen-only="true"
+        dir="rtl"
+        aria-label="راهنمای رنگ‌های نمودار"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "flex-start",
+          gap: "20px 16px",
+          marginTop: "16px",
         }}
-      />
+      >
+        {legendData.map(({ item, originalIndex }) => (
+          <span
+            key={`${item.name}-${originalIndex}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              maxWidth: "100%",
+              color: "#4B5563",
+              fontFamily: "Epsilon",
+              fontSize: "25px",
+              lineHeight: 1.5,
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                width: "50px",
+                height: "50px",
+                flex: "0 0 10px",
+                borderRadius: "2px",
+                backgroundColor: item.itemStyle.color,
+              }}
+            />
+            <span>{toPersianDigits(item.name || "")}</span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
