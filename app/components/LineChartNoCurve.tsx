@@ -137,6 +137,12 @@ export default function LineChartNoCurve({
   const colors = CUSTOM_LINE_COLORS;
   const isRajaeiTradeShareComparison =
     chart.id === "trade-share-comparison";
+  const forceAllLabelsAbove =
+    chart.id === "iraq-trade-value-by-year" ||
+    chart.id === "pakistan-trade-value-by-year" ||
+    chart.id === "turkey-trade-value-by-year" ||
+    chart.id === "uae-trade-value-by-year" ||
+    chart.id === "annual-food-security-trade";
   const usesOnlySolidLines =
     chart.id === "trade-value-by-year" ||
     chart.id === "trade-weight-by-year";
@@ -159,6 +165,35 @@ export default function LineChartNoCurve({
     const placeLabelBelow =
       s.name === "ارزش صادرات" ||
       (isRajaeiTradeShareComparison && s.name === "سهم ارزشی صادرات");
+    const seriesLabelPosition =
+      chart.id === "iraq-trade-value-by-year" && s.name === "تراز تجاری"
+        ? "bottom"
+        : forceAllLabelsAbove || !placeLabelBelow
+          ? "top"
+          : "bottom";
+    const getPointLabelPosition = (dataIndex: number) => {
+      if (
+        chart.id === "turkey-trade-value-by-year" &&
+        s.name === "ارزش واردات" &&
+        dataIndex < 2
+      ) {
+        return "bottom";
+      }
+
+      if (chart.id === "china-trade-value-by-year" && dataIndex === 0) {
+        if (s.name === "ارزش واردات") return "bottom";
+        if (s.name === "ارزش صادرات") return "top";
+      }
+
+      return null;
+    };
+    const getDataPoint = (value: number, dataIndex: number) => {
+      const position = getPointLabelPosition(dataIndex);
+
+      return position
+        ? { value, label: { position, distance: position === "bottom" ? 10 : 10 } }
+        : value;
+    };
     const alternatingLabelOffset = isRajaeiTradeShareComparison
       ? s.name === "سهم وزنی صادرات"
         ? 0
@@ -180,9 +215,11 @@ export default function LineChartNoCurve({
 
       data: hasPartialYearSegment
         ? data.map((value, dataIndex) =>
-            dataIndex > partialYearStartIndex ? null : value,
+            dataIndex > partialYearStartIndex
+              ? null
+              : getDataPoint(value, dataIndex),
           )
-        : data,
+        : data.map(getDataPoint),
 
       smooth: false,
 
@@ -223,9 +260,9 @@ export default function LineChartNoCurve({
   ? {
       show: true,
 
-     position: placeLabelBelow ? "bottom" : "top",
+     position: seriesLabelPosition,
 
-      distance: s.name === "ارزش صادرات" ? 36 : 10,
+      distance: seriesLabelPosition === "bottom" ? 10 : 10,
 
       formatter: (params: LineDataParams) => {
         if (

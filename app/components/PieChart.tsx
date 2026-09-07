@@ -296,30 +296,30 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
         center: pieCenter,
         avoidLabelOverlap: true,
 
-    padAngle: 3,
+        padAngle: 3,
 
-itemStyle: {
-  borderRadius: 20,
-  borderWidth: 0,
-},
-      label: {
-  show: true,
-  formatter: (params: any) => {
-    const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
-    const nameLines = wrapLabelLines(params.name);
-    const finalNameLine = nameLines[nameLines.length - 1];
-    const precedingNameLines = nameLines.slice(0, -1);
+        itemStyle: {
+          borderRadius: 20,
+          borderWidth: 0,
+        },
+        label: {
+          show: true,
+          formatter: (params: any) => {
+            const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
+            const nameLines = wrapLabelLines(params.name);
+            const finalNameLine = nameLines[nameLines.length - 1];
+            const precedingNameLines = nameLines.slice(0, -1);
 
-    // ECharts positions rich-text blocks left-to-right. Putting the percentage
-    // first on the final row makes the complete Persian label read visually
-    // as: wrapped name - percentage, without truncating any part of the name.
-    const finalLine = `{percent|${percentDisplay}} {separator|-} {name|${finalNameLine}}`;
+            // ECharts positions rich-text blocks left-to-right. Putting the percentage
+            // first on the final row makes the complete Persian label read visually
+            // as: wrapped name - percentage, without truncating any part of the name.
+            const finalLine = `{percent|${percentDisplay}} {separator|-} {name|${finalNameLine}}`;
 
-    return [
-      ...precedingNameLines.map((line) => `{name|${line}}`),
-      finalLine,
-    ].join("\n");
-  },
+            return [
+              ...precedingNameLines.map((line) => `{name|${line}}`),
+              finalLine,
+            ].join("\n");
+          },
           fontFamily: "Epsilon",
           color: "#636466",
           position: "outside",
@@ -343,7 +343,7 @@ itemStyle: {
               fontWeight: 400,
               color: "#636466",
               overflow: "none",
-                  padding: [0, 5, 0, 0], // Add right padding
+              padding: [0, 6, 0, 0], // Add right padding
 
               lineHeight: 50,
             },
@@ -368,7 +368,7 @@ itemStyle: {
             formatter: (params: any) => {
               const value = toPersianDigits(formatFullNumber(params.value));
 
-             const percentDisplay = `${formatPercent(Number(params.percent))}٪`;
+              const percentDisplay = `${formatPercent(Number(params.percent))}٪`;
 
               const valueWithUnit = chart.unit
                 ? `${value} ${toPersianLabel(chart.unit)}`
