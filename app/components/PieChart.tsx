@@ -13,6 +13,7 @@ interface PieChartDataItem {
 }
 
 interface PieChartType {
+  id?: string;
   title?: string;
   unit?: string;
   data?: PieChartDataItem[];
@@ -292,6 +293,11 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
         name: chart.title ? toPersianLabel(chart.title) : undefined,
 
         type: "pie",
+        startAngle:
+          chart.id === "top-customs-mobile" ||
+          chart.id === "top-mobile-hs-dollar"
+            ? 130
+            : 90,
         radius: pieRadius,
         center: pieCenter,
         avoidLabelOverlap: true,
@@ -343,7 +349,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
               fontWeight: 400,
               color: "#636466",
               overflow: "none",
-              padding: [0, 6, 0, 0], // Add right padding
+              padding: [0, 10, 0, 0],
 
               lineHeight: 50,
             },
