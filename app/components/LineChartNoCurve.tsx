@@ -76,29 +76,31 @@ const formatFullNumber = (value: number) => {
   return toPersianDigits(new Intl.NumberFormat("fa-IR").format(value));
 };
 
-// Format number without unit text
-const formatNumberWithoutUnit = (value: number) => {
-  // Handle decimal numbers properly
-  if (value % 1 !== 0 && Math.abs(value) < 10) {
-    return toPersianDigits(String(value));
-  }
-  
-  const formatted = new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
+const getChartValueDivisor = (series: ChartSeries[]) => {
+  const largestAbsoluteValue = Math.max(
+    0,
+    ...series.flatMap(({ data }) => data.map((value) => Math.abs(value))),
+  );
 
-  return formatted.replace(/[^0-9.\-\u0660-\u0669]/g, "").trim();
+  if (largestAbsoluteValue >= 1e12) return 1e12;
+  if (largestAbsoluteValue >= 1e9) return 1e9;
+  if (largestAbsoluteValue >= 1e6) return 1e6;
+  if (largestAbsoluteValue >= 1e3) return 1e3;
+
+  return 1;
 };
 
-const formatLineValue = (value: number) => {
-  const formatted = new Intl.NumberFormat("en-US", {
-    notation: "compact",
+const formatScaledValue = (value: number, divisor: number) => {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
-  }).format(value);
+  }).format(value / divisor);
+};
 
-  return formatted.replace(/[^0-9.\-\u0660-\u0669]/g, "").trim();
+const formatScaledAxisValue = (value: number, divisor: number) => {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 1,
+  }).format(value / divisor);
 };
 
 export default function LineChartNoCurve({
@@ -118,6 +120,7 @@ export default function LineChartNoCurve({
   }
 
   const categories = chart.categories || [];
+  const chartValueDivisor = getChartValueDivisor(chart.series);
 
   const createSolidLegendIcon = () => {
     return "path://M0 10 H64 V14 H0 Z M32 3 A9 9 0 1 1 32 21 A9 9 0 1 1 32 3 Z";
@@ -233,7 +236,7 @@ export default function LineChartNoCurve({
         }
 
         const formattedNumber = toPersianDigits(
-          formatLineValue(params.value),
+          formatScaledValue(params.value, chartValueDivisor),
         );
 
         return formattedNumber;
@@ -281,7 +284,9 @@ export default function LineChartNoCurve({
                 return "";
               }
 
-              return toPersianDigits(formatLineValue(params.value));
+              return toPersianDigits(
+                formatScaledValue(params.value, chartValueDivisor),
+              );
             },
           }
         : { show: false },
@@ -517,7 +522,7 @@ export default function LineChartNoCurve({
           color: "#808285",
           margin: 50,
           formatter: (value: number) => {
-            const formatted = formatNumberWithoutUnit(value);
+            const formatted = formatScaledAxisValue(value, chartValueDivisor);
             return toPersianDigits(formatted);
           },
         },
