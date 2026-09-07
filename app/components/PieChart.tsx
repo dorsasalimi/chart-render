@@ -316,9 +316,6 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
             const finalNameLine = nameLines[nameLines.length - 1];
             const precedingNameLines = nameLines.slice(0, -1);
 
-            // ECharts positions rich-text blocks left-to-right. Putting the percentage
-            // first on the final row makes the complete Persian label read visually
-            // as: wrapped name - percentage, without truncating any part of the name.
             const finalLine = `{percent|${percentDisplay}} {separator|-} {name|${finalNameLine}}`;
 
             return [
