@@ -53,9 +53,8 @@ function formatNodeDisplayName(
   return `${name}${separator}${shareText}`;
 }
 
-// Further reduced gaps for better fit
-const NODE_GAP = 30; // Reduced from 30
-const RIBBON_NODE_GAP = 5; // Reduced from 4
+const NODE_GAP = 50;
+const RIBBON_NODE_GAP = 10;
 
 function addRibbonNodeGaps(instance: any) {
   const series = instance.getModel()?.getSeriesByIndex(0);
@@ -516,8 +515,8 @@ export default function AnnualSankeyChart({
   chapterColumn = "فصل",
   topCountries = 3,
   topChaptersPerCountry = 3,
-  width = 580,
-  height = 395,
+  width = 600,
+  height = 530,
   showSummary = false,
   showStatus = false,
 }: SankeyChartProps) {
@@ -593,11 +592,6 @@ export default function AnnualSankeyChart({
         setNodeLabels(labels);
 
         const isRtl = dataset.direction === "rtl";
-        
-        // Dynamic sizing based on height
-        const nodeWidth = height < 450 ? 16 : height < 550 ? 20 : 24;
-        const labelDistance = height < 450 ? 6 : height < 550 ? 8 : 10;
-
         setOption({
           animationDuration: 850,
           animationEasing: "cubicOut",
@@ -607,7 +601,7 @@ export default function AnnualSankeyChart({
             triggerOn: "mousemove|click",
             confine: true,
             extraCssText:
-              "direction:rtl; text-align:right; line-height:1.8; border-radius:10px; font-size:16px;",
+              "direction:rtl; text-align:right; line-height:1.8; border-radius:10px; font-size:26px;",
             formatter: (params: any) =>
               tooltipFormatter(params, dataset, labels),
           },
@@ -616,16 +610,15 @@ export default function AnnualSankeyChart({
             {
               type: "sankey",
               name: dataset.labels.trade,
-              nodeWidth: nodeWidth,
+              nodeWidth: 30,
               nodeGap: NODE_GAP,
               nodeAlign: "justify",
               layout: "none",
               layoutIterations: 0,
               draggable: false,
 
-              // Much tighter margins
-              left: isRtl ? "12%" : "1%",
-              right: isRtl ? "1%" : "12%",
+              left: isRtl ? "22%" : "1%",
+              right: isRtl ? "1%" : "22%",
               top: 10,
               bottom: 20,
 
@@ -637,11 +630,11 @@ export default function AnnualSankeyChart({
 label: {
   show: true,
   position: isRtl ? "left" : "right",
-  distance: labelDistance,
+  distance: 18,
   color: "#636466",
   fontFamily: "w_Epsilon",
-  fontSize: 27,
-  lineHeight: 60,
+  fontSize: 50,
+  lineHeight: 40,
   overflow: "truncate",
   fontWeight: "normal",
   formatter: (params: any) => {
@@ -707,7 +700,6 @@ label: {
     chapterColumn,
     topCountries,
     topChaptersPerCountry,
-    height,
   ]);
 
   useEffect(() => {
