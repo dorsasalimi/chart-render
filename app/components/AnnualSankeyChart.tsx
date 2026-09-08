@@ -515,8 +515,8 @@ export default function AnnualSankeyChart({
   chapterColumn = "فصل",
   topCountries = 3,
   topChaptersPerCountry = 3,
-  width = 600,
-  height = 530,
+  width = 300,
+  height = 400,
   showSummary = false,
   showStatus = false,
 }: SankeyChartProps) {
