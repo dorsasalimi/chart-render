@@ -4,20 +4,15 @@ import ReactECharts from "echarts-for-react";
 import type { TreemapChart as TreemapChartType } from "../types/charts";
 import { CHART_COLORS_RANKED } from "../lib/colorThemes";
 
-const TREEMAP_WIDTH = 470;
-const TREEMAP_HEIGHT = 630;
+const TREEMAP_WIDTH = 500;
+const TREEMAP_HEIGHT = 500;
 
 // Treemap datasets currently contain 12 parent categories. Keep the shared
 // ranked palette intact and add treemap-only colors for categories beyond it.
-const TREEMAP_COLORS = [
-  ...CHART_COLORS_RANKED,
-  "#694101",
-  "#4e7f80",
-];
+const TREEMAP_COLORS = [...CHART_COLORS_RANKED, "#694101", "#4e7f80"];
 
 interface Props {
   chart: TreemapChartType;
-  height?: number;
 }
 
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
@@ -65,7 +60,7 @@ const getColorByRank = (
   return `hsl(${hue} 52% 44%)`;
 };
 
-export default function TreemapChart({ chart, height = 310 }: Props) {
+export default function TreemapChart({ chart }: Props) {
   // --------------------------------------------------
   // EMPTY STATE
   // --------------------------------------------------
@@ -75,9 +70,8 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
       <div
         className="flex items-center justify-center rounded-lg bg-[#F7F9F8]"
         style={{
-          width: "100%",
-          aspectRatio: "510 / 310",
-          minHeight: `${height}px`,
+          width: `${TREEMAP_WIDTH}px`,
+          height: `${TREEMAP_HEIGHT}px`,
         }}
       >
         <p className="text-sm text-[#6B7A73]">No data available</p>
@@ -162,9 +156,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
       value: parentValues[index],
       originalIndex: index,
     }))
-    .sort(
-      (a, b) => b.value - a.value || a.originalIndex - b.originalIndex,
-    );
+    .sort((a, b) => b.value - a.value || a.originalIndex - b.originalIndex);
 
   // --------------------------------------------------
   // ECHARTS OPTION
@@ -179,12 +171,12 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
       backgroundColor: "rgba(255,255,255,0.98)",
       borderColor: "#E5E7EB",
       borderWidth: 0,
-      padding: [12, 14],
+      padding: [0, 0],
 
       textStyle: {
         fontFamily: "Epsilon",
         color: "#111827",
-        fontSize: "52px",
+        fontSize: "15px",
       },
 
       extraCssText: `
@@ -261,7 +253,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
           position: "insideTopLeft",
           align: "left",
           verticalAlign: "top",
-          padding: 12,
+          padding: 2,
 
           formatter: (params: any) => {
             const name = toPersianDigits(params?.data?.name || "");
@@ -273,7 +265,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
 
           rich: {
             name: {
-              fontSize: "52px",
+              fontSize: "15px",
               fontFamily: "Epsilon",
               fontWeight: 400,
               color: "#FFFFFF",
@@ -302,7 +294,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
             itemStyle: {
               borderColor: "transparent",
               borderWidth: 0,
-              gapWidth: 4,
+              gapWidth: 1,
             },
           },
 
@@ -311,7 +303,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
             itemStyle: {
               borderColor: "transparent",
               borderWidth: 0,
-              gapWidth: 4,
+              gapWidth: 1,
             },
 
             upperLabel: {
@@ -328,7 +320,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
             itemStyle: {
               borderColor: "transparent",
               borderWidth: 0,
-              gapWidth: 4,
+              gapWidth: 1,
             },
 
             label: {
@@ -337,7 +329,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
               position: "insideTopLeft",
               align: "left",
               verticalAlign: "top",
-      padding: [20, 12],
+              padding: [2, 6],
 
               formatter: (params: any) => {
                 const name = toPersianDigits(params?.data?.name || "");
@@ -349,7 +341,7 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
 
               rich: {
                 name: {
-                  fontSize: 52,
+                  fontSize: 15,
                   fontWeight: 400,
                   color: "#FFFFFF",
                   lineHeight: 16,
@@ -378,16 +370,15 @@ export default function TreemapChart({ chart, height = 310 }: Props) {
   // --------------------------------------------------
 
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: `${TREEMAP_WIDTH}px` }}>
       <div
         data-echarts-container
         data-chart-export-width={TREEMAP_WIDTH}
         data-chart-export-height={TREEMAP_HEIGHT}
         data-chart-export-transparent="true"
         style={{
-          width: "100%",
-          aspectRatio: `${TREEMAP_WIDTH} / ${TREEMAP_HEIGHT}`,
-          minHeight: `${height}px`,
+          width: `${TREEMAP_WIDTH}px`,
+          height: `${TREEMAP_HEIGHT}px`,
           position: "relative",
         }}
       >
