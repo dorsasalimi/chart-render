@@ -4,6 +4,17 @@ import ReactECharts from "echarts-for-react";
 
 // Fixed 3 colors for line charts
 const CUSTOM_LINE_COLORS = ["#1d3767", "#a84b41", "#595959"];
+const FIRST_POINT_INSET_RATIO = 0.03;
+
+const getCategoryXPosition = (index: number, categoryCount: number) => {
+  if (categoryCount <= 1) return FIRST_POINT_INSET_RATIO;
+
+  const lastPosition = categoryCount - 1;
+  const firstPosition = lastPosition * FIRST_POINT_INSET_RATIO;
+  const interval = (lastPosition - firstPosition) / lastPosition;
+
+  return firstPosition + index * interval;
+};
 
 interface ChartSeries {
   name: string;
@@ -14,7 +25,7 @@ interface ChartSeries {
 
 interface LineDataParams {
   dataIndex: number;
-  value: number;
+  value: number | [number, number];
 }
 
 interface TooltipSeriesParams extends LineDataParams {
@@ -103,6 +114,9 @@ const formatScaledAxisValue = (value: number, divisor: number) => {
   }).format(value / divisor);
 };
 
+const getLineValue = (value: LineDataParams["value"]) =>
+  Array.isArray(value) ? value[1] : value;
+
 export default function LineChartNoCurve({
   chart,
   height,
@@ -190,9 +204,18 @@ export default function LineChartNoCurve({
     const getDataPoint = (value: number, dataIndex: number) => {
       const position = getPointLabelPosition(dataIndex);
 
+      // Distribute points evenly from the left inset to the unchanged right edge.
+      const plottedValue: [number, number] = [
+        getCategoryXPosition(dataIndex, categories.length),
+        value,
+      ];
+
       return position
-        ? { value, label: { position, distance: position === "bottom" ? 10 : 10 } }
-        : value;
+        ? {
+            value: plottedValue,
+            label: { position, distance: position === "bottom" ? 10 : 10 },
+          }
+        : plottedValue;
     };
     const alternatingLabelOffset = isRajaeiTradeShareComparison
       ? s.name === "سهم وزنی صادرات"
@@ -273,7 +296,7 @@ export default function LineChartNoCurve({
         }
 
         const formattedNumber = toPersianDigits(
-          formatScaledValue(params.value, chartValueDivisor),
+          formatScaledValue(getLineValue(params.value), chartValueDivisor),
         );
 
         return formattedNumber;
@@ -304,7 +327,7 @@ export default function LineChartNoCurve({
       data: data.map((value, dataIndex) =>
         dataIndex === partialYearStartIndex ||
         dataIndex === partialYearStartIndex + 1
-          ? value
+          ? getDataPoint(value, dataIndex)
           : null,
       ),
       lineStyle: {
@@ -322,7 +345,7 @@ export default function LineChartNoCurve({
               }
 
               return toPersianDigits(
-                formatScaledValue(params.value, chartValueDivisor),
+                formatScaledValue(getLineValue(params.value), chartValueDivisor),
               );
             },
           }
@@ -333,6 +356,10 @@ export default function LineChartNoCurve({
 
     return [baseSeries, partialSegmentSeries];
   });
+
+  const categoryXPositions = categories.map((_category, index) =>
+    getCategoryXPosition(index, categories.length),
+  );
 
   const option = {
     backgroundColor: "transparent",
@@ -365,7 +392,6 @@ export default function LineChartNoCurve({
         lineStyle: {
           color: "#D1D5DB",
           width: 1,
-          type: [8, 8],
         },
       },
 
@@ -374,14 +400,11 @@ export default function LineChartNoCurve({
           return "";
         }
 
-        const category = params[0]?.axisValue ?? "";
+        const category = categories[params[0]?.dataIndex] ?? "";
 
         const rows = params
           .map((item) => {
-            const value =
-              typeof item.value === "number"
-                ? formatFullNumber(item.value)
-                : item.value;
+            const value = formatFullNumber(getLineValue(item.value));
 
             return `
               <div
@@ -497,28 +520,35 @@ export default function LineChartNoCurve({
     // X AXIS
     // =========================================================
     xAxis: {
-      type: "category",
-      data: categories.map(toPersianDigits),
-      boundaryGap: false,
+      type: "value",
+      min: 0,
+      max: Math.max(categories.length - 1, 1),
 
       axisLine: {
-        show: false,
+        show: true,
         onZero: false,
+        lineStyle: {
+          color: "#808285",
+          type: "solid",
+        },
       },
 
       axisTick: {
         show: true,
-        alignWithLabel: true,
+        customValues: categoryXPositions,
         inside: true,
         length: 10,
         lineStyle: {
-          color: "#b8b9b9",
+          color: "#808285",
           width: 3,
         },
       },
 
       axisLabel: {
         show: true,
+        customValues: categoryXPositions,
+        formatter: (_value: number, index: number) =>
+          toPersianDigits(categories[index] ?? ""),
         fontSize: "40px",
         fontFamily: "Epsilon",
         color: "#808285",
@@ -543,12 +573,19 @@ export default function LineChartNoCurve({
 
         axisTick: {
           show: false,
+          inside: false,
+          length: 10,
+          lineStyle: {
+            color: "#808285",
+            width: 3,
+          },
         },
 
         splitLine: {
           show: true,
+          showMinLine: false,
           lineStyle: {
-            color: "#b8b9b9",
+            color: "#a7a9ac",
             type: [8, 8],
           },
         },
@@ -573,8 +610,8 @@ export default function LineChartNoCurve({
         axisLine: {
           show: true,
           lineStyle: {
-            color: "#b8b9b9",
-            type: [8, 8],
+            color: "#808285",
+            type: "solid",
           },
         },
 

@@ -153,9 +153,9 @@ export default function MonthlyTradeChart({
           show: true,
           onZero: false,
           lineStyle: {
-            color: "#b8b9b9",
+            color: "#808285",
             width: 1,
-            type: [8, 8],
+            type: "solid",
           },
         },
 
@@ -182,9 +182,10 @@ export default function MonthlyTradeChart({
 
         splitLine: {
           show: true,
+          showMinLine: false,
 
           lineStyle: {
-            color: "#b8b9b9",
+            color: "#a7a9ac",
             type: [8, 8],
             width: 1,
           },
@@ -200,9 +201,9 @@ export default function MonthlyTradeChart({
           show: true,
           onZero: false,
           lineStyle: {
-            color: "#b8b9b9",
+            color: "#808285",
             width: 1,
-            type: [0, 20],
+            type: "solid",
           },
         },
 

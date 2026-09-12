@@ -622,8 +622,13 @@ ${toPersianLabel(categoryName)}          </div>
       boundaryGap: true,
 
       axisLine: {
-        show: false,
+        show: true,
         onZero: false,
+        lineStyle: {
+          color: "#808285",
+          type: "solid",
+          width: 0.8,
+        },
       },
 
       axisTick: {
@@ -635,6 +640,7 @@ ${toPersianLabel(categoryName)}          </div>
           lineStyle: {
             color: "#D1D5DB",
             type: [5, 5],
+            
           },
       },
 
@@ -678,10 +684,13 @@ ${toPersianLabel(categoryName)}          </div>
 
         splitLine: {
           show: true,
+          showMinLine: false,
 
            lineStyle: {
-            color: "#D1D5DB",
-            type: [5, 5],
+            color: "#a7a9ac",
+            type: [4, 5],
+                                  width: 0.8,
+
           },
         },
 
@@ -707,7 +716,7 @@ ${toPersianLabel(categoryName)}          </div>
       },
 
       // Second Y axis:
-      // only used to draw the left vertical dashed line
+      // only used to draw the left vertical solid line
 {
   type: "value",
 
@@ -721,8 +730,10 @@ ${toPersianLabel(categoryName)}          </div>
           show: true,
 
           lineStyle: {
-            color: "#D1D5DB",
-            type: [5, 5],
+            color: "#808285",
+            type: "solid",
+                      width: 0.8,
+
           },
         },
 

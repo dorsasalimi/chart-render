@@ -19,7 +19,6 @@ interface AgriculturalTradeChartProps {
 const IMPORT_COLOR = "#1d3767";
 const EXPORT_COLOR = "#a84b41";
 const AXIS_COLOR = "#808285";
-const GRID_COLOR = "#b8b9b9";
 const FONT_FAMILY = "Epsilon";
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 
@@ -133,13 +132,17 @@ export default function AgriculturalTradeChart({ data }: AgriculturalTradeChartP
         type: "category",
         data: years.map(toPersianDigits),
         boundaryGap: true,
-        axisLine: { show: true, onZero: false, lineStyle: { color: "#aeb7c9", width: 1 } },
+        axisLine: {
+          show: true,
+          onZero: false,
+          lineStyle: { color: "#808285", width: 1, type: "solid" },
+        },
         axisTick: {
           show: true,
           alignWithLabel: true,
           inside: true,
           length: 8,
-          lineStyle: { color: "#aeb7c9", width: 1.5 },
+          lineStyle: { color: "#808285", width: 1.5 },
         },
         axisLabel: {
           show: true,
@@ -156,16 +159,23 @@ export default function AgriculturalTradeChart({ data }: AgriculturalTradeChartP
         min: -axisMax,
         max: axisMax,
         interval: 20,
-        axisLine: { show: true, lineStyle: { color: "#aeb7c9", width: 1 } },
+        axisLine: {
+          show: true,
+          lineStyle: { color: "#808285", width: 1, type: "solid" },
+        },
         axisTick: {
           show: true,
           inside: true,
           length: 8,
-          lineStyle: { color: "#aeb7c9", width: 1.5 },
+          lineStyle: { color: "#808285", width: 1.5 },
         },
         splitLine: {
           show: true,
-          lineStyle: { color: GRID_COLOR, width: 0.7, opacity: 0.42 },
+          showMinLine: false,
+          lineStyle: {
+            color: "#a7a9ac",
+            type: [8, 8],
+          },
         },
         axisLabel: {
           fontSize: 40,
