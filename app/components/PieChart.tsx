@@ -146,6 +146,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
   });
 
   const dataLength = normalizedData.length;
+  const keepLabelsInsideChart = chart.id === "china-top-customs-dollar";
 
   const legendItemGap = dataLength <= 4 ? 60 : dataLength <= 6 ? 40 : 25;
 
@@ -326,13 +327,15 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
           fontFamily: "Epsilon",
           color: "#636466",
           position: "outside",
+          alignTo: keepLabelsInsideChart ? "edge" : "none",
+          edgeDistance: keepLabelsInsideChart ? 20 : undefined,
           distanceToLabelLine: 5,
           lineHeight: 35,
           overflow: "none",
           bleedMargin: 0,
           rich: {
             separator: {
-              fontSize: 39,
+              fontSize: 40,
               fontWeight: 400,
               color: "#636466",
             },
@@ -342,7 +345,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
               color: "#636466",
             },
             name: {
-              fontSize: 39,
+              fontSize: 39.5,
               fontWeight: 400,
               color: "#636466",
               overflow: "none",
