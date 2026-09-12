@@ -76,9 +76,15 @@ function toPersianDigits(value: string | number) {
 }
 
 function formatValue(value: number) {
+  // A value that rounds to 0 at integer precision (e.g. 0.26) still had
+  // real, non-zero data — showing a flat "0" made it look like there was
+  // no data for that province at all, so keep a couple of decimals for
+  // any small-but-nonzero value.
+  const needsDecimals = value !== 0 && Math.abs(value) < 1;
+
   return toPersianDigits(
     new Intl.NumberFormat("en-US", {
-      maximumFractionDigits: 0,
+      maximumFractionDigits: needsDecimals ? 2 : 0,
     }).format(value),
   );
 }
