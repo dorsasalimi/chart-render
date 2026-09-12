@@ -7,6 +7,7 @@ import DownloadButton from "./components/DownloadButton";
 import IranProvinceMap from "./components/IranProvinceMap";
 import MapDownloadButton from "./components/MapDownloadButton";
 import iranProvinceExports from "./components/data/charts/map/iran-province-exports.json";
+import iranProvinceImports from "./components/data/charts/map/iran-province-imports.json";
 import {
   MapPinned,
   Menu,
@@ -129,10 +130,12 @@ export default function ChartsPage() {
     if (selectedChartType !== "all" && selectedChartType !== "map") return false;
 
     const terms = normalizeSearchText(searchQuery).split(" ").filter(Boolean);
-    const mapText = normalizeSearchText("نقشه استان‌های ایران ارزش صادرات گمرک‌ها");
+    const mapText = normalizeSearchText(
+      "نقشه استان‌های ایران ارزش صادرات واردات گمرک‌ها",
+    );
     return terms.every((term) => mapText.includes(term));
   }, [searchQuery, selectedChartType]);
-  const visibleResultCount = filteredCount + (showMap ? 1 : 0);
+  const visibleResultCount = filteredCount + (showMap ? 2 : 0);
 
   // Helper to render a single chart - with improved compact layout
   const renderChartCard = useCallback(
@@ -329,7 +332,7 @@ export default function ChartsPage() {
                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-right text-sm transition ${selectedChartType === "all" ? "bg-[#1d3767] font-medium text-white" : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"}`}
               >
                 <span>همه موارد</span>
-                <span className="text-xs opacity-75">{totalCharts + 1}</span>
+                <span className="text-xs opacity-75">{totalCharts + 2}</span>
               </button>
               <button
                 type="button"
@@ -340,7 +343,7 @@ export default function ChartsPage() {
                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-right text-sm transition ${selectedChartType === "map" ? "bg-[#1d3767] font-medium text-white" : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"}`}
               >
                 <span className="flex items-center gap-2"><MapPinned className="h-4 w-4" />نقشه استان‌ها</span>
-                <span className="text-xs opacity-75">۱</span>
+                <span className="text-xs opacity-75">۲</span>
               </button>
               {chartTypes.map((type) => {
                 const info = chartTypeInfo[type as keyof typeof chartTypeInfo];
@@ -513,24 +516,89 @@ export default function ChartsPage() {
           </div>
         </div>
 
-        {/* The map participates in the same sidebar filtering as registry charts. */}
+        {/* The maps participate in the same sidebar filtering as registry charts. */}
         {showMap && (
-        <section id="province-map" className="scroll-mt-24 overflow-hidden rounded-xl border border-[#E6EBE8] bg-white shadow-[0_2px_10px_rgba(20,40,30,0.025)]">
-          <div className="flex justify-end px-4 pt-4 sm:px-6 sm:pt-6">
-            <MapDownloadButton
-              mapId="chart-iran-province-map"
-              mapTitle="نقشه-ارزش-صادرات-استان‌ها"
-            />
-          </div>
-          <div id="chart-iran-province-map" className="px-2 pb-4 sm:px-3 sm:pb-6">
-            <IranProvinceMap
-              data={iranProvinceExports}
-              title="ارزش صادرات گمرک‌های استان‌ها"
-              unit="میلیون دلار"
-              height={900}
-            />
-          </div>
-        </section>
+        <div className="space-y-6">
+          <section id="province-map-export" className="scroll-mt-24 overflow-hidden rounded-xl border border-[#E6EBE8] bg-white shadow-[0_2px_10px_rgba(20,40,30,0.025)]">
+            <div
+              className="
+                flex flex-wrap items-center justify-between
+                gap-2
+                border-b border-[#EEF1EF]
+                px-4 py-3
+                sm:px-5 sm:py-4
+                bg-gradient-to-r from-white to-[#FAFCFB]
+              "
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <div
+                  className="
+                    h-8 w-1
+                    shrink-0
+                    rounded-full
+                    bg-gradient-to-b from-[#1d3767] to-[#1E7A4D]
+                    shadow-sm
+                  "
+                />
+                <h2 className="truncate text-md font-semibold tracking-[-0.01em] text-[#202522] sm:text-base">
+                  ارزش صادرات گمرک‌های استان‌ها
+                </h2>
+              </div>
+              <MapDownloadButton
+                mapId="chart-iran-province-map-export"
+                mapTitle="نقشه-ارزش-صادرات-استان‌ها"
+              />
+            </div>
+            <div id="chart-iran-province-map-export" className="px-2 pb-4 sm:px-3 sm:pb-6">
+              <IranProvinceMap
+                data={iranProvinceExports}
+                title="ارزش صادرات گمرک‌های استان‌ها"
+                unit="میلیون دلار"
+                height={900}
+              />
+            </div>
+          </section>
+
+          <section id="province-map-import" className="scroll-mt-24 overflow-hidden rounded-xl border border-[#E6EBE8] bg-white shadow-[0_2px_10px_rgba(20,40,30,0.025)]">
+            <div
+              className="
+                flex flex-wrap items-center justify-between
+                gap-2
+                border-b border-[#EEF1EF]
+                px-4 py-3
+                sm:px-5 sm:py-4
+                bg-gradient-to-r from-white to-[#FAFCFB]
+              "
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <div
+                  className="
+                    h-8 w-1
+                    shrink-0
+                    rounded-full
+                    bg-gradient-to-b from-[#1d3767] to-[#1E7A4D]
+                    shadow-sm
+                  "
+                />
+                <h2 className="truncate text-md font-semibold tracking-[-0.01em] text-[#202522] sm:text-base">
+                  ارزش واردات گمرک‌های استان‌ها
+                </h2>
+              </div>
+              <MapDownloadButton
+                mapId="chart-iran-province-map-import"
+                mapTitle="نقشه-ارزش-واردات-استان‌ها"
+              />
+            </div>
+            <div id="chart-iran-province-map-import" className="px-2 pb-4 sm:px-3 sm:pb-6">
+              <IranProvinceMap
+                data={iranProvinceImports}
+                title="ارزش واردات گمرک‌های استان‌ها"
+                unit="میلیون دلار"
+                height={900}
+              />
+            </div>
+          </section>
+        </div>
         )}
 
         {/* Charts Grid - Grouped by Type */}
