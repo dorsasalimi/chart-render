@@ -7,14 +7,42 @@ import ReactECharts from "echarts-for-react";
 const MAP_NAME = "iran-provinces";
 const MAP_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/maps/iran-provinces.geojson`;
 
-const MAP_COLORS = [
-  "#f0f2f6",
-  "#d8dfe9",
-  "#b2c0d2",
-  "#8ba0ba",
-  "#55759e",
-  "#244a7e",
-] as const;
+interface ColorSchemeConfig {
+  mapColors: readonly string[];
+  textColor: string;
+  borderColor: string;
+  emphasisAreaColor: string;
+}
+
+const BLUE_SCHEME: ColorSchemeConfig = {
+  mapColors: [
+    "#f0f2f6",
+    "#d8dfe9",
+    "#b2c0d2",
+    "#8ba0ba",
+    "#55759e",
+    "#244a7e",
+  ],
+  textColor: "#1d3b68",
+  borderColor: "#1d3767",
+  emphasisAreaColor: "#244a7e",
+} as const;
+
+const RED_SCHEME: ColorSchemeConfig = {
+  mapColors: [
+    "#f8ecec",
+    "#f3d5d4",
+    "#eeb3b1",
+    "#ee7d7d",
+    "#c96058",
+    "#a84b41",
+  ],
+  textColor: "#7a2f28",
+  borderColor: "#a84b41",
+  emphasisAreaColor: "#a84b41",
+} as const;
+
+type ColorScheme = "blue" | "red";
 
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
 
@@ -30,6 +58,7 @@ export interface IranProvinceMapProps {
   unit?: string;
   height?: number;
   showTooltip?: boolean;
+  colorScheme?: ColorScheme;
 }
 
 export const IRAN_PROVINCE_NAMES = [
@@ -89,11 +118,17 @@ function formatValue(value: number) {
   );
 }
 
-function getLabelColor(value: number, min: number, max: number) {
+function getLabelColor(
+  value: number,
+  min: number,
+  max: number,
+  scheme: ColorSchemeConfig,
+) {
+  const mapColors = scheme.mapColors;
   const ratio = Math.max(0, Math.min(1, (value - min) / (max - min)));
-  const scaled = ratio * (MAP_COLORS.length - 1);
-  const lower = MAP_COLORS[Math.floor(scaled)];
-  const upper = MAP_COLORS[Math.min(Math.ceil(scaled), MAP_COLORS.length - 1)];
+  const scaled = ratio * (mapColors.length - 1);
+  const lower = mapColors[Math.floor(scaled)];
+  const upper = mapColors[Math.min(Math.ceil(scaled), mapColors.length - 1)];
   const mix = scaled - Math.floor(scaled);
 
   const rgb = [1, 3, 5].map((offset) =>
@@ -115,7 +150,7 @@ function getLabelColor(value: number, min: number, max: number) {
       0,
     );
 
-  return luminance < 0.42 ? "#ffffff" : "#1d3b68";
+  return luminance < 0.42 ? "#ffffff" : scheme.textColor;
 }
 
 export default function IranProvinceMap({
@@ -124,7 +159,10 @@ export default function IranProvinceMap({
   unit = "میلیون دلار",
   height = 650,
   showTooltip = true,
+  colorScheme = "blue",
 }: IranProvinceMapProps) {
+  const scheme = colorScheme === "red" ? RED_SCHEME : BLUE_SCHEME;
+
   const [isMapReady, setIsMapReady] = useState(
     Boolean(echarts.getMap(MAP_NAME)),
   );
@@ -198,8 +236,8 @@ export default function IranProvinceMap({
       ...item,
       label: {
         color: Number.isFinite(Number(item.value))
-          ? getLabelColor(Number(item.value), min, max)
-          : "#1d3b68",
+          ? getLabelColor(Number(item.value), min, max, scheme)
+          : scheme.textColor,
         rotate:
           item.name === "West Azerbaijan" || item.name === "Bushehr"
             ? -70
@@ -222,7 +260,7 @@ export default function IranProvinceMap({
         padding: [10, 12],
 
         textStyle: {
-          color: "#1d3b68",
+          color: scheme.textColor,
           fontFamily: "Epsilon",
           fontSize: 14,
         },
@@ -281,7 +319,7 @@ export default function IranProvinceMap({
         calculable: false,
 
         inRange: {
-          color: MAP_COLORS,
+          color: scheme.mapColors,
         },
 
         outOfRange: {
@@ -329,7 +367,7 @@ export default function IranProvinceMap({
 
             // White province boundaries give a much cleaner
             // cartographic appearance than dark blue borders.
-            borderColor: "#1d3767",
+            borderColor: scheme.borderColor,
 
             borderWidth: 1.2,
 
@@ -339,7 +377,7 @@ export default function IranProvinceMap({
           label: {
             show: true,
 
-            color: "#1d3b68",
+            color: scheme.textColor,
 
             fontFamily: "Epsilon",
 
@@ -388,7 +426,7 @@ export default function IranProvinceMap({
             disabled: false,
 
             itemStyle: {
-              areaColor: "#244a7e",
+              areaColor: scheme.emphasisAreaColor,
 
               borderColor: "#ffffff",
 
@@ -410,7 +448,7 @@ export default function IranProvinceMap({
         },
       ],
     };
-  }, [data, showTooltip, title, unit]);
+  }, [data, showTooltip, title, unit, scheme]);
 
   if (loadError) {
     return (

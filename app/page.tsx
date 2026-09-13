@@ -595,6 +595,7 @@ export default function ChartsPage() {
                 title="ارزش واردات گمرک‌های استان‌ها"
                 unit="میلیون دلار"
                 height={900}
+                colorScheme="red"
               />
             </div>
           </section>
