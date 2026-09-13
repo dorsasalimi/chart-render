@@ -11,6 +11,10 @@ interface Props {
   showLegend?: boolean;
 }
 
+const BAR_WIDTH_RATIO = 0.52;
+const BAR_CENTER_OFFSET = (1 - BAR_WIDTH_RATIO) / 2;
+const TRANSPARENT_ELEMENT_GAP = 2;
+
 const getNiceYAxisScale = (
   maxValue: number,
   targetSplitCount = 7,
@@ -478,6 +482,10 @@ export default function BarChart({
     });
   };
 
+  const categoryLabelPositions = categories.map(
+    (_category, index) => index - BAR_CENTER_OFFSET,
+  );
+
   const option = {
     animation: true,
     animationDuration: 800,
@@ -613,53 +621,76 @@ ${toPersianLabel(categoryName)}          </div>
     // =========================================================
     // X AXIS
     // =========================================================
-    xAxis: {
-      type: "category",
+    xAxis: [
+      {
+        type: "category",
 
-      data: categories.map(toPersianLabel),
-      // Keep TRUE for the ribbon/bar chart.
-      // false works for lines but can clip the first/last bars.
-      boundaryGap: true,
+        data: categories.map(toPersianLabel),
+        // Keep TRUE for the ribbon/bar chart.
+        // false works for lines but can clip the first/last bars.
+        boundaryGap: true,
 
-      axisLine: {
-        show: true,
-        onZero: false,
-        lineStyle: {
-          color: "#808285",
-          type: "solid",
-          width: 0.8,
+        axisLine: {
+          show: true,
+          onZero: false,
+          lineStyle: {
+            color: "#808285",
+            type: "solid",
+            width: 0.8,
+          },
+        },
+
+        axisTick: {
+          show: false,
+        },
+
+        axisLabel: {
+          show: false,
+        },
+
+        splitLine: {
+          show: false,
         },
       },
+      {
+        type: "value",
+        position: "bottom",
+        offset: 0,
+        min: -0.5,
+        max: categories.length - 0.5,
 
-      axisTick: {
-        show: true,
-        alignWithLabel: true,
-        inside: true,
-        length: 10,
+        axisLine: {
+          show: false,
+        },
 
+        axisTick: {
+          show: true,
+          customValues: categoryLabelPositions,
+          inside: true,
+          length: 10,
           lineStyle: {
             color: "#D1D5DB",
             type: [5, 5],
-            
           },
+        },
+
+        axisLabel: {
+          show: true,
+          customValues: categoryLabelPositions,
+          formatter: (_value: number, index: number) =>
+            toPersianLabel(categories[index] ?? ""),
+          fontSize: 26,
+          fontFamily: "Epsilon",
+          color: "#808285",
+          margin: 15,
+          rotate: categories.length > 8 ? 30 : 0,
+        },
+
+        splitLine: {
+          show: false,
+        },
       },
-
-      axisLabel: {
-        show: true,
-
-              fontSize: 26,
-        fontFamily: "Epsilon",
-        color: "#808285",
-
-        margin: 30,
-
-        rotate: categories.length > 8 ? 30 : 0,
-      },
-
-      splitLine: {
-        show: false,
-      },
-    },
+    ],
 
     // =========================================================
     // Y AXIS
@@ -787,20 +818,20 @@ const targetCenterX = api.coord([nextCategoryIndex, 0])[0];
 
 const categoryWidth = Math.abs(api.size([1, 0])[0]);
 
-const barWidth = categoryWidth * 0.52;
+const barWidth = categoryWidth * BAR_WIDTH_RATIO;
 
-// Both bars are aligned to the left edge of their category slot
+// Align bars to the left edge of each category slot so the ribbon layout
+// does not gain extra horizontal padding on either side.
 const sourceBarX =
   sourceCenterX - categoryWidth / 2;
 
 const targetBarX =
   targetCenterX - categoryWidth / 2;
 
-// Ribbon starts from right edge of source bar
-const x1 = sourceBarX + barWidth;
+// Leave a small transparent break between ribbons and both adjacent bars.
+const x1 = sourceBarX + barWidth + TRANSPARENT_ELEMENT_GAP;
 
-// Ribbon ends at left edge of target bar
-const x2 = targetBarX;
+const x2 = targetBarX - TRANSPARENT_ELEMENT_GAP;
 
           const top1 = api.coord([categoryIndex, source.top])[1];
 
@@ -850,7 +881,7 @@ const x2 = targetBarX;
 
           const categoryWidth = Math.abs(api.size([1, 0])[0]);
 
-          const barWidth = categoryWidth * 0.52;
+          const barWidth = categoryWidth * BAR_WIDTH_RATIO;
 
           const topY = api.coord([categoryIndex, bounds.top])[1];
 
@@ -866,6 +897,15 @@ const x = centerX - categoryWidth / 2;
           const radiusTop = isTopSegment ? 5 : 0;
 
           const radiusBottom = isBottomSegment ? 5 : 0;
+
+          const segmentGap = TRANSPARENT_ELEMENT_GAP;
+          const gapAbove = isTopSegment ? 0 : segmentGap / 2;
+          const gapBelow = isBottomSegment ? 0 : segmentGap / 2;
+          const visibleTopY = topY + gapAbove;
+          const visibleHeight = Math.max(
+            0,
+            segmentHeight - gapAbove - gapBelow,
+          );
 
           const color = colors[seriesIndex % colors.length];
           const labelColor = getContrastTextColor(color);
@@ -883,24 +923,24 @@ const x = centerX - categoryWidth / 2;
 
               shape: {
                 x,
-                y: topY,
+                y: visibleTopY,
                 width: barWidth,
-                height: segmentHeight,
+                height: visibleHeight,
 
                 r: [radiusTop, radiusTop, radiusBottom, radiusBottom],
               },
 
               style: {
                 fill: color,
-                stroke: "#FFFFFF",
-                lineWidth: 1.5,
+                stroke: "transparent",
+                lineWidth: 0,
               },
             },
           ];
 
           if (segmentHeight >= 24) {
             const labelX = x + barWidth / 2;
-            const labelY = (topY + bottomY) / 2;
+            const labelY = visibleTopY + visibleHeight / 2;
 
             children.push({
               type: "text",
