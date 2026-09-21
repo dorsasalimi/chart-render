@@ -48,6 +48,21 @@ function preserveTextGeometry(source: SVGSVGElement, clone: SVGSVGElement) {
     const cloneText = cloneTexts[index];
     if (!cloneText) return;
     const computed = window.getComputedStyle(sourceText);
+
+    // ECharts has already applied labelLayout (dx/dy/rotation) when this
+    // bounding box is measured. Keep that browser-rendered geometry so the
+    // outlined glyphs can be placed at the exact same visual centre.
+    try {
+      const bbox = sourceText.getBBox();
+      cloneText.setAttribute("data-export-bbox-x", String(bbox.x));
+      cloneText.setAttribute("data-export-bbox-y", String(bbox.y));
+      cloneText.setAttribute("data-export-bbox-width", String(bbox.width));
+      cloneText.setAttribute("data-export-bbox-height", String(bbox.height));
+    } catch {
+      // A detached/hidden SVG may not expose getBBox; anchor-based placement
+      // below remains a safe fallback.
+    }
+
     cloneText.setAttribute("font-size", computed.fontSize);
     cloneText.setAttribute("font-family", "Epsilon");
     cloneText.setAttribute("font-weight", computed.fontWeight);
@@ -84,7 +99,65 @@ function textToPaths(text: SVGTextElement, font: Font) {
       width + (positions[index]?.xAdvance ?? glyph?.advanceWidth ?? 0) * scale,
     0,
   );
-  let cursor = x - (anchor === "middle" ? totalWidth / 2 : anchor === "end" ? totalWidth : 0);
+  let glyphCursor = 0;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+
+  glyphs.forEach((glyph: Glyph, index: number) => {
+    const position: GlyphPosition | undefined = positions[index];
+    const advance =
+      (position?.xAdvance ?? glyph?.advanceWidth ?? 0) * scale;
+    const bbox = glyph?.bbox;
+
+    if (bbox) {
+      const glyphX = glyphCursor + (position?.xOffset || 0) * scale;
+      const glyphY = (position?.yOffset || 0) * scale;
+      minX = Math.min(minX, glyphX + bbox.minX * scale);
+      maxX = Math.max(maxX, glyphX + bbox.maxX * scale);
+      minY = Math.min(minY, glyphY - bbox.maxY * scale);
+      maxY = Math.max(maxY, glyphY - bbox.minY * scale);
+    }
+
+    glyphCursor += advance;
+  });
+
+  const hasGlyphBounds =
+    Number.isFinite(minX) &&
+    Number.isFinite(maxX) &&
+    Number.isFinite(minY) &&
+    Number.isFinite(maxY);
+  const bboxX = numericAttribute(text, "data-export-bbox-x", NaN);
+  const bboxY = numericAttribute(text, "data-export-bbox-y", NaN);
+  const bboxWidth = numericAttribute(text, "data-export-bbox-width", NaN);
+  const bboxHeight = numericAttribute(text, "data-export-bbox-height", NaN);
+  const hasBrowserBounds =
+    Number.isFinite(bboxX) &&
+    Number.isFinite(bboxY) &&
+    Number.isFinite(bboxWidth) &&
+    Number.isFinite(bboxHeight);
+
+  let cursor: number;
+  let baseline: number;
+
+  if (hasGlyphBounds && hasBrowserBounds) {
+    cursor = bboxX + bboxWidth / 2 - (minX + maxX) / 2;
+    baseline = bboxY + bboxHeight / 2 - (minY + maxY) / 2;
+  } else if (hasGlyphBounds) {
+    cursor =
+      anchor === "middle"
+        ? x - (minX + maxX) / 2
+        : anchor === "end"
+          ? x - maxX
+          : x - minX;
+    baseline = y;
+  } else {
+    cursor =
+      x -
+      (anchor === "middle" ? totalWidth / 2 : anchor === "end" ? totalWidth : 0);
+    baseline = y;
+  }
   const transform = text.getAttribute("transform");
 
   return glyphs.flatMap((glyph: Glyph, index: number) => {
@@ -98,7 +171,7 @@ function textToPaths(text: SVGTextElement, font: Font) {
     const path = document.createElementNS(SVG_NS, "path");
     path.setAttribute("d", glyph.path.toSVG());
     path.setAttribute("fill", fill || "#1d3b68");
-    const glyphTransform = `translate(${cursor + (position?.xOffset || 0) * scale}, ${y + (position?.yOffset || 0) * scale}) scale(${scale}, ${-scale})`;
+    const glyphTransform = `translate(${cursor + (position?.xOffset || 0) * scale}, ${baseline + (position?.yOffset || 0) * scale}) scale(${scale}, ${-scale})`;
     path.setAttribute("transform", transform ? `${transform} ${glyphTransform}` : glyphTransform);
     cursor += advance;
     return [path];
