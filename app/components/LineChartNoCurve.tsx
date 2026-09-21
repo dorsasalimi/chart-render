@@ -594,10 +594,14 @@ export default function LineChartNoCurve({
           fontSize: "40px",
           fontFamily: "Epsilon",
           color: "#808285",
-          margin: 50,
+          margin: 30,
           formatter: (value: number) => {
             const formatted = formatScaledAxisValue(value, chartValueDivisor);
-            return toPersianDigits(formatted);
+            const persianValue = toPersianDigits(formatted);
+
+            return isRajaeiTradeShareComparison
+              ? `٪${persianValue}`
+              : persianValue;
           },
         },
       },
