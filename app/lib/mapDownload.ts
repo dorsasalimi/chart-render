@@ -64,7 +64,14 @@ function textToPaths(text: SVGTextElement, font: Font) {
 
   const size = fontSize(text);
   const scale = size / (font.unitsPerEm || 1000);
-  const run = font.layout(content);
+  // The map's on-canvas text is just numerals (Persian digits, e.g. "۳۴۹").
+  // fontkit auto-detects their Unicode script as Arabic (Persian digits
+  // U+06F0-06F9 are in the Arabic script block) and, left to its default,
+  // shapes the run right-to-left — reversing the digit order to "۹۴۳" in
+  // the exported paths even though on-screen (browser bidi keeps numeral
+  // runs left-to-right) it reads correctly. Force LTR shaping here so the
+  // exported glyph order always matches the visible number.
+  const run = font.layout(content, [], undefined, undefined, "ltr");
   const glyphs = run.glyphs || [];
   const positions = run.positions || [];
   const x = numericAttribute(text, "x");
