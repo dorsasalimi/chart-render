@@ -1052,7 +1052,7 @@ const x = centerX - categoryWidth / 2;
       {showLegend && (
         <div
           data-chart-custom-legend="true"
-          dir="rtl"
+          dir="ltr"
           style={{
             width: "36.666667%",
             height: "100%",
@@ -1124,7 +1124,7 @@ const x = centerX - categoryWidth / 2;
                   transition:
                     "opacity 0.2s",
 
-                  textAlign: "right",
+                  textAlign: "left",
                 }}
               >
                 <span
@@ -1145,6 +1145,8 @@ const x = centerX - categoryWidth / 2;
                     lineHeight: 1.15,
                     color: "#5F6368",
                     whiteSpace: "nowrap",
+                    direction: "rtl",
+                    textAlign: "right",
                   }}
                 >
                   {toPersianLabel(

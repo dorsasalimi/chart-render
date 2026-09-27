@@ -283,12 +283,14 @@ const extractLegendData = (chartElement: HTMLElement): LegendItemData[] => {
 
   if (!legendContainer) return [];
 
-  const buttons = Array.from(legendContainer.querySelectorAll("button"));
+  const items = Array.from(
+    legendContainer.querySelectorAll("button, :scope > div"),
+  );
 
-  return buttons
-    .map((button) => {
-      const colorEl = button.querySelector("span[style*='background-color']");
-      const spans = Array.from(button.querySelectorAll("span"));
+  return items
+    .map((item) => {
+      const colorEl = item.querySelector("span[style*='background-color']");
+      const spans = Array.from(item.querySelectorAll("span"));
       const labelEl = spans.find((span) => span !== colorEl);
 
       const color =
@@ -660,7 +662,7 @@ const buildExportSVG = async (
 
     for (const item of legendItems) {
       const centerY = currentY + rowHeight / 2;
-      const markerX = legendRight - markerWidth;
+      const markerX = legendLeft;
 
       const rect = document.createElementNS(SVG_NS, "rect");
       rect.setAttribute("x", String(markerX));
@@ -675,13 +677,16 @@ const buildExportSVG = async (
       legendGroup.appendChild(rect);
 
       const text = document.createElementNS(SVG_NS, "text");
-      text.setAttribute("x", String(markerX - markerTextGap));
+      text.setAttribute(
+        "x",
+        String(markerX + markerWidth + markerTextGap),
+      );
       text.setAttribute("y", String(centerY));
       text.setAttribute("font-size", String(legendFontSize));
       text.setAttribute("font-family", "Epsilon");
       text.setAttribute("font-weight", "500");
       text.setAttribute("fill", "#5F6368");
-      text.setAttribute("text-anchor", "end");
+      text.setAttribute("text-anchor", "start");
       text.setAttribute("dominant-baseline", "central");
       text.textContent = item.name;
 

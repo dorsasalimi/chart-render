@@ -356,8 +356,8 @@ yAxis: {
       {showLegend && (
         <div
           data-chart-custom-legend="true"
-          className="mt-10 flex flex-wrap justify-center gap-x-5 gap-y-2"
-          dir="rtl"
+          className="mt-10 flex flex-wrap justify-start gap-x-5 gap-y-2"
+          dir="ltr"
         >
           {chart.series.map((series, seriesIndex) => (
             <div
@@ -374,6 +374,8 @@ yAxis: {
                   fontSize: "40px",
                   fontFamily: "Epsilon",
                   fontWeight: 400,
+                  direction: "rtl",
+                  textAlign: "right",
                 }}
               >
                 {toPersianLabel(series.name)}
