@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
+import { CHART_COLORS } from "../lib/chartTheme";
 
 interface AgriculturalTradeData {
   year: string;
@@ -16,8 +17,8 @@ interface AgriculturalTradeChartProps {
   data: AgriculturalTradeData[];
 }
 
-const IMPORT_COLOR = "#1d3767";
-const EXPORT_COLOR = "#a84b41";
+const IMPORT_COLOR = CHART_COLORS[3];
+const EXPORT_COLOR = CHART_COLORS[0];
 const AXIS_COLOR = "#808285";
 const FONT_FAMILY = "Epsilon";
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";

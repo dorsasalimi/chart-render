@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
+import { CHART_COLORS } from "../lib/chartTheme";
 
 interface ChartDataItem {
   name: string;
@@ -27,8 +28,8 @@ interface MonthlyTradeChartProps {
 const FONT_FAMILY =
   "Epsilon, IRANSansX, IRANSans, Vazirmatn, Tahoma, Arial, sans-serif";
 
-const IMPORT_COLOR = "#1d3767";
-const EXPORT_COLOR = "#a84b41";
+const IMPORT_COLOR = CHART_COLORS[3];
+const EXPORT_COLOR = CHART_COLORS[0];
 const BALANCE_COLOR = "#fba919";
 
 const PERSIAN_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
