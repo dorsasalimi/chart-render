@@ -4,6 +4,15 @@ import ReactECharts from "echarts-for-react";
 
 // Fixed 3 colors for line charts
 const CUSTOM_LINE_COLORS = ["#1d3767", "#a84b41", "#595959"];
+const IMPORT_LINE_CHART_IDS = new Set([
+  "five-year-automotive-trade",
+  "monthly-car-trade-1404",
+  "annual-mobile-trade",
+  "monthly-mobile-trade-1404",
+  "tamin-enerji-monthly-import-value-1404",
+  "annual-energy-supply-trade",
+]);
+const IMPORT_LINE_COLOR = "#a84b41";
 const FIRST_POINT_INSET_RATIO = 0.03;
 
 const getCategoryXPosition = (index: number, categoryCount: number) => {
@@ -149,6 +158,7 @@ export default function LineChartNoCurve({
   };
   // Use only our 3 specific colors
   const colors = CUSTOM_LINE_COLORS;
+  const isImportLineChart = IMPORT_LINE_CHART_IDS.has(chart.id);
   const isRajaeiTradeShareComparison =
     chart.id === "trade-share-comparison";
   const forceAllLabelsAbove =
@@ -170,7 +180,9 @@ export default function LineChartNoCurve({
   // Build ECharts series. For annual charts, split only the 1403 -> 1404
   // interval into a second series so the rest of the path remains solid.
   const series = chart.series.flatMap((s, index) => {
-    const seriesColor = s.color ?? colors[index % colors.length];
+    const seriesColor = isImportLineChart
+      ? IMPORT_LINE_COLOR
+      : s.color ?? colors[index % colors.length];
     const data = s.data || [];
 
     const isDashed =
