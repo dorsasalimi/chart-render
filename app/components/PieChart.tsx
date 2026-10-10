@@ -147,6 +147,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
 
   const dataLength = normalizedData.length;
   const keepLabelsInsideChart = chart.id === "china-top-customs-dollar";
+  const isTopMobileHsDollar = chart.id === "top-mobile-hs-dollar";
 
   const legendItemGap = dataLength <= 4 ? 60 : dataLength <= 6 ? 40 : 25;
 
@@ -163,6 +164,22 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
       color: colors[index % colors.length],
     },
   }));
+
+  const formatPieLabel = (params: { name: string; percent: number }) => {
+    const nameLines = wrapLabelLines(params.name);
+    const finalNameLine = nameLines[nameLines.length - 1];
+    const precedingNameLines = nameLines.slice(0, -1);
+    const showPercent =
+      !isTopMobileHsDollar || params.name === "تلفن همراه هوشمند";
+    const finalLine = showPercent
+      ? `{percent|٪${formatPercent(Number(params.percent))}} {separator|-} {name|${finalNameLine}}`
+      : `{name|${finalNameLine}}`;
+
+    return [
+      ...precedingNameLines.map((line) => `{name|${line}}`),
+      finalLine,
+    ].join("\n");
+  };
 
   const option = {
     color: colors,
@@ -296,7 +313,8 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
         type: "pie",
         startAngle:
           chart.id === "top-customs-mobile" ||
-          chart.id === "top-mobile-hs-dollar"
+          chart.id === "top-mobile-hs-dollar" ||
+          chart.id === "top-car-import-countries-total"
             ? 130
             : 90,
         radius: pieRadius,
@@ -311,19 +329,7 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
         },
         label: {
           show: true,
-          formatter: (params: any) => {
-            const percentDisplay = `٪${formatPercent(Number(params.percent))}`;
-            const nameLines = wrapLabelLines(params.name);
-            const finalNameLine = nameLines[nameLines.length - 1];
-            const precedingNameLines = nameLines.slice(0, -1);
-
-            const finalLine = `{percent|${percentDisplay}} {separator|-} {name|${finalNameLine}}`;
-
-            return [
-              ...precedingNameLines.map((line) => `{name|${line}}`),
-              finalLine,
-            ].join("\n");
-          },
+          formatter: formatPieLabel,
           fontFamily: "Epsilon",
           color: "#636466",
           position: "outside",
@@ -372,6 +378,8 @@ export default function PieChart({ chart, onChartReady, downloadRef }: Props) {
             fontFamily: "Epsilon",
 
             formatter: (params: any) => {
+              if (isTopMobileHsDollar) return formatPieLabel(params);
+
               const value = toPersianDigits(formatFullNumber(params.value));
 
               const percentDisplay = `${formatPercent(Number(params.percent))}٪`;

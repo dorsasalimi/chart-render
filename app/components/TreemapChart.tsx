@@ -1,6 +1,7 @@
 "use client";
 
 import ReactECharts from "echarts-for-react";
+import type { ECharts } from "echarts";
 import type { TreemapChart as TreemapChartType } from "../types/charts";
 import { CHART_COLORS_RANKED } from "../lib/colorThemes";
 
@@ -27,6 +28,43 @@ const formatNumber = (value: number) => {
   }).format(value);
 
   return toPersianDigits(formatted);
+};
+
+// ECharts truncates labels inside small tiles, which can turn "38" into "3".
+// Hide a chapter code unless its complete text and both label lines fit.
+const hideClippedChapterLabels = (instance: ECharts) => {
+  const context = document.createElement("canvas").getContext("2d");
+  if (!context) return;
+
+  context.font = "15px Epsilon";
+  let changed = false;
+
+  instance.getZr().storage.traverse((element) => {
+    const text = element.getTextContent();
+    const chapter = /^\{name\|([۰-۹]+)\}/.exec(text?.style.text || "")?.[1];
+    const shape = "shape" in element
+      ? (element.shape as { width?: unknown; height?: unknown })
+      : null;
+    if (
+      !text ||
+      !chapter ||
+      !shape ||
+      typeof shape.width !== "number" ||
+      typeof shape.height !== "number"
+    ) return;
+
+    const fits =
+      shape.width >= context.measureText(chapter).width + 16 &&
+      shape.height >= 34;
+
+    if (text.ignore !== !fits) {
+      text.ignore = !fits;
+      text.dirty();
+      changed = true;
+    }
+  });
+
+  if (changed) instance.getZr().refresh();
 };
 
 // --------------------------------------------------
@@ -386,6 +424,11 @@ export default function TreemapChart({ chart }: Props) {
           option={option}
           notMerge
           lazyUpdate={false}
+          onEvents={{
+            finished: (_event: unknown, instance: ECharts) => {
+              if (hasNestedData) hideClippedChapterLabels(instance);
+            },
+          }}
           style={{
             width: "100%",
             height: "100%",
@@ -397,6 +440,7 @@ export default function TreemapChart({ chart }: Props) {
             const dom = instance.getDom();
 
             dom.setAttribute("data-echarts-instance", "true");
+            if (hasNestedData) hideClippedChapterLabels(instance);
           }}
         />
       </div>
